@@ -122,7 +122,7 @@ class TestDataSet extends DummyDataSet {
       'pid': 0,
       'pcid': 0,
       'pcQuantity': 1,
-      'pcStatus': '제품 준비 완료',
+      'pcStatus': config.pickupStatus[1], // 제품 준비 완료
     },
   ];
 
@@ -133,7 +133,7 @@ class TestDataSet extends DummyDataSet {
       'loginTime': '2025-12-12 17:05',
       'lStatus': '0',
       'lVersion': 1.0,
-      'lAddress': '강남구',
+      'lAddress': config.district[0], // 강남구
       'lPaymentMethod': 'KaKaoPay',
     },
   ];

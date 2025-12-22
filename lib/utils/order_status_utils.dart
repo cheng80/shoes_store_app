@@ -140,7 +140,7 @@ class OrderStatusUtils {
         '주문 상태 결정 실패: PurchaseItem 목록이 비어있음 (데이터 무결성 오류) - Purchase ID: ${purchase.id}, OrderCode: ${purchase.orderCode}',
         tag: 'OrderStatusUtils',
       );
-      return config.pickupStatus[0] ?? '제품 준비 중';
+      return config.pickupStatus[0] ?? config.pickupStatus[0]!; // '제품 준비 중'
     }
 
     // 2단계: 반품 상태 체크 (최우선)
@@ -188,7 +188,7 @@ class OrderStatusUtils {
         '주문 상태 결정 실패(관리자): PurchaseItem 목록이 비어있음 (데이터 무결성 오류) - Purchase ID: ${purchase.id}, OrderCode: ${purchase.orderCode}',
         tag: 'OrderStatusUtils',
       );
-      return config.pickupStatus[0] ?? '제품 준비 중';
+      return config.pickupStatus[0] ?? config.pickupStatus[0]!; // '제품 준비 중'
     }
 
     // 2단계: 반품 상태 체크 (최우선)
@@ -277,7 +277,7 @@ class OrderStatusUtils {
 
     // 유효한 반품 상태 범위 체크
     if (maxReturnStatus >= 3 && maxReturnStatus <= 5) {
-      return config.pickupStatus[maxReturnStatus] ?? '반품 신청';
+      return config.pickupStatus[maxReturnStatus] ?? config.pickupStatus[3]!; // '반품 신청'
     }
 
     // 예상치 못한 상태 번호
@@ -285,7 +285,7 @@ class OrderStatusUtils {
       '예상치 못한 반품 상태 번호 - Purchase ID: ${purchase.id}, Status: $maxReturnStatus',
       tag: 'OrderStatusUtils',
     );
-    return config.pickupStatus[0] ?? '제품 준비 중';
+    return config.pickupStatus[0] ?? config.pickupStatus[0]!; // '제품 준비 중'
   }
 
   /// pickupDate 파싱 (중복 체크 제거를 위한 헬퍼 함수)
@@ -335,7 +335,7 @@ class OrderStatusUtils {
     if (parsedPickupDate != null) {
       final daysDifference = now.difference(parsedPickupDate).inDays;
       if (daysDifference >= 30) {
-        return config.pickupStatus[2] ?? '제품 수령 완료';
+        return config.pickupStatus[2] ?? config.pickupStatus[2]!; // '제품 수령 완료'
       }
     }
 
@@ -352,13 +352,13 @@ class OrderStatusUtils {
       // pickupDate가 오늘보다 작거나 같으면 true
       if (pickupDateOnly.isBefore(nowDateOnly) ||
           pickupDateOnly.isAtSameMomentAs(nowDateOnly)) {
-        return config.pickupStatus[1] ?? '제품 준비 완료';
+        return config.pickupStatus[1] ?? config.pickupStatus[1]!; // '제품 준비 완료'
       }
     }
 
     // 우선순위 3: 구매 당일 체크
     if (isPurchaseDateToday(purchase, now)) {
-      return config.pickupStatus[0] ?? '제품 준비 중';
+      return config.pickupStatus[0] ?? config.pickupStatus[0]!; // '제품 준비 중'
     }
 
     // 날짜 기반 조건에 맞지 않으면 null 반환 (다음 단계로 진행)
@@ -403,27 +403,27 @@ class OrderStatusUtils {
     if (isCustomerView) {
       // status 2 이상은 모두 "제품 수령 완료"로 표시
       if (displayStatus >= 2 && displayStatus <= 5) {
-        return config.pickupStatus[2] ?? '제품 수령 완료';
+        return config.pickupStatus[2] ?? config.pickupStatus[2]!; // '제품 수령 완료'
       } else if (displayStatus == 0 || displayStatus == 1) {
-        return config.pickupStatus[displayStatus] ?? '제품 준비 중';
+        return config.pickupStatus[displayStatus] ?? config.pickupStatus[0]!; // '제품 준비 중'
       } else {
         AppLogger.w(
           '예상치 못한 상태 번호 - Purchase ID: ${purchase.id}, Status: $displayStatus',
           tag: 'OrderStatusUtils',
         );
-        return config.pickupStatus[0] ?? '제품 준비 중';
+        return config.pickupStatus[0] ?? config.pickupStatus[0]!; // '제품 준비 중'
       }
     }
 
     // 관리자 화면용 처리 (실제 상태 그대로 표시)
     if (displayStatus >= 0 && displayStatus <= 5) {
-      return config.pickupStatus[displayStatus] ?? '제품 준비 중';
+      return config.pickupStatus[displayStatus] ?? config.pickupStatus[0]!; // '제품 준비 중'
     } else {
       AppLogger.w(
         '예상치 못한 상태 번호(관리자) - Purchase ID: ${purchase.id}, Status: $displayStatus',
         tag: 'OrderStatusUtils',
       );
-      return config.pickupStatus[0] ?? '제품 준비 중';
+      return config.pickupStatus[0] ?? config.pickupStatus[0]!; // '제품 준비 중'
     }
   }
 

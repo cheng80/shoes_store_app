@@ -7,8 +7,7 @@
     11/29/2025 17:52, 'Point 2, Price format preset', Creator: Chansol, Park
     12/12/2025 15:55, 'Point 3, PurchaseItem, LoginHistory table added', Creator: Chansol, Park
     12/12/2025 15:55, 'Point 4, pickupStatus, returnStatus, loginStatus, district added', Creator: zero
-    13/12/2025 13:49, 'Point 5, Retail Model configuration added', Creator: Chansol Park
-    13/12/2025 21:42, 'Point 6, pickupStatus와 returnStatus를 통합', Creator: zero
+    13/12/2025 21:42, 'Point 5, pickupStatus와 returnStatus를 통합', Creator: zero
   Version: 1.0
   Desc: Config for dbName, version, etc.
 */
@@ -36,6 +35,9 @@ const String kIconAssetPath = 'icons/';
 //  DB Dummies
 const int kDefaultUserId = -1;  //  UserID befor login
 const String kDefaultProductImage = '${kImageAssetPath}default.png';  //  Default image for ProductBase
+
+//  Storage Keys
+const String kStorageKeyDBInitialized = 'db_initialized';  //  DB 초기화 완료 여부 저장 키
 
 //  Formats
 const String dateFormat = 'yyyy-MM-dd';
@@ -69,8 +71,6 @@ const String tTableEmployee = 'Employee';
 //  Point 3
 const String kTableLoginHistory = 'LoginHistory';
 const String kTablePurchaseItem = 'PurchaseItem';
-//  Point 5
-const String kTableRetail = 'Retail';
 
 
 //  Routes

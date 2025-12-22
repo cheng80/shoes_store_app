@@ -156,7 +156,7 @@ class _PurchaseViewState extends State<PurchaseView> {
         pid: productId,
         pcid: purchaseId, // 생성된 Purchase ID 사용
         pcQuantity: purchaseQuantity,
-        pcStatus: config.pickupStatus[0] ?? '제품 준비 중', // 초기 상태는 "제품 준비 중"
+        pcStatus: config.pickupStatus[0] ?? config.pickupStatus[0]!, // 초기 상태는 "제품 준비 중"
       );
 
       await _purchaseItemHandler.insertData(item);

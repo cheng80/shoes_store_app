@@ -272,9 +272,9 @@ class PurchaseService {
     final db = await _getDatabase();
 
     // config.pickupStatus의 한글 값 사용
-    final completeStatus = config.pickupStatus[2] ?? '제품 수령 완료';
-    final returnRequestStatus = config.pickupStatus[3] ?? '반품 신청';
-    final returnDoneStatus = config.pickupStatus[5] ?? '반품 완료';
+    final completeStatus = config.pickupStatus[2] ?? config.pickupStatus[2]!; // '제품 수령 완료'
+    final returnRequestStatus = config.pickupStatus[3] ?? config.pickupStatus[3]!; // '반품 신청'
+    final returnDoneStatus = config.pickupStatus[5] ?? config.pickupStatus[5]!; // '반품 완료'
 
     final results = await db.rawQuery('''
       SELECT DISTINCT

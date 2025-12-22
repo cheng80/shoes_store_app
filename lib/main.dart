@@ -30,20 +30,35 @@ Future<void> main() async {
   await GetStorage.init();
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 데이터베이스 초기화 (DatabaseManager 사용)
-  final dbPath = await getDatabasesPath();
-  final path = join(dbPath, '${config.kDBName}${config.kDBFileExt}');
-  
-  // 개발 중이므로 기존 DB 삭제 (운영 환경에서는 제거)
-  await deleteDatabase(path);
-  
-  // DatabaseManager로 DB 초기화
-  final dbManager = DatabaseManager();
-  await dbManager.initializeDB();
+  // GetStorage에서 DB 초기화 완료 여부 확인
+  final storage = GetStorage();
+  final isDBInitialized = storage.read<bool>(config.kStorageKeyDBInitialized) ?? false;
 
-  // 더미 데이터 삽입 (새 핸들러 방식 사용)
-  final dummyDataSetting = DummyDataSetting();
-  await dummyDataSetting.insertAllDummyData();
+  // DB가 초기화되지 않았을 때만 초기화 및 더미 데이터 삽입
+  if (!isDBInitialized) {
+    // 데이터베이스 초기화 (DatabaseManager 사용)
+    final dbPath = await getDatabasesPath();
+    final path = join(dbPath, '${config.kDBName}${config.kDBFileExt}');
+    
+    // DatabaseManager 인스턴스 가져오기
+    final dbManager = DatabaseManager();
+    
+    // 기존 DB 연결 닫기 및 리셋 (DB 삭제 전에 필수)
+    await dbManager.closeAndReset();
+    
+    // 개발 중이므로 기존 DB 삭제 (운영 환경에서는 제거)
+    await deleteDatabase(path);
+    
+    // DatabaseManager로 DB 초기화
+    await dbManager.initializeDB();
+
+    // 더미 데이터 삽입 (새 핸들러 방식 사용)
+    final dummyDataSetting = DummyDataSetting();
+    await dummyDataSetting.insertAllDummyData();
+    
+    // 초기화 완료 플래그 저장
+    await storage.write(config.kStorageKeyDBInitialized, true);
+  }
   
   runApp(const MyApp());
 }

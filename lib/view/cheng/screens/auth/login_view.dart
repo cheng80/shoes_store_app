@@ -234,10 +234,10 @@ class _LoginViewState extends State<LoginView> {
         
         await _loginHistoryHandler.updateStatusByCustomerId(
           customer.id!,
-          config.loginStatus[1] as String,
+          config.loginStatus[1] as String, // '휴면 회원'
         );
         
-        _blockLogin('장기간 미접속으로 휴면 회원 처리 되었습니다.');
+        _blockLogin('장기간 미접속으로 ${config.loginStatus[1]} 처리 되었습니다.'); // '휴면 회원'
         return true;
       }
       return false;
@@ -279,22 +279,22 @@ class _LoginViewState extends State<LoginView> {
       return true;
     } else if (statusKey == 1) {
       AppLogger.w('휴면 회원 로그인 시도 - Customer ID: ${customer.id}', tag: 'Login');
-      _blockLogin('휴면 회원입니다.');
+      _blockLogin('${config.loginStatus[1]}입니다.'); // '휴면 회원'
       return false;
     } else if (statusKey == 2) {
       AppLogger.w('탈퇴 회원 로그인 시도 - Customer ID: ${customer.id}', tag: 'Login');
-      _blockLogin('탈퇴 회원입니다.');
+      _blockLogin('${config.loginStatus[2]}입니다.'); // '탈퇴 회원'
       return false;
     } else if (statusKey == null) {
-      if (currentStatus == '탈퇴 회원' || currentStatus == '2' || currentStatus.contains('탈퇴')) {
+      if (currentStatus == config.loginStatus[2] || currentStatus == '2' || currentStatus.contains('탈퇴')) { // '탈퇴 회원'
         AppLogger.w('탈퇴 회원으로 판단 (직접 비교) - Customer ID: ${customer.id}', tag: 'Login');
-        _blockLogin('탈퇴 회원입니다.');
+        _blockLogin('${config.loginStatus[2]}입니다.'); // '탈퇴 회원'
         return false;
-      } else if (currentStatus == '휴면 회원' || currentStatus == '1' || currentStatus.contains('휴면')) {
+      } else if (currentStatus == config.loginStatus[1] || currentStatus == '1' || currentStatus.contains('휴면')) { // '휴면 회원'
         AppLogger.w('휴면 회원으로 판단 (직접 비교) - Customer ID: ${customer.id}', tag: 'Login');
-        _blockLogin('휴면 회원입니다.');
+        _blockLogin('${config.loginStatus[1]}입니다.'); // '휴면 회원'
         return false;
-      } else if (currentStatus == '활동 회원' || currentStatus == '0' || currentStatus.contains('활동')) {
+      } else if (currentStatus == config.loginStatus[0] || currentStatus == '0' || currentStatus.contains('활동')) { // '활동 회원'
         await _updateLoginTime(customer);
         _handleLoginSuccess(customer);
         return true;
@@ -441,7 +441,7 @@ class _LoginViewState extends State<LoginView> {
     final newLoginHistory = LoginHistory(
       cid: customer.id,
       loginTime: currentTime,
-      lStatus: config.loginStatus[0] as String,
+      lStatus: config.loginStatus[0] as String, // '활동 회원'
       lVersion: dVersion,
       lAddress: '',
       lPaymentMethod: '',

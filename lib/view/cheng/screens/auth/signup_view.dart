@@ -546,7 +546,7 @@ class _SignUpViewState extends State<SignUpView> {
           final loginHistory = LoginHistory(
             cid: insertedId,
             loginTime: currentTime,
-            lStatus: config.loginStatus[0] as String,
+            lStatus: config.loginStatus[0] as String, // '활동 회원'
             lVersion: dVersion,
             lAddress: '',
             lPaymentMethod: '',

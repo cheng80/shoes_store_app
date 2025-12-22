@@ -194,10 +194,10 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
             String returnStatusText;
             if (statusNum >= 3) {
               // 반품 신청 이상 (3, 4, 5)
-              returnStatusText = config.pickupStatus[statusNum] ?? '반품 신청';
+              returnStatusText = config.pickupStatus[statusNum] ?? config.pickupStatus[3]!; // '반품 신청'
             } else {
               // 반품 신청 가능 (2: 제품 수령 완료)
-              returnStatusText = '반품 신청';
+              returnStatusText = config.pickupStatus[3]!; // '반품 신청'
             }
             
             // 실제 pcStatus 값 저장 (버튼 활성화 판단용)
@@ -217,8 +217,8 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
                 final currentStatusNum = OrderStatusUtils.parseStatusToNumber(item.pcStatus);
                 final higherStatusNum = existingStatusNum > currentStatusNum ? existingStatusNum : currentStatusNum;
                 final higherStatusText = higherStatusNum >= 3
-                    ? (config.pickupStatus[higherStatusNum] ?? '반품 신청')
-                    : '반품 신청';
+                    ? (config.pickupStatus[higherStatusNum] ?? config.pickupStatus[3]!) // '반품 신청'
+                    : config.pickupStatus[3]!; // '반품 신청'
 
                 // PurchaseItem ID 추가
                 final updatedPurchaseItemIds = List<int>.from(existingItem.purchaseItemIds);
@@ -417,8 +417,8 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
                     final isReturnCompleted = statusNum == 5; // 반품 완료
                     // 반품 완료(5)일 때만 pickupStatus[5] 사용, 그 외에는 '반품 신청' 텍스트 사용
                     final returnStatusText = isReturnCompleted 
-                        ? (config.pickupStatus[5] ?? '반품 완료')
-                        : '반품 신청';
+                        ? (config.pickupStatus[5] ?? config.pickupStatus[5]!) // '반품 완료'
+                        : config.pickupStatus[3]!; // '반품 신청'
                     
                     // pickupDate로부터 30일 경과 확인
                     bool is30DaysPassed = false;
@@ -558,7 +558,7 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
 
     try {
       // 반품 완료 상태로 업데이트
-      final returnCompleteStatus = config.pickupStatus[5] ?? '반품 완료';
+      final returnCompleteStatus = config.pickupStatus[5] ?? config.pickupStatus[5]!; // '반품 완료'
       
       /// 같은 제품의 모든 PurchaseItem을 반품 완료로 업데이트
       for (final purchaseItemId in item.purchaseItemIds) {
@@ -628,7 +628,7 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
 
       /// 스낵바로 알림 표시
       Get.snackbar(
-        '반품 완료',
+        config.pickupStatus[5]!, // '반품 완료'
         '${item.productName}의 반품이 완료되었습니다.',
         snackPosition: SnackPosition.BOTTOM,
       );

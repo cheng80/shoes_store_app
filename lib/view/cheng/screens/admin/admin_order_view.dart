@@ -150,7 +150,7 @@ class _AdminOrderViewState
             statusMap[purchase.id!] = status;
           } catch (e) {
             AppLogger.e('주문 상태 조회 실패 (ID: ${purchase.id})', error: e);
-            statusMap[purchase.id!] = config.pickupStatus[0] ?? '제품 준비 중';
+            statusMap[purchase.id!] = config.pickupStatus[0] ?? config.pickupStatus[0]!; // '제품 준비 중'
           }
         }
       }
@@ -267,8 +267,8 @@ class _AdminOrderViewState
                         // 각 주문을 OrderCard로 표시
                         ..._filteredOrders.map((order) {
                           final orderStatus = order.id != null 
-                              ? _orderStatusMap[order.id] ?? config.pickupStatus[0] ?? '제품 준비 중'
-                              : config.pickupStatus[0] ?? '제품 준비 중';
+                              ? _orderStatusMap[order.id] ?? config.pickupStatus[0] ?? config.pickupStatus[0]! // '제품 준비 중'
+                              : config.pickupStatus[0] ?? config.pickupStatus[0]!; // '제품 준비 중'
                           final customerName = order.id != null
                               ? _customerNameMap[order.id] ?? '고객 정보 없음'
                               : '고객 정보 없음';

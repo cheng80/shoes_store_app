@@ -142,16 +142,6 @@ class DatabaseManager {
         lPaymentMethod TEXT
       )
     ''');
-
-    // Retail 테이블
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS Retail (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        pid INTEGER,
-        eid INTEGER,
-        rQuantity INTEGER
-      )
-    ''');
   }
 
   /// 인덱스 생성 (조인 쿼리 성능 향상)
@@ -249,19 +239,6 @@ class DatabaseManager {
       ON LoginHistory(cid)
     ''');
 
-    // Retail 테이블 인덱스
-    // 제품별 재고 조회 최적화
-    await db.execute('''
-      CREATE INDEX IF NOT EXISTS idx_retail_pid 
-      ON Retail(pid)
-    ''');
-
-    // 직원(대리점)별 재고 조회 최적화
-    await db.execute('''
-      CREATE INDEX IF NOT EXISTS idx_retail_eid 
-      ON Retail(eid)
-    ''');
-
     print("✅ 모든 인덱스 생성 완료");
   }
 
@@ -275,10 +252,20 @@ class DatabaseManager {
     return _db!;
   }
 
+  /// DB 연결 닫기 및 리셋
+  /// 
+  /// DB를 삭제하거나 재초기화하기 전에 호출해야 합니다.
+  /// 기존 연결을 안전하게 닫고 인스턴스를 리셋합니다.
+  Future<void> closeAndReset() async {
+    if (_db != null) {
+      await _db!.close();
+      _db = null;
+    }
+  }
+
   /// 테이블 전체 삭제 (개발/테스트용)
   Future<void> clearAllTables() async {
     final db = await getDatabase();
-    await db.delete('Retail');
     await db.delete('LoginHistory');
     await db.delete('PurchaseItem');
     await db.delete('Purchase');

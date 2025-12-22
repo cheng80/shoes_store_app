@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'package:shoes_store_app/config.dart' as config;
+import 'package:shoes_store_app/database/core/database_manager.dart';
+import 'package:shoes_store_app/database/dummy_data/dummy_data_setting.dart';
 import 'package:shoes_store_app/database/handlers/customer_handler.dart';
 import 'package:shoes_store_app/database/handlers/login_history_handler.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
@@ -16,6 +18,9 @@ import 'package:shoes_store_app/view/cheng/screens/customer/order_list_view.dart
 import 'package:shoes_store_app/view/cheng/screens/customer/return_list_view.dart';
 import 'package:shoes_store_app/view/cheng/screens/customer/search_view.dart';
 import 'package:shoes_store_app/view/cheng/screens/customer/user_profile_edit_view.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 
 class TestNavigationPage extends StatelessWidget {
   const TestNavigationPage({super.key});
@@ -46,7 +51,14 @@ class TestNavigationPage extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 16),
+                CustomButton(
+                  btnText: 'DB 초기화 및 더미 데이터 재삽입',
+                  buttonType: ButtonType.elevated,
+                  onCallBack: () => _reinitializeDatabase(context),
+                  minimumSize: const Size(double.infinity, 56),
+                ),
+                const SizedBox(height: 16),
                 CustomButton(
                   btnText: '로그인 화면',
                   buttonType: ButtonType.elevated,
@@ -229,6 +241,96 @@ class TestNavigationPage extends StatelessWidget {
   /// 검색 화면으로 이동
   void _navigateToSearchView(BuildContext context) {
     Get.to(() => const SearchView());
+  }
+
+  /// DB 초기화 및 더미 데이터 재삽입
+  /// 
+  /// 기존 DB를 삭제하고 새로 초기화한 후 더미 데이터를 삽입합니다.
+  /// GetStorage의 초기화 플래그도 리셋합니다.
+  Future<void> _reinitializeDatabase(BuildContext context) async {
+    try {
+      // 확인 다이얼로그 표시
+      final shouldProceed = await Get.dialog<bool>(
+        AlertDialog(
+          title: const Text('DB 초기화'),
+          content: const Text(
+            '데이터베이스를 초기화하고 더미 데이터를 재삽입하시겠습니까?\n\n'
+            '⚠️ 기존의 모든 데이터가 삭제됩니다.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(result: false),
+              child: const Text('취소'),
+            ),
+            TextButton(
+              onPressed: () => Get.back(result: true),
+              child: const Text('확인'),
+            ),
+          ],
+        ),
+      );
+
+      if (shouldProceed != true) {
+        return;
+      }
+
+      // 로딩 표시
+      Get.dialog(
+        const Center(child: CircularProgressIndicator()),
+        barrierDismissible: false,
+      );
+
+      // 데이터베이스 초기화
+      final dbPath = await getDatabasesPath();
+      final path = join(dbPath, '${config.kDBName}${config.kDBFileExt}');
+      
+      // DatabaseManager 인스턴스 가져오기
+      final dbManager = DatabaseManager();
+      
+      // 기존 DB 연결 닫기 및 리셋 (DB 삭제 전에 필수)
+      await dbManager.closeAndReset();
+      
+      // 기존 DB 삭제
+      await deleteDatabase(path);
+      
+      // DatabaseManager로 DB 초기화
+      await dbManager.initializeDB();
+
+      // 더미 데이터 삽입
+      final dummyDataSetting = DummyDataSetting();
+      await dummyDataSetting.insertAllDummyData();
+      
+      // 초기화 완료 플래그 저장
+      final storage = GetStorage();
+      await storage.write(config.kStorageKeyDBInitialized, true);
+
+      // 로딩 닫기
+      Get.back();
+
+      // 성공 메시지 표시
+      Get.snackbar(
+        '초기화 완료',
+        '데이터베이스가 초기화되고 더미 데이터가 삽입되었습니다.',
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(seconds: 2),
+      );
+
+      AppLogger.d('DB 초기화 및 더미 데이터 재삽입 완료', tag: 'TestNavigation');
+    } catch (e, stackTrace) {
+      // 로딩 닫기
+      Get.back();
+
+      AppLogger.e('DB 초기화 실패', tag: 'TestNavigation', error: e, stackTrace: stackTrace);
+      
+      Get.snackbar(
+        '초기화 실패',
+        '데이터베이스 초기화 중 오류가 발생했습니다: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade100,
+        colorText: Colors.red.shade900,
+        duration: const Duration(seconds: 5),
+      );
+    }
   }
 
   /// 등록된 모든 사용자를 터미널에 출력

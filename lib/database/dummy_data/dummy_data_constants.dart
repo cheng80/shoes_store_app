@@ -530,42 +530,42 @@ class DummyPurchaseItems {
   /// 
   /// pid: Product 인덱스 (0-based)
   /// pcid: Purchase 인덱스 (0-based)
-  static const List<Map<String, dynamic>> development = [
+  static List<Map<String, dynamic>> get development => [
     {
       'pid': 0, // ProductBase 0의 첫 번째 사이즈 (220)
       'pcid': 0, // ORDER-001
       'pcQuantity': 10,
-      'pcStatus': '제품 준비 완료',
+      'pcStatus': config.pickupStatus[1], // 제품 준비 완료
     },
     {
       'pid': 1, // ProductBase 0의 두 번째 사이즈 (230)
       'pcid': 1, // ORDER-002
       'pcQuantity': 3,
-      'pcStatus': '제품 준비 완료',
+      'pcStatus': config.pickupStatus[1], // 제품 준비 완료
     },
     {
       'pid': 2, // ProductBase 0의 세 번째 사이즈 (240)
       'pcid': 1, // ORDER-002
       'pcQuantity': 6,
-      'pcStatus': '제품 준비 완료',
+      'pcStatus': config.pickupStatus[1], // 제품 준비 완료
     },
     {
       'pid': 7, // ProductBase 1의 첫 번째 사이즈 (220)
       'pcid': 2, // ORDER-003
       'pcQuantity': 1,
-      'pcStatus': '제품 준비 완료',
+      'pcStatus': config.pickupStatus[1], // 제품 준비 완료
     },
     {
       'pid': 8, // ProductBase 1의 두 번째 사이즈 (230)
       'pcid': 3, // ORDER-004
       'pcQuantity': 9,
-      'pcStatus': '제품 준비 완료',
+      'pcStatus': config.pickupStatus[1], // 제품 준비 완료
     },
     {
       'pid': 9, // ProductBase 1의 세 번째 사이즈 (240)
       'pcid': 4, // ORDER-005
       'pcQuantity': 11,
-      'pcStatus': '제품 준비 완료',
+      'pcStatus': config.pickupStatus[1], // 제품 준비 완료
     },
   ];
 }
@@ -581,13 +581,13 @@ class DummyLoginHistories {
   /// 개발용 로그인 이력 데이터
   /// 
   /// cid: Customer 인덱스 (0-based)
-  static const List<Map<String, dynamic>> development = [
+  static List<Map<String, dynamic>> get development => [
     {
       'cid': 0, // 조조
       'loginTime': '2025-12-12 17:05',
       'lStatus': '0',
       'lVersion': 1.0,
-      'lAddress': '강남구',
+      'lAddress': config.district[0], // 강남구
       'lPaymentMethod': 'KaKaoPay',
     },
     {
@@ -595,7 +595,7 @@ class DummyLoginHistories {
       'loginTime': '2025-12-12 19:05',
       'lStatus': '0',
       'lVersion': 1.0,
-      'lAddress': '강남구',
+      'lAddress': config.district[0], // 강남구
       'lPaymentMethod': 'KaKaoPay',
     },
     {
@@ -603,7 +603,7 @@ class DummyLoginHistories {
       'loginTime': '2025-12-12 19:20',
       'lStatus': '0',
       'lVersion': 1.0,
-      'lAddress': '강남구',
+      'lAddress': config.district[0], // 강남구
       'lPaymentMethod': 'KaKaoPay',
     },
     {
@@ -611,7 +611,7 @@ class DummyLoginHistories {
       'loginTime': '2023-12-12 19:20',
       'lStatus': '0',
       'lVersion': 1.0,
-      'lAddress': '강남구',
+      'lAddress': config.district[0], // 강남구
       'lPaymentMethod': 'KaKaoPay',
     },
     {
@@ -619,7 +619,7 @@ class DummyLoginHistories {
       'loginTime': '2025-12-12 07:20',
       'lStatus': '2',
       'lVersion': 1.0,
-      'lAddress': '강남구',
+      'lAddress': config.district[0], // 강남구
       'lPaymentMethod': 'KaKaoPay',
     },
     {
@@ -627,7 +627,7 @@ class DummyLoginHistories {
       'loginTime': '2023-12-12 07:20',
       'lStatus': '1',
       'lVersion': 1.0,
-      'lAddress': '강남구',
+      'lAddress': config.district[0], // 강남구
       'lPaymentMethod': 'KaKaoPay',
     },
   ];
