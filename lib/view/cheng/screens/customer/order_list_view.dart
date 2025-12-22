@@ -1,0 +1,411 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import 'package:shoes_store_app/config.dart' as config;
+import 'package:shoes_store_app/database/handlers/customer_handler.dart';
+import 'package:shoes_store_app/database/handlers/purchase_handler.dart';
+import 'package:shoes_store_app/database/handlers/purchase_item_handler.dart';
+import 'package:shoes_store_app/model/customer.dart';
+import 'package:shoes_store_app/model/sale/purchase.dart';
+import 'package:shoes_store_app/model/sale/purchase_item.dart';
+import 'package:shoes_store_app/utils/app_logger.dart';
+import 'package:shoes_store_app/view/cheng/custom/custom.dart';
+import 'package:shoes_store_app/view/cheng/storage/user_storage.dart';
+import 'package:shoes_store_app/utils/order_status_utils.dart';
+import 'package:shoes_store_app/view/cheng/widgets/customer/customer_order_card.dart';
+import 'package:shoes_store_app/view/cheng/screens/customer/order_detail_view.dart';
+
+/// 고객용 주문 내역 화면
+/// 모바일 세로 화면에 최적화된 주문 내역 화면입니다.
+/// 검색 필터와 주문 카드 리스트를 표시하며, 카드를 탭하면 상세 페이지로 이동합니다.
+class OrderListView extends StatefulWidget {
+  const OrderListView({super.key});
+
+  @override
+  State<OrderListView> createState() => _OrderListViewState();
+}
+
+class _OrderListViewState extends State<OrderListView> {
+  /// 검색 필터 입력을 위한 텍스트 컨트롤러
+  final TextEditingController _searchController = TextEditingController();
+
+  /// 주문 내역 데이터
+  List<Purchase> _orders = [];
+
+  /// 주문 상태 맵 (주문 ID -> 상태)
+  Map<int, String> _orderStatusMap = {};
+
+  /// 로딩 상태
+  bool _isLoading = true;
+
+  /// 정렬 기준 (기본값: 주문 번호)
+  String _sortBy = 'orderCode';
+
+  /// 정렬 방향 (true: 오름차순, false: 내림차순)
+  bool _sortAscending = true;
+
+  /// 현재 로그인한 사용자 정보
+  Customer? _currentUser;
+
+  /// 고객 핸들러
+  final CustomerHandler _customerHandler = CustomerHandler();
+  
+  /// 주문 핸들러
+  final PurchaseHandler _purchaseHandler = PurchaseHandler();
+  
+  /// 주문 항목 핸들러
+  final PurchaseItemHandler _purchaseItemHandler = PurchaseItemHandler();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOrders();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  /// DB에서 주문 목록을 불러오는 함수
+  /// 현재 로그인한 사용자의 주문만 필터링하여 가져옵니다.
+  Future<void> _loadOrders() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final userId = UserStorage.getUserId();
+      if (userId == null) {
+        AppLogger.w('사용자 정보가 없습니다. 로그인이 필요합니다.');
+        setState(() {
+          _orders = [];
+          _isLoading = false;
+        });
+        return;
+      }
+
+      AppLogger.d('=== 주문 내역 조회 시작 ===');
+      AppLogger.d('사용자 ID: $userId');
+      
+      /// 현재 사용자 정보 조회
+      try {
+        _currentUser = await _customerHandler.queryById(userId);
+        if (_currentUser != null) {
+          AppLogger.d('사용자 정보 로드 성공: 이름=${_currentUser!.cName}, 이메일=${_currentUser!.cEmail}');
+        } else {
+          AppLogger.w('사용자 정보를 찾을 수 없습니다. ID: $userId');
+        }
+      } catch (e) {
+        AppLogger.e('사용자 정보 조회 실패', error: e);
+      }
+      
+      /// 고객별 주문 목록 조회
+      final purchases = await _purchaseHandler.queryByCustomerId(userId);
+      
+      AppLogger.d('조회된 Purchase 개수: ${purchases.length}');
+      for (var i = 0; i < purchases.length; i++) {
+        final purchase = purchases[i];
+        AppLogger.d('--- Purchase[$i] ---');
+        AppLogger.d('  id: ${purchase.id}');
+        AppLogger.d('  cid: ${purchase.cid}');
+        AppLogger.d('  orderCode: ${purchase.orderCode}');
+        AppLogger.d('  pickupDate: ${purchase.pickupDate}');
+        AppLogger.d('  timeStamp: ${purchase.timeStamp}');
+      }
+      
+      /// 시간순으로 정렬 (최신순)
+      purchases.sort((a, b) => b.timeStamp.compareTo(a.timeStamp));
+
+      /// 각 주문의 상태를 미리 계산 및 30일 경과 주문 자동 업데이트
+      final statusMap = <int, String>{};
+      final now = DateTime.now();
+      
+      for (final purchase in purchases) {
+        if (purchase.id != null) {
+          try {
+            AppLogger.d('--- PurchaseItem 조회 (pcid: ${purchase.id}) ---');
+            final items = await _purchaseItemHandler.queryByPurchaseId(purchase.id!);
+            AppLogger.d('조회된 PurchaseItem 개수: ${items.length}');
+            
+            /// 30일 경과 확인 및 자동 업데이트
+            if (OrderStatusUtils.shouldAutoUpdateToCompleted(items, purchase, now: now)) {
+              AppLogger.d('주문 ID ${purchase.id}: 30일 경과 - 자동 수령 완료 처리');
+              
+              /// 모든 PurchaseItem의 pcStatus를 '제품 수령 완료'로 업데이트
+              final completeStatus = config.pickupStatus[2] ?? '제품 수령 완료';
+              for (final item in items) {
+                if (item.id != null) {
+                  try {
+                    final statusNum = OrderStatusUtils.parseStatusToNumber(item.pcStatus);
+                    // status 2 미만인 아이템만 업데이트
+                    if (statusNum < 2) {
+                      final updatedItem = PurchaseItem(
+                        id: item.id,
+                        pid: item.pid,
+                        pcid: item.pcid,
+                        pcQuantity: item.pcQuantity,
+                        pcStatus: completeStatus,
+                      );
+                      await _purchaseItemHandler.updateData(updatedItem);
+                      AppLogger.d('PurchaseItem ID ${item.id} 업데이트 완료: pcStatus = $completeStatus');
+                    }
+                  } catch (e) {
+                    AppLogger.e('PurchaseItem 업데이트 실패 (ID: ${item.id})', error: e);
+                  }
+                }
+              }
+              
+              // 업데이트 후 다시 조회하여 최신 상태로 계산
+              final updatedItems = await _purchaseItemHandler.queryByPurchaseId(purchase.id!);
+              final status = OrderStatusUtils.determineOrderStatusForCustomer(updatedItems, purchase, now: now);
+              statusMap[purchase.id!] = status;
+            } else {
+              /// 상태 결정 (공용 유틸리티 사용)
+              final status = OrderStatusUtils.determineOrderStatusForCustomer(items, purchase, now: now);
+              statusMap[purchase.id!] = status;
+            }
+            
+            AppLogger.d('결정된 주문 상태: ${statusMap[purchase.id!]}');
+          } catch (e) {
+            AppLogger.e('주문 상태 조회 실패 (ID: ${purchase.id})', error: e);
+            statusMap[purchase.id!] = config.pickupStatus[0] ?? '제품 준비 중';
+          }
+        }
+      }
+      
+      AppLogger.d('=== 주문 내역 조회 완료 ===');
+
+      setState(() {
+        _orders = purchases;
+        _orderStatusMap = statusMap;
+        _isLoading = false;
+      });
+    } catch (e, stackTrace) {
+      AppLogger.e('주문 내역 로드 실패', error: e, stackTrace: stackTrace);
+      setState(() {
+        _orders = [];
+        _isLoading = false;
+      });
+    }
+  }
+
+
+  /// 검색어에 따라 필터링되고 정렬된 주문 목록 반환
+  List<Purchase> get _filteredOrders {
+    var filtered = _orders;
+    
+    final searchText = _searchController.text.toLowerCase();
+    if (searchText.isNotEmpty) {
+      filtered = filtered.where((order) {
+        if (order.orderCode.toLowerCase().contains(searchText)) {
+          return true;
+        }
+        
+        final orderDate = _normalizeDate(order.timeStamp);
+        final searchDate = _normalizeDate(searchText);
+        
+        if (orderDate.contains(searchDate) || searchDate.contains(orderDate)) {
+          return true;
+        }
+        
+        if (order.timeStamp.toLowerCase().contains(searchText) ||
+            order.pickupDate.toLowerCase().contains(searchText)) {
+          return true;
+        }
+        
+        return false;
+      }).toList();
+    }
+    
+    filtered.sort((a, b) {
+      int comparison = 0;
+      
+      switch (_sortBy) {
+        case 'orderCode':
+          comparison = a.orderCode.compareTo(b.orderCode);
+          break;
+        case 'orderDate':
+          comparison = a.timeStamp.compareTo(b.timeStamp);
+          break;
+        default:
+          comparison = a.orderCode.compareTo(b.orderCode);
+      }
+      
+      return _sortAscending ? comparison : -comparison;
+    });
+    
+    return filtered;
+  }
+
+  /// 정렬 기준 변경
+  void _changeSortOrder(String sortBy) {
+    setState(() {
+      if (_sortBy == sortBy) {
+        // 같은 기준이면 정렬 방향만 변경
+        _sortAscending = !_sortAscending;
+      } else {
+        // 다른 기준이면 새 기준으로 오름차순 정렬
+        _sortBy = sortBy;
+        _sortAscending = true;
+      }
+    });
+  }
+
+  /// 날짜 문자열을 정규화하는 함수
+  /// 여러 형식(20251222, 2025-12-22, 2025/12/22)을 숫자만 있는 형식으로 변환
+  /// 예: "2025-12-22" -> "20251222", "2025/12/22" -> "20251222"
+  String _normalizeDate(String dateString) {
+    // 숫자와 하이픈, 슬래시만 추출
+    final cleaned = dateString.replaceAll(RegExp(r'[^\d]'), '');
+    return cleaned;
+  }
+
+  /// 주문 카드 위젯 생성
+  Widget _buildOrderCard(Purchase order) {
+    String orderStatus = order.id != null 
+        ? _orderStatusMap[order.id] ?? config.pickupStatus[0] ?? '제품 준비 중'
+        : config.pickupStatus[0] ?? '제품 준비 중';
+    
+    final orderDate = order.timeStamp.split(' ').first;
+    
+    return GestureDetector(
+      onTap: () async {
+        if (order.id != null) {
+          await Get.to(
+            () => OrderDetailView(purchaseId: order.id!),
+          );
+          _loadOrders();
+        }
+      },
+      child: CustomerOrderCard(
+        orderId: order.orderCode,
+        orderStatus: orderStatus,
+        orderDate: orderDate,
+        totalPrice: null,
+      ),
+    );
+  }
+
+  /// 로딩 인디케이터 위젯
+  Widget _buildLoadingIndicator() {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 32),
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+
+  /// 빈 주문 내역 메시지 위젯
+  Widget _buildEmptyMessage() {
+    return Center(
+      child: CustomPadding(
+        padding: const EdgeInsets.symmetric(vertical: 32),
+        child: CustomText(
+          '주문 내역이 없습니다.',
+          fontSize: 14,
+          fontWeight: FontWeight.normal,
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+
+  /// 주문 내역 위젯
+  Widget _buildOrderList() {
+    return Column(
+      children: _filteredOrders.map((order) => _buildOrderCard(order)).toList(),
+    );
+  }
+
+  /// 정렬 버튼 위젯
+  Widget _buildSortButton(String sortBy, String label) {
+    final isActive = _sortBy == sortBy;
+    final icon = isActive
+        ? (_sortAscending ? Icons.arrow_upward : Icons.arrow_downward)
+        : Icons.sort;
+    
+    return GestureDetector(
+      onTap: () => _changeSortOrder(sortBy),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive ? Colors.blue.shade100 : Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(8),
+          border: isActive
+              ? Border.all(color: Colors.blue, width: 2)
+              : null,
+        ),
+        child: CustomRow(
+          spacing: 4,
+          children: [
+            CustomText(
+              label,
+              fontSize: 12,
+              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+            ),
+            Icon(icon, size: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFD9D9D9),
+      appBar: CustomAppBar(
+        title: '주문 내역',
+        centerTitle: true,
+        titleTextStyle: config.rLabel,
+        backgroundColor: const Color(0xFFD9D9D9),
+        foregroundColor: Colors.black,
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: CustomPadding(
+            padding: const EdgeInsets.all(16),
+            child: CustomColumn(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: 16,
+              children: [
+                CustomTextField(
+                  controller: _searchController,
+                  hintText: '주문번호 또는 주문날짜로 검색',
+                  prefixIcon: const Icon(Icons.search),
+                  onChanged: (_) => setState(() {}),
+                ),
+
+                CustomRow(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  spacing: 8,
+                  children: [
+                    _buildSortButton('orderCode', '주문번호'),
+                    _buildSortButton('orderDate', '주문일'),
+                  ],
+                ),
+
+                CustomText(
+                  '주문 내역 (수령 예상일로 부터 30일이 지난 주문은 자동으로 수령 완료 처리 됩니다.)',
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+
+                if (_isLoading)
+                  _buildLoadingIndicator()
+                else if (_filteredOrders.isEmpty)
+                  _buildEmptyMessage()
+                else
+                  _buildOrderList(),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+

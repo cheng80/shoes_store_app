@@ -1,0 +1,196 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import 'package:shoes_store_app/database/handlers/employee_handler.dart';
+import 'package:shoes_store_app/model/employee.dart';
+import 'package:shoes_store_app/utils/app_logger.dart';
+import 'package:shoes_store_app/view/cheng/custom/custom.dart';
+import 'package:shoes_store_app/view/cheng/storage/admin_storage.dart';
+import 'package:shoes_store_app/view/cheng/utils/admin_tablet_utils.dart';
+import 'package:shoes_store_app/view/cheng/screens/admin/admin_mobile_block_view.dart';
+import 'package:shoes_store_app/view/cheng/screens/admin/admin_order_view.dart';
+
+/// 관리자 로그인 화면
+/// 태블릿에서 가로 모드로 강제 표시되는 관리자 전용 로그인 화면입니다.
+/// 관리자는 회원가입이 불가능하며 로그인만 가능합니다.
+
+class AdminLoginView extends StatefulWidget {
+  const AdminLoginView({super.key});
+
+  @override
+  State<AdminLoginView> createState() => _AdminLoginViewState();
+}
+
+class _AdminLoginViewState extends State<AdminLoginView> {
+  /// Form 검증을 위한 키
+  final _formKey = GlobalKey<FormState>(debugLabel: 'AdminLoginForm');
+
+  /// 이메일 입력 컨트롤러
+  final TextEditingController _emailController = TextEditingController();
+
+  /// 비밀번호 입력 컨트롤러
+  final TextEditingController _passwordController = TextEditingController();
+
+  /// 직원 핸들러
+  final EmployeeHandler _employeeHandler = EmployeeHandler();
+
+  @override
+  void initState() {
+    super.initState();
+
+    /// 태블릿이 아니면 모바일 차단 화면으로 이동
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!isTablet(context)) {
+        Get.off(() => const AdminMobileBlockView());
+      } else {
+        lockTabletLandscape(context);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    unlockAllOrientations();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _unfocusKeyboard,
+      behavior: HitTestBehavior.opaque,
+      child: Scaffold(
+        appBar: CustomAppBar(
+          title: '관리자 로그인',
+          centerTitle: true,
+          toolbarHeight: 48,
+        ),
+        body: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: CustomPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
+                  child: Form(
+                    key: _formKey,
+                    child: CustomColumn(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      spacing: 24,
+                      children: [
+                        CustomText(
+                          '관리자 로그인',
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          textAlign: TextAlign.center,
+                        ),
+
+                        CustomText(
+                          '태블릿에서만 접근 가능합니다',
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal,
+                          textAlign: TextAlign.center,
+                          color: Colors.grey[600],
+                        ),
+
+                        CustomTextField(
+                          controller: _emailController,
+                          labelText: '이메일 또는 전화번호',
+                          hintText: '이메일 또는 전화번호를 입력하세요',
+                          keyboardType: TextInputType.text,
+                          prefixIcon: const Icon(Icons.person),
+                          required: true,
+                          requiredMessage: '이메일 또는 전화번호를 입력해주세요',
+                        ),
+
+                        CustomTextField(
+                          controller: _passwordController,
+                          labelText: '비밀번호',
+                          hintText: '비밀번호를 입력하세요',
+                          obscureText: true,
+                          prefixIcon: const Icon(Icons.lock),
+                          required: true,
+                          requiredMessage: '비밀번호를 입력해주세요',
+                        ),
+
+                        CustomButton(
+                          btnText: '로그인',
+                          buttonType: ButtonType.elevated,
+                          onCallBack: _handleLogin,
+                          minimumSize: const Size(double.infinity, 56),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 키보드 내리기
+  void _unfocusKeyboard() {
+    FocusScope.of(context).unfocus();
+  }
+
+  /// 로그인 버튼 클릭 처리
+  void _handleLogin() async {
+    _unfocusKeyboard();
+
+    if (!_formKey.currentState!.validate()) return;
+
+    final input = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+    final isEmail = CustomCommonUtil.isEmail(input);
+
+    try {
+      Employee? employee;
+      
+      if (isEmail) {
+        employee = await _employeeHandler.queryByEmail(input);
+      } else {
+        employee = await _employeeHandler.queryByPhoneNumber(input);
+      }
+
+      if (employee == null || employee.ePassword != password) {
+        Get.snackbar(
+          '로그인 실패',
+          '이메일/전화번호 또는 비밀번호가 올바르지 않습니다.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.shade100,
+          colorText: Colors.red.shade900,
+        );
+        return;
+      }
+
+      AppLogger.d('관리자 로그인 성공: ${employee.eName}', tag: 'AdminLogin');
+      
+      AdminStorage.saveAdmin(employee);
+      
+      Get.snackbar(
+        '로그인 성공',
+        '${employee.eName}님 환영합니다!',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      Get.off(
+        () => const AdminOrderView(),
+        transition: Transition.fadeIn,
+      );
+    } catch (error) {
+      AppLogger.e('로그인 에러', tag: 'AdminLogin', error: error);
+      Get.snackbar(
+        '오류',
+        '로그인 중 오류가 발생했습니다.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade100,
+        colorText: Colors.red.shade900,
+      );
+    }
+  }
+}
+

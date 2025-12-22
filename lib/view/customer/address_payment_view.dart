@@ -1,0 +1,208 @@
+import 'package:shoes_store_app/config.dart' as config;
+import 'package:shoes_store_app/database/handlers/login_history_handler.dart';
+import 'package:shoes_store_app/model/login_history.dart';
+import 'package:shoes_store_app/view/cheng/storage/user_storage.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+/// 주소 및 결제 방법 설정 화면
+/// 
+/// 배송지 주소와 결제 방법을 입력하여 LoginHistory에 저장할 수 있는 화면입니다.
+class AddressPaymentView extends StatefulWidget {
+  const AddressPaymentView({super.key});
+
+  @override
+  State<AddressPaymentView> createState() => _AddressPaymentViewState();
+}
+
+class _AddressPaymentViewState extends State<AddressPaymentView> {
+  final _formKey = GlobalKey<FormState>();
+  final _loginHistoryHandler = LoginHistoryHandler();
+
+  // config.dart에 정의된 서울 내 자치구 리스트 사용
+  final List<String> districts = config.district;
+  String? selectedDistrict;
+  
+  late TextEditingController _paymentController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    selectedDistrict = districts.first; // 기본값으로 첫 번째 자치구 선택
+    _paymentController = TextEditingController();
+    _loadSavedData();
+  }
+
+  @override
+  void dispose() {
+    _paymentController.dispose();
+    super.dispose();
+  }
+
+  /// 저장된 주소와 결제 방법 불러오기
+  Future<void> _loadSavedData() async {
+    final userId = UserStorage.getUserId();
+    if (userId == null) return;
+
+    try {
+      final histories = await _loginHistoryHandler.queryByCustomerId(userId);
+      if (histories.isNotEmpty) {
+        final latest = histories.first;
+        // lAddress에서 district 추출 (district만 저장하므로 그대로 사용)
+        if (latest.lAddress.isNotEmpty) {
+          final savedDistrict = latest.lAddress.trim();
+          if (districts.contains(savedDistrict)) {
+            setState(() {
+              selectedDistrict = savedDistrict;
+            });
+          }
+        }
+        if (latest.lPaymentMethod.isNotEmpty) {
+          _paymentController.text = latest.lPaymentMethod;
+        }
+      }
+    } catch (e) {
+      print('저장된 데이터 로드 실패: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('주소 / 결제방법', style: config.rLabel),
+        centerTitle: true,
+      ),
+      body: SafeArea(
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('수령 지점(자치구)', style: config.rLabel),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: DropdownButtonFormField<String>(
+                    initialValue: selectedDistrict,
+                    isExpanded: true,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    style: config.rLabel,
+                    items: districts
+                        .map((d) => DropdownMenuItem(value: d, child: Text(d, style: config.rLabel)))
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedDistrict = value;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return '자치구를 선택해주세요.';
+                      }
+                      return null;
+                    },
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Text('Payment method', style: config.rLabel),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _paymentController,
+                  style: config.rLabel,
+                  decoration: InputDecoration(
+                    hintText: '예) 신한카드 ****-****-****-1234',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    isDense: true,
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return '결제 방법을 입력해주세요.';
+                    }
+                    return null;
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        child: SizedBox(
+          height: 55,
+          child: ElevatedButton(
+            onPressed: _onSavePressed,
+            child: Text('변경하기', style: config.rLabel),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 저장 버튼 클릭 처리
+  /// 
+  /// 선택한 자치구(district)와 결제 방법을 LoginHistory에 저장합니다.
+  Future<void> _onSavePressed() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final userId = UserStorage.getUserId();
+    if (userId == null) {
+      Get.snackbar('오류', '로그인된 사용자 정보가 없습니다.', snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+
+    // district만 저장 (상세 주소 없음)
+    final String district = selectedDistrict ?? districts.first;
+    final String payment = _paymentController.text.trim();
+
+    try {
+      // LoginHistory 객체 생성 및 저장
+      final loginHistory = LoginHistory(
+        cid: userId,
+        lAddress: district, // district만 저장
+        lPaymentMethod: payment,
+        loginTime: DateTime.now().toIso8601String(),
+        lStatus: 'active', // 기본 상태값
+        lVersion: 1.0, // 기본 버전값
+      );
+
+      await _loginHistoryHandler.insertData(loginHistory);
+
+      Get.defaultDialog(
+        title: '입력 성공',
+        middleText: '수령 지점: $district\n결제 방법: $payment',
+        barrierDismissible: false,
+        textConfirm: '확인',
+        confirmTextColor: Colors.white,
+        onConfirm: () {
+          _paymentController.text = '';
+          Get.back();
+          Get.back();
+        },
+      );
+    } catch (e) {
+      Get.defaultDialog(
+        title: '입력 실패',
+        middleText: '입력에 실패하였습니다: $e',
+        barrierDismissible: false,
+        textConfirm: '확인',
+        confirmTextColor: Colors.white,
+        onConfirm: () {
+          Get.back();
+        },
+      );
+    }
+  }
+}
