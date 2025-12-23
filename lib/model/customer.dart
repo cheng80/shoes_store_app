@@ -1,14 +1,5 @@
 //  Customer Model
-/*
-  Create: 10/12/2025 12:11, Creator: Chansol, Park
-  Update log: 
-    12/11/2025 10:53, 'remove nickname and imagePath', Creator: 
-    12/11/2025 10:53, 'add Function toMap', Creator: taekkwon, kim
-    12/12/2025 10:53, 'rename cPname to cName', Creator: cheng, kim
-  Version: 1.0
-  Dependency: SQFlite, Path, collection
-  Desc: Customer Model
-*/
+
 
 class Customer {
   // Properties

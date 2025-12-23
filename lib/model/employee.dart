@@ -1,14 +1,4 @@
 //  Customer Model
-/*
-  Create: 12/11/2025 15:38, Creator: taekkwon, kim
-  Update log: 
-    12/11/2025 15:38, 'create Employee Model', Creator: taekkwon, kim
-    12/11/2025 15:38, 'add Function toMap', Creator: taekkwon, kim
-    12/12/2025 14:41, 'Point 1, eRole', Creator: Chansol Park
-  Version: 1.0
-  Dependency: SQFlite, Path, collection
-  Desc: Employee Model
-*/
 
 class Employee {
   // Properties

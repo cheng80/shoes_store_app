@@ -1,16 +1,5 @@
 //  ProductBase Model
-/*
-  Create: 10/12/2025 14:05, Creator: Chansol, Park
-  Update log: 
-    11/12/2025 10:53, 'Point 1, Redesign entire Model', Creator: Chansol, Park
-    11/12/2025 13:53, 'Point 2, Remove piid', Creator: Chansol, Park
-  Version: 1.0
-  Dependency: SQFlite, Path, collection
-  Desc: ProductBase Model
 
-  DateTime MUST converted using value.toIso8601String()
-  Stored DateTime in String MUST converted using DateTime.parse(value);
-*/
 
 class ProductBase {
   // Properties

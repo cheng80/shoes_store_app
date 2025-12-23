@@ -204,63 +204,75 @@ class DummyProductImages {
   static const Map<int, List<String>> imageMap = {
     0: [
       '${config.kImageAssetPath}Newbalance_U740WN2/Newbalnce_U740WN2_Black_01.png',
-      '${config.kImageAssetPath}Newbalance_U740WN2/Newbalnce_U740WN2_Black_02.png',
-      '${config.kImageAssetPath}Newbalance_U740WN2/Newbalnce_U740WN2_Black_03.png',
+      // 현재 고객 화면에서 사용되지 않는 이미지 (향후 이미지 갤러리 기능 추가 시 사용 예정)
+      // '${config.kImageAssetPath}Newbalance_U740WN2/Newbalnce_U740WN2_Black_02.png',
+      // '${config.kImageAssetPath}Newbalance_U740WN2/Newbalnce_U740WN2_Black_03.png',
     ],
     1: [
       '${config.kImageAssetPath}Newbalance_U740WN2/Newbalnce_U740WN2_Gray_01.png',
-      '${config.kImageAssetPath}Newbalance_U740WN2/Newbalnce_U740WN2_Gray_02.png',
-      '${config.kImageAssetPath}Newbalance_U740WN2/Newbalnce_U740WN2_Gray_03.png',
+      // 현재 고객 화면에서 사용되지 않는 이미지 (향후 이미지 갤러리 기능 추가 시 사용 예정)
+      // '${config.kImageAssetPath}Newbalance_U740WN2/Newbalnce_U740WN2_Gray_02.png',
+      // '${config.kImageAssetPath}Newbalance_U740WN2/Newbalnce_U740WN2_Gray_03.png',
     ],
     2: [
       '${config.kImageAssetPath}Newbalance_U740WN2/Newbalnce_U740WN2_White_01.png',
-      '${config.kImageAssetPath}Newbalance_U740WN2/Newbalnce_U740WN2_White_02.png',
-      '${config.kImageAssetPath}Newbalance_U740WN2/Newbalnce_U740WN2_White_03.png',
+      // 현재 고객 화면에서 사용되지 않는 이미지 (향후 이미지 갤러리 기능 추가 시 사용 예정)
+      // '${config.kImageAssetPath}Newbalance_U740WN2/Newbalnce_U740WN2_White_02.png',
+      // '${config.kImageAssetPath}Newbalance_U740WN2/Newbalnce_U740WN2_White_03.png',
     ],
     3: [
       '${config.kImageAssetPath}Nike_Shox_TL/Nike_Shox_TL_Black_01.avif',
-      '${config.kImageAssetPath}Nike_Shox_TL/Nike_Shox_TL_Black_02.avif',
-      '${config.kImageAssetPath}Nike_Shox_TL/Nike_Shox_TL_Black_03.avif',
+      // 현재 고객 화면에서 사용되지 않는 이미지 (향후 이미지 갤러리 기능 추가 시 사용 예정)
+      // '${config.kImageAssetPath}Nike_Shox_TL/Nike_Shox_TL_Black_02.avif',
+      // '${config.kImageAssetPath}Nike_Shox_TL/Nike_Shox_TL_Black_03.avif',
     ],
     4: [
       '${config.kImageAssetPath}Nike_Shox_TL/Nike_Shox_TL_Gray_01.avif',
-      '${config.kImageAssetPath}Nike_Shox_TL/Nike_Shox_TL_Gray_02.avif',
-      '${config.kImageAssetPath}Nike_Shox_TL/Nike_Shox_TL_Gray_03.avif',
+      // 현재 고객 화면에서 사용되지 않는 이미지 (향후 이미지 갤러리 기능 추가 시 사용 예정)
+      // '${config.kImageAssetPath}Nike_Shox_TL/Nike_Shox_TL_Gray_02.avif',
+      // '${config.kImageAssetPath}Nike_Shox_TL/Nike_Shox_TL_Gray_03.avif',
     ],
     5: [
       '${config.kImageAssetPath}Nike_Shox_TL/Nike_Shox_TL_White_01.avif',
-      '${config.kImageAssetPath}Nike_Shox_TL/Nike_Shox_TL_White_02.avif',
-      '${config.kImageAssetPath}Nike_Shox_TL/Nike_Shox_TL_White_03.avif',
+      // 현재 고객 화면에서 사용되지 않는 이미지 (향후 이미지 갤러리 기능 추가 시 사용 예정)
+      // '${config.kImageAssetPath}Nike_Shox_TL/Nike_Shox_TL_White_02.avif',
+      // '${config.kImageAssetPath}Nike_Shox_TL/Nike_Shox_TL_White_03.avif',
     ],
     6: [
       '${config.kImageAssetPath}Nike_Air_1/Nike_Air_1_Black_01.avif',
-      '${config.kImageAssetPath}Nike_Air_1/Nike_Air_1_Black_02.avif',
-      '${config.kImageAssetPath}Nike_Air_1/Nike_Air_1_Black_03.avif',
+      // 현재 고객 화면에서 사용되지 않는 이미지 (향후 이미지 갤러리 기능 추가 시 사용 예정)
+      // '${config.kImageAssetPath}Nike_Air_1/Nike_Air_1_Black_02.avif',
+      // '${config.kImageAssetPath}Nike_Air_1/Nike_Air_1_Black_03.avif',
     ],
     7: [
       '${config.kImageAssetPath}Nike_Air_1/Nike_Air_1_Gray_01.avif',
-      '${config.kImageAssetPath}Nike_Air_1/Nike_Air_1_Gray_02.avif',
-      '${config.kImageAssetPath}Nike_Air_1/Nike_Air_1_Gray_03.avif',
+      // 현재 고객 화면에서 사용되지 않는 이미지 (향후 이미지 갤러리 기능 추가 시 사용 예정)
+      // '${config.kImageAssetPath}Nike_Air_1/Nike_Air_1_Gray_02.avif',
+      // '${config.kImageAssetPath}Nike_Air_1/Nike_Air_1_Gray_03.avif',
     ],
     8: [
       '${config.kImageAssetPath}Nike_Air_1/Nike_Air_1_White_01.avif',
-      '${config.kImageAssetPath}Nike_Air_1/Nike_Air_1_White_02.avif',
-      '${config.kImageAssetPath}Nike_Air_1/Nike_Air_1_White_03.avif',
+      // 현재 고객 화면에서 사용되지 않는 이미지 (향후 이미지 갤러리 기능 추가 시 사용 예정)
+      // '${config.kImageAssetPath}Nike_Air_1/Nike_Air_1_White_02.avif',
+      // '${config.kImageAssetPath}Nike_Air_1/Nike_Air_1_White_03.avif',
     ],
     9: [
       '${config.kImageAssetPath}Nike_Pegasus/Nike_Pegasus_Black_01.avif',
-      '${config.kImageAssetPath}Nike_Pegasus/Nike_Pegasus_Black_02.avif',
-      '${config.kImageAssetPath}Nike_Pegasus/Nike_Pegasus_Black_03.avif',
+      // 현재 고객 화면에서 사용되지 않는 이미지 (향후 이미지 갤러리 기능 추가 시 사용 예정)
+      // '${config.kImageAssetPath}Nike_Pegasus/Nike_Pegasus_Black_02.avif',
+      // '${config.kImageAssetPath}Nike_Pegasus/Nike_Pegasus_Black_03.avif',
     ],
     10: [
       '${config.kImageAssetPath}Nike_Pegasus/Nike_Pegasus_Gray_01.avif',
-      '${config.kImageAssetPath}Nike_Pegasus/Nike_Pegasus_Gray_02.avif',
-      '${config.kImageAssetPath}Nike_Pegasus/Nike_Pegasus_Gray_03.avif',
+      // 현재 고객 화면에서 사용되지 않는 이미지 (향후 이미지 갤러리 기능 추가 시 사용 예정)
+      // '${config.kImageAssetPath}Nike_Pegasus/Nike_Pegasus_Gray_02.avif',
+      // '${config.kImageAssetPath}Nike_Pegasus/Nike_Pegasus_Gray_03.avif',
     ],
     11: [
       '${config.kImageAssetPath}Nike_Pegasus/Nike_Pegasus_White_01.avif',
-      '${config.kImageAssetPath}Nike_Pegasus/Nike_Pegasus_White_02.avif',
-      '${config.kImageAssetPath}Nike_Pegasus/Nike_Pegasus_White_03.avif',
+      // 현재 고객 화면에서 사용되지 않는 이미지 (향후 이미지 갤러리 기능 추가 시 사용 예정)
+      // '${config.kImageAssetPath}Nike_Pegasus/Nike_Pegasus_White_02.avif',
+      // '${config.kImageAssetPath}Nike_Pegasus/Nike_Pegasus_White_03.avif',
     ],
   };
 }

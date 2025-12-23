@@ -1,13 +1,5 @@
 //  LoginHistory Model
-/*
-  Create: 10/12/2025 12:26, Creator: Chansol, Park
-  Update log: 
-    DUMMY 9/29/2025 09:53, 'Point X, Description', Creator: Chansol, Park
-    12/12/2025 14:46, 'Point 1, lPaymentMethod, lAddress, total refactored attributes', Creator: Chansol, Park
-  Version: 1.0
-  Dependency: SQFlite, Path, collection
-  Desc: LoginHistory Model
-*/
+
 
 class LoginHistory {
   // Properties

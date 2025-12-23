@@ -1,13 +1,4 @@
 //  Settings Model
-/*
-  Create: 10/12/2025 13:50, Creator: Chansol, Park
-  Update log: 
-    DUMMY 00/00/0000 00:00, 'Point X, Description', Creator: Chansol, Park
-  Version: 1.0
-  Dependency: SQFlite, Path, collection
-  Desc: Settings Model
-
-*/
 
 class Settings {
   // Properties

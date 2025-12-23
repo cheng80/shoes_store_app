@@ -1,21 +1,10 @@
 //  Purchase Model
-/*
-  Create: 10/12/2025 12:35, Creator: Chansol, Park
-  Update log: 
-    DUMMY 9/29/2025 09:53, 'Point X, Description', Creator: Chansol, Park
-    12/12/2025 20:22, 'Point 1, cid added', Creator: Chansol, Park
-  Version: 1.0
-  Dependency: SQFlite, Path, collection
-  Desc: Purchase Model
 
-  DateTime MUST converted using value.toIso8601String()
-  Stored DateTime in String MUST converted using DateTime.parse(value);
-*/
 
 class Purchase {
   //  Properties
   int? id;
-  //  Point 1
+
   int? cid; //  Customer id
   final String pickupDate;  //  Pickupdate default is Purchasedate +1 dummy for now
   final String orderCode; //  Client's request
