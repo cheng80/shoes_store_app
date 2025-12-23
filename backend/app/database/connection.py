@@ -15,6 +15,15 @@ DB_CONFIG = {
     'charset': 'utf8mb4'
 }
 
+# DB_CONFIG = {
+#     'host': 'cheng80.myqnapcloud.com',
+#     'user': 'team0101',
+#     'password': 'qwer1234',  # 실제 사용 시 환경변수로 변경
+#     'database': 'shoes_store_db',  # 데이터베이스 이름 (init.sql에서 생성한 이름)
+#     'charset': 'utf8mb4',
+#     'port': 13306
+# }
+
 
 def connect_db():
     """
