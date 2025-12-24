@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:shoes_store_app/database/handlers/employee_handler.dart';
 import 'package:shoes_store_app/custom/custom_snack_bar.dart';
 import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
@@ -91,6 +92,8 @@ class _AdminProfileEditViewState extends State<AdminProfileEditView> {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    
     return GestureDetector(
       // 키보드 내리기
       onTap: _unfocusKeyboard,
@@ -132,7 +135,7 @@ class _AdminProfileEditViewState extends State<AdminProfileEditView> {
                           enabled: false, // 수정 불가
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: Colors.grey[200],
+                            fillColor: p.chipUnselectedBg,
                           ),
                         ),
 

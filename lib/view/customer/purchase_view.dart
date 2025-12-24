@@ -10,6 +10,7 @@ import 'package:shoes_store_app/view/cheng/storage/user_storage.dart';
 import 'package:shoes_store_app/view/cheng/storage/cart_storage.dart';
 import 'package:shoes_store_app/custom/custom_bottom_sheet.dart';
 import 'package:shoes_store_app/view/customer/payment_sheet_content.dart';
+import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 /// 결제 화면
@@ -233,16 +234,18 @@ class _PurchaseViewState extends State<PurchaseView> {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    
     if (cart.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: Text('결제', style: config.rLabel)),
-        body: Center(child: Text('구매할 상품이 없습니다', style: config.rLabel)),
+        appBar: AppBar(title: Text('결제', style: config.rLabel.copyWith(color: p.textPrimary))),
+        body: Center(child: Text('구매할 상품이 없습니다', style: config.rLabel.copyWith(color: p.textPrimary))),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('결제', style: config.rLabel),
+        title: Text('결제', style: config.rLabel.copyWith(color: p.textPrimary)),
         centerTitle: true,
       ),
       body: Column(
@@ -280,12 +283,12 @@ class _PurchaseViewState extends State<PurchaseView> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(name, style: config.rLabel),
+                              Text(name, style: config.rLabel.copyWith(color: p.textPrimary)),
                               const SizedBox(height: 4),
-                              Text('색상: $color / 사이즈: $size', style: config.rLabel),
+                              Text('색상: $color / 사이즈: $size', style: config.rLabel.copyWith(color: p.textPrimary)),
                               const SizedBox(height: 6),
-                              Text('수량: $qty', style: config.rLabel),
-                              Text('합계: ${config.priceFormatter(lineTotal)}원', style: config.rLabel),
+                              Text('수량: $qty', style: config.rLabel.copyWith(color: p.textPrimary)),
+                              Text('합계: ${config.priceFormatter(lineTotal)}원', style: config.rLabel.copyWith(color: p.textPrimary)),
                             ],
                           ),
                         ),
@@ -302,11 +305,11 @@ class _PurchaseViewState extends State<PurchaseView> {
             child: Row(
               children: [
                 Expanded(
-                  child: Text('총액: ${config.priceFormatter(totalPrice)}원', style: config.rLabel),
+                  child: Text('총액: ${config.priceFormatter(totalPrice)}원', style: config.rLabel.copyWith(color: p.textPrimary)),
                 ),
                 ElevatedButton(
                   onPressed: _openPaymentSheet,
-                  child: Text('결제하기', style: config.rLabel),
+                  child: Text('결제하기', style: config.rLabel.copyWith(color: p.textOnPrimary)),
                 ),
               ],
             ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
+import 'package:shoes_store_app/theme/app_colors.dart';
 
 import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/database/handlers/customer_handler.dart';
@@ -333,15 +334,17 @@ class _OrderListViewState extends State<OrderListView> {
         ? (_sortAscending ? Icons.arrow_upward : Icons.arrow_downward)
         : Icons.sort;
     
+    final p = context.palette;
+    
     return GestureDetector(
       onTap: () => _changeSortOrder(sortBy),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? Colors.blue.shade100 : Colors.grey.shade200,
+          color: isActive ? p.chipSelectedBg.withOpacity(0.2) : p.chipUnselectedBg,
           borderRadius: BorderRadius.circular(8),
           border: isActive
-              ? Border.all(color: Colors.blue, width: 2)
+              ? Border.all(color: p.primary, width: 2)
               : null,
         ),
         child: CustomRow(
@@ -361,14 +364,16 @@ class _OrderListViewState extends State<OrderListView> {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    
     return Scaffold(
-      backgroundColor: const Color(0xFFD9D9D9),
+      backgroundColor: p.background,
       appBar: CustomAppBar(
         title: '주문 내역',
         centerTitle: true,
         titleTextStyle: config.rLabel,
-        backgroundColor: const Color(0xFFD9D9D9),
-        foregroundColor: Colors.black,
+        backgroundColor: p.background,
+        foregroundColor: p.textPrimary,
       ),
       body: SafeArea(
         child: SingleChildScrollView(

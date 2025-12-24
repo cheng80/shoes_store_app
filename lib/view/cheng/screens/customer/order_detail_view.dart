@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:shoes_store_app/config.dart' as config;
+import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:shoes_store_app/custom/custom_snack_bar.dart';
 import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/database/handlers/customer_handler.dart';
@@ -300,15 +301,17 @@ class _OrderDetailViewState extends State<OrderDetailView> {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: const Color(0xFFD9D9D9),
+        backgroundColor: p.background,
         appBar: CustomAppBar(
           title: '주문 상세',
           centerTitle: true,
           titleTextStyle: config.rLabel,
-          backgroundColor: const Color(0xFFD9D9D9),
-          foregroundColor: Colors.black,
+          backgroundColor: p.background,
+          foregroundColor: p.textPrimary,
         ),
         body: const Center(
           child: CircularProgressIndicator(),
@@ -318,13 +321,13 @@ class _OrderDetailViewState extends State<OrderDetailView> {
 
     if (_purchase == null || _customer == null) {
       return Scaffold(
-        backgroundColor: const Color(0xFFD9D9D9),
+        backgroundColor: p.background,
         appBar: CustomAppBar(
           title: '주문 상세',
           centerTitle: true,
           titleTextStyle: config.rLabel,
-          backgroundColor: const Color(0xFFD9D9D9),
-          foregroundColor: Colors.black,
+          backgroundColor: p.background,
+          foregroundColor: p.textPrimary,
         ),
         body: const Center(
           child: Text('주문 정보를 불러올 수 없습니다.'),
@@ -339,13 +342,13 @@ class _OrderDetailViewState extends State<OrderDetailView> {
     );
 
     return Scaffold(
-      backgroundColor: const Color(0xFFD9D9D9),
+      backgroundColor: p.background,
       appBar: CustomAppBar(
         title: '주문 상세',
         centerTitle: true,
         titleTextStyle: config.rLabel,
-        backgroundColor: const Color(0xFFD9D9D9),
-        foregroundColor: Colors.black,
+        backgroundColor: p.background,
+        foregroundColor: p.textPrimary,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -380,7 +383,7 @@ class _OrderDetailViewState extends State<OrderDetailView> {
                           _orderStatus,
                           fontSize: 12,
                           fontWeight: FontWeight.normal,
-                          color: Colors.white,
+                          color: p.textOnPrimary,
                         ),
                       ),
                     ],
@@ -432,13 +435,13 @@ class _OrderDetailViewState extends State<OrderDetailView> {
                                 '사이즈: ${item.size} | 색상: ${item.color} | 수량: ${item.quantity}',
                                 fontSize: 14,
                                 fontWeight: FontWeight.normal,
-                                color: Colors.grey.shade600,
+                                color: p.textSecondary,
                               ),
                               CustomText(
                                 '${OrderUtils.formatPrice(item.price * item.quantity)}원',
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.blue.shade700,
+                                color: p.primary,
                               ),
                             ],
                           ),
@@ -485,7 +488,7 @@ class _OrderDetailViewState extends State<OrderDetailView> {
                       width: double.infinity,
                       height: 50,
                       decoration: BoxDecoration(
-                        color: Colors.grey,
+                        color: p.divider,
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Center(
@@ -493,7 +496,7 @@ class _OrderDetailViewState extends State<OrderDetailView> {
                           _orderStatus, // 현재 주문 상태를 버튼 텍스트로 표시
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white70,
+                          color: p.textSecondary,
                         ),
                       ),
                     ),

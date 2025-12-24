@@ -22,23 +22,26 @@ class _NoSwipeBackPageRoute<T> extends PageRouteBuilder<T> {
   }) : super(
         pageBuilder: (context, animation, secondaryAnimation) {
           // PopScope로 감싸서 스와이프 백 제스처만 차단 (뒤로가기 버튼은 허용)
-          // canPop을 false로 설정하면 스와이프 백 제스처가 차단되지만,
-          // 뒤로가기 버튼(Navigator.pop())으로 인한 pop은 여전히 동작함
-          return PopScope(
-            canPop: false,
-            onPopInvokedWithResult: (bool didPop, dynamic result) {
-              // didPop이 false인 경우: canPop이 false여서 pop이 차단된 경우 (정상 동작)
-              // didPop이 true인 경우: Navigator.pop()으로 명시적으로 호출된 경우
-              // 따라서 didPop이 true인 경우는 정상적인 뒤로가기이므로 복구하지 않음
-              // 스와이프 백 제스처는 canPop이 false여서 차단되므로 didPop이 false가 됨
-              if (!didPop) {
-                // pop이 차단된 경우 (스와이프 백 제스처) - 이미 차단되었으므로 아무 작업도 하지 않음
-                return;
-              }
-              // didPop이 true인 경우는 Navigator.pop()으로 명시적으로 호출된 정상적인 뒤로가기
-              // 이 경우는 복구하지 않음
+          // canPop을 동적으로 확인하여 AppBar의 뒤로 가기 버튼이 작동하도록 함
+          // 스와이프 백 제스처는 onPopInvokedWithResult에서 차단
+          return Builder(
+            builder: (builderContext) {
+              return PopScope(
+                canPop: Navigator.canPop(builderContext),
+                onPopInvokedWithResult: (bool didPop, dynamic result) {
+                  // didPop이 false인 경우: 스와이프 백 제스처로 인한 pop 시도 (차단됨)
+                  // didPop이 true인 경우: Navigator.pop() 또는 AppBar 뒤로 가기 버튼으로 인한 pop (정상 동작)
+                  if (!didPop) {
+                    // 스와이프 백 제스처는 차단 (아무 작업도 하지 않음)
+                    // AppBar의 뒤로 가기 버튼은 canPop이 true이므로 정상 작동
+                    return;
+                  }
+                  // Navigator.pop() 또는 AppBar 뒤로 가기 버튼으로 인한 pop은 이미 완료되었으므로
+                  // 추가 작업 불필요
+                },
+                child: builder(context),
+              );
             },
-            child: builder(context),
           );
         },
          // fullscreenDialog: true 제거 (이것이 X 아이콘을 표시하는 원인)

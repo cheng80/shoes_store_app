@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:shoes_store_app/database/handlers/customer_handler.dart';
 import 'package:shoes_store_app/database/handlers/product_handler.dart';
 import 'package:shoes_store_app/database/handlers/purchase_handler.dart';
@@ -203,6 +204,8 @@ class _AdminOrderDetailViewState extends State<AdminOrderDetailView> {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    
     if (_isLoading) {
       return const Center(
         child: Padding(
@@ -268,7 +271,7 @@ class _AdminOrderDetailViewState extends State<AdminOrderDetailView> {
                   _orderStatus,
                   fontSize: 12,
                   fontWeight: FontWeight.normal,
-                  color: Colors.white,
+                  color: p.textOnPrimary,
                 ),
               ),
             ],
@@ -373,7 +376,7 @@ class _AdminOrderDetailViewState extends State<AdminOrderDetailView> {
             width: double.infinity,
             height: 50,
             decoration: BoxDecoration(
-              color: Colors.grey.shade400,
+              color: p.divider,
               borderRadius: BorderRadius.circular(4),
             ),
             child: Center(
@@ -381,7 +384,7 @@ class _AdminOrderDetailViewState extends State<AdminOrderDetailView> {
                 buttonText,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.white70,
+                color: p.textSecondary,
               ),
             ),
           ),

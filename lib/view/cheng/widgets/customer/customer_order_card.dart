@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:shoes_store_app/custom/custom.dart';
+import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:shoes_store_app/utils/order_utils.dart';
 import 'package:shoes_store_app/utils/order_status_colors.dart';
 
@@ -27,6 +28,8 @@ class CustomerOrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    
     return CustomCard(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -55,7 +58,7 @@ class CustomerOrderCard extends StatelessWidget {
                   orderStatus,
                   fontSize: 12,
                   fontWeight: FontWeight.normal,
-                  color: Colors.white,
+                  color: p.textOnPrimary,
                 ),
               ),
             ],
@@ -66,7 +69,7 @@ class CustomerOrderCard extends StatelessWidget {
               '주문일: $orderDate',
               fontSize: 12,
               fontWeight: FontWeight.normal,
-              color: Colors.grey.shade600,
+              color: p.textSecondary,
             ),
           // 총 주문 금액 표시 (있는 경우)
           if (totalPrice != null)
@@ -74,7 +77,7 @@ class CustomerOrderCard extends StatelessWidget {
               '총 금액: ${OrderUtils.formatPrice(totalPrice!)}원',
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: Colors.blue.shade700,
+              color: p.primary,
             ),
         ],
       ),

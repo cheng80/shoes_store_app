@@ -5,6 +5,7 @@ import 'package:shoes_store_app/view/cheng/storage/user_storage.dart';
 import 'package:shoes_store_app/custom/custom_snack_bar.dart';
 import 'package:shoes_store_app/custom/custom_dialog.dart';
 import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
+import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 /// 주소 및 결제 방법 설정 화면
@@ -70,9 +71,11 @@ class _AddressPaymentViewState extends State<AddressPaymentView> {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    
     return Scaffold(
       appBar: AppBar(
-        title: Text('주소 / 결제방법', style: config.rLabel),
+        title: Text('주소 / 결제방법', style: config.rLabel.copyWith(color: p.textPrimary)),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -83,12 +86,12 @@ class _AddressPaymentViewState extends State<AddressPaymentView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('수령 지점(자치구)', style: config.rLabel),
+                Text('수령 지점(자치구)', style: config.rLabel.copyWith(color: p.textPrimary)),
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
+                    border: Border.all(color: p.divider),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: DropdownButtonFormField<String>(
@@ -98,9 +101,9 @@ class _AddressPaymentViewState extends State<AddressPaymentView> {
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.symmetric(vertical: 12),
                     ),
-                    style: config.rLabel,
+                    style: config.rLabel.copyWith(color: p.textPrimary),
                     items: districts
-                        .map((d) => DropdownMenuItem(value: d, child: Text(d, style: config.rLabel)))
+                        .map((d) => DropdownMenuItem(value: d, child: Text(d, style: config.rLabel.copyWith(color: p.textPrimary))))
                         .toList(),
                     onChanged: (value) {
                       setState(() {
@@ -116,11 +119,11 @@ class _AddressPaymentViewState extends State<AddressPaymentView> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                Text('Payment method', style: config.rLabel),
+                Text('Payment method', style: config.rLabel.copyWith(color: p.textPrimary)),
                 const SizedBox(height: 8),
                 TextFormField(
                   controller: _paymentController,
-                  style: config.rLabel,
+                  style: config.rLabel.copyWith(color: p.textPrimary),
                   decoration: InputDecoration(
                     hintText: '예) 신한카드 ****-****-****-1234',
                     border: OutlineInputBorder(
@@ -146,7 +149,7 @@ class _AddressPaymentViewState extends State<AddressPaymentView> {
           height: 55,
           child: ElevatedButton(
             onPressed: _onSavePressed,
-            child: Text('변경하기', style: config.rLabel),
+            child: Text('변경하기', style: config.rLabel.copyWith(color: p.textOnPrimary)),
           ),
         ),
       ),

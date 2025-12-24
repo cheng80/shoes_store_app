@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:shoes_store_app/config.dart' as config;
+import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:shoes_store_app/custom/custom_snack_bar.dart';
 import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/database/handlers/customer_handler.dart';
@@ -118,15 +119,18 @@ class _SignUpViewState extends State<SignUpView> {
     return GestureDetector(
       onTap: _unfocusKeyboard,
       behavior: HitTestBehavior.opaque, // 자식 위젯이 터치를 소비해도 onTap이 호출되도록 설정
-      child: Scaffold(
-        backgroundColor: const Color(0xFFD9D9D9),
-        appBar: CustomAppBar(
-          title: '회원가입',
-          centerTitle: true,
-          titleTextStyle: config.rLabel,
-          backgroundColor: const Color(0xFFD9D9D9),
-          foregroundColor: Colors.black,
-        ),
+      child: Builder(
+        builder: (context) {
+          final p = context.palette;
+          return Scaffold(
+            backgroundColor: p.background,
+            appBar: CustomAppBar(
+              title: '회원가입',
+              centerTitle: true,
+              titleTextStyle: config.rLabel,
+              backgroundColor: p.background,
+              foregroundColor: p.textPrimary,
+            ),
         body: SafeArea(
           child: SingleChildScrollView(
             child: CustomPadding(
@@ -165,7 +169,7 @@ class _SignUpViewState extends State<SignUpView> {
                                 decoration: _termsError && !_agreeTerms
                                     ? BoxDecoration(
                                         border: Border.all(
-                                          color: Colors.red,
+                                          color: p.accent,
                                           width: 2,
                                         ),
                                         borderRadius: BorderRadius.circular(4),
@@ -178,7 +182,7 @@ class _SignUpViewState extends State<SignUpView> {
                                   label: '이용약관 동의 (필수)',
                                   spacing: 2,
                                   activeColor: _termsError && _agreeTerms
-                                      ? Colors.red
+                                      ? p.accent
                                       : null,
                                 ),
                               ),
@@ -191,7 +195,7 @@ class _SignUpViewState extends State<SignUpView> {
                                 buttonType: ButtonType.text,
                                 onCallBack: () => _viewTerms('terms'),
                                 backgroundColor: Colors.transparent,
-                                foregroundColor: Colors.blue,
+                                foregroundColor: p.primary,
                                 textFontSize: 14,
                                 textFontWeight: FontWeight.normal,
                                 minimumSize: const Size(0, 0),
@@ -210,7 +214,7 @@ class _SignUpViewState extends State<SignUpView> {
                                 decoration: _privacyError && !_agreePrivacy
                                     ? BoxDecoration(
                                         border: Border.all(
-                                          color: Colors.red,
+                                          color: p.accent,
                                           width: 2,
                                         ),
                                         borderRadius: BorderRadius.circular(4),
@@ -223,7 +227,7 @@ class _SignUpViewState extends State<SignUpView> {
                                   label: '개인정보 처리방침 동의 (필수)',
                                   spacing: 2,
                                   activeColor: _privacyError && _agreePrivacy
-                                      ? Colors.red
+                                      ? p.accent
                                       : null,
                                 ),
                               ),
@@ -236,7 +240,7 @@ class _SignUpViewState extends State<SignUpView> {
                                 buttonType: ButtonType.text,
                                 onCallBack: () => _viewTerms('privacy'),
                                 backgroundColor: Colors.transparent,
-                                foregroundColor: Colors.blue,
+                                foregroundColor: p.primary,
                                 textFontSize: 14,
                                 textFontWeight: FontWeight.normal,
                                 minimumSize: const Size(0, 0),
@@ -267,7 +271,7 @@ class _SignUpViewState extends State<SignUpView> {
                                 buttonType: ButtonType.text,
                                 onCallBack: () => _viewTerms('marketing'),
                                 backgroundColor: Colors.transparent,
-                                foregroundColor: Colors.blue,
+                                foregroundColor: p.primary,
                                 textFontSize: 14,
                                 textFontWeight: FontWeight.normal,
                                 minimumSize: const Size(0, 0),
@@ -355,7 +359,7 @@ class _SignUpViewState extends State<SignUpView> {
                                   '회원가입 처리 중...',
                                   fontSize: 14,
                                   fontWeight: FontWeight.normal,
-                                  color: Colors.grey[600],
+                                  color: p.textSecondary,
                                 ),
                               ],
                             ),
@@ -372,6 +376,8 @@ class _SignUpViewState extends State<SignUpView> {
             ),
           ),
         ),
+          );
+        },
       ),
     );
   }

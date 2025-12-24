@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:shoes_store_app/config.dart' as config;
+import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:shoes_store_app/database/handlers/customer_handler.dart';
 import 'package:shoes_store_app/database/handlers/product_handler.dart';
 import 'package:shoes_store_app/database/handlers/purchase_handler.dart';
@@ -221,6 +222,8 @@ class _AdminReturnOrderDetailViewState extends State<AdminReturnOrderDetailView>
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    
     if (_isLoading) {
       return const Center(
         child: CircularProgressIndicator(),
@@ -273,7 +276,7 @@ class _AdminReturnOrderDetailViewState extends State<AdminReturnOrderDetailView>
                   _returnStatus,
                   fontSize: 12,
                   fontWeight: FontWeight.normal,
-                  color: Colors.white,
+                  color: p.textOnPrimary,
                 ),
               ),
             ],
@@ -326,7 +329,7 @@ class _AdminReturnOrderDetailViewState extends State<AdminReturnOrderDetailView>
                           '사이즈: ${item.size} | 색상: ${item.color} | 수량: ${item.quantity}',
                           fontSize: 14,
                           fontWeight: FontWeight.normal,
-                          color: Colors.grey.shade600,
+                          color: p.textSecondary,
                         ),
                       ),
                       // 가격 표시 (오른쪽 정렬)
@@ -334,7 +337,7 @@ class _AdminReturnOrderDetailViewState extends State<AdminReturnOrderDetailView>
                         '${OrderUtils.formatPrice(item.price * item.quantity)}원',
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: Colors.blue.shade700,
+                        color: p.primary,
                       ),
                     ],
                   ),
@@ -359,7 +362,7 @@ class _AdminReturnOrderDetailViewState extends State<AdminReturnOrderDetailView>
                       
                       // 30일 경과 시 회색으로 표시, 그 외에는 상태에 따른 색상
                       final statusColor = (is30DaysPassed && !isReturnCompleted)
-                          ? Colors.grey.shade400
+                          ? p.divider
                           : OrderStatusColors.getStatusColor(statusText);
                       
                       return Container(
@@ -375,7 +378,7 @@ class _AdminReturnOrderDetailViewState extends State<AdminReturnOrderDetailView>
                           statusText,
                           fontSize: 12,
                           fontWeight: FontWeight.normal,
-                          color: Colors.white,
+                          color: p.textOnPrimary,
                         ),
                       );
                     },

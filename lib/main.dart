@@ -1,4 +1,5 @@
 import 'package:shoes_store_app/config.dart' as config;
+import 'package:shoes_store_app/theme/theme_provider.dart';
 import 'package:shoes_store_app/database/core/database_manager.dart';
 import 'package:shoes_store_app/database/dummy_data/dummy_data_setting.dart';
 import 'package:shoes_store_app/view/cheng/screens/auth/login_view.dart';
@@ -59,33 +60,47 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final ThemeMode _themeMode = ThemeMode.system; // 시스템에서 설정한 색상으로 초기화
+  ThemeMode _themeMode = ThemeMode.system; // 시스템에서 설정한 색상으로 초기화
 
   final Color _seedColor = Colors.deepPurple;
 
+  void _toggleTheme() {
+    setState(() {
+      if (_themeMode == ThemeMode.light) {
+        _themeMode = ThemeMode.dark;
+      } else {
+        _themeMode = ThemeMode.light;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
+    return ThemeProvider(
       themeMode: _themeMode,
-      theme: ThemeData(
-        brightness: Brightness.light,
-        colorSchemeSeed: _seedColor,
+      onToggleTheme: _toggleTheme,
+      child: MaterialApp(
+        title: 'Flutter Demo',
+        themeMode: _themeMode,
+        theme: ThemeData(
+          brightness: Brightness.light,
+          colorSchemeSeed: _seedColor,
+        ),
+        darkTheme: ThemeData(
+          brightness: Brightness.dark,
+          colorSchemeSeed: _seedColor,
+        ),
+        initialRoute: '/',
+        routes: {
+          '/': (context) => const LoginView(),
+          '/cart': (context) => const Cart(),
+          '/searchview': (context) => const SearchView(),
+          '/detailview': (context) => const DetailView(),
+          '/purchaseview': (context) => const PurchaseView(),
+          '/address-payment': (context) => const AddressPaymentView(),
+        },
+        debugShowCheckedModeBanner: false,
       ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        colorSchemeSeed: _seedColor,
-      ),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const LoginView(),
-        '/cart': (context) => const Cart(),
-        '/searchview': (context) => const SearchView(),
-        '/detailview': (context) => const DetailView(),
-        '/purchaseview': (context) => const PurchaseView(),
-        '/address-payment': (context) => const AddressPaymentView(),
-      },
-      debugShowCheckedModeBanner: false,
     );
   }
 }

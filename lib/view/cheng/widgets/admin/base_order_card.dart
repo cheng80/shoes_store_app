@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shoes_store_app/custom/custom.dart';
+import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:shoes_store_app/utils/order_status_colors.dart';
 
 /// 주문 카드 기본 위젯
@@ -28,12 +29,14 @@ class BaseOrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    
     return GestureDetector(
       // 카드 전체를 탭 가능하게 만듦
       onTap: onTap,
       child: CustomCard(
         // 선택된 상태일 때 배경색 변경
-        color: isSelected ? Colors.blue.shade50 : null,
+        color: isSelected ? p.chipSelectedBg.withOpacity(0.2) : null,
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(12),
         child: CustomColumn(
@@ -57,7 +60,7 @@ class BaseOrderCard extends StatelessWidget {
                   orderStatus,
                   fontSize: 12,
                   fontWeight: FontWeight.normal,
-                    color: Colors.white,
+                    color: p.textOnPrimary,
                   ),
                 ),
               ],

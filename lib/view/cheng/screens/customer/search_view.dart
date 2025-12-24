@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:shoes_store_app/theme/theme_provider.dart';
+import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:shoes_store_app/database/handlers/manufacturer_handler.dart';
 import 'package:shoes_store_app/custom/custom_dialog.dart';
 import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
@@ -187,14 +189,16 @@ class _SearchViewState extends State<SearchView> {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    
     return Scaffold(
-      backgroundColor: const Color(0xFFD9D9D9),
+      backgroundColor: p.background,
 
       // 👤 Drawer 안에 사용자 정보
       drawer: _buildUserDrawer(),
 
       appBar: AppBar(
-        backgroundColor: const Color(0xFFD9D9D9),
+        backgroundColor: p.background,
         elevation: 0,
         leading: Builder(
           builder: (context) => IconButton(
@@ -236,7 +240,7 @@ class _SearchViewState extends State<SearchView> {
               decoration: InputDecoration(
                 hintText: '원하는 신발을 찾아보아요',
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: p.cardBackground,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 0,
@@ -314,7 +318,7 @@ class _SearchViewState extends State<SearchView> {
                                 ),
                                 Text(
                                   mf?.mName ?? '제조사 없음',
-                                  style: const TextStyle(color: Colors.grey),
+                                  style: TextStyle(color: p.textSecondary),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -349,6 +353,7 @@ class _SearchViewState extends State<SearchView> {
   }
 
   Drawer _buildUserDrawer() {
+    final p = context.palette;
     final userInitial = _userName.isNotEmpty && _userName != '사용자'
         ? _userName[0].toUpperCase()
         : 'U';
@@ -360,15 +365,30 @@ class _SearchViewState extends State<SearchView> {
     print('  - getUserName(): ${UserStorage.getUserName()}');
     print('  - getUserEmail(): ${UserStorage.getUserEmail()}');
 
+    final isDark = context.isDarkMode;
+
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
           UserAccountsDrawerHeader(
-            accountName: Text(_userName),
-            accountEmail: Text(_userEmail),
+            accountName: Text(_userName, style: TextStyle(color: p.textOnPrimary)),
+            accountEmail: Text(_userEmail, style: TextStyle(color: p.textOnPrimary)),
             currentAccountPicture: CircleAvatar(child: Text(userInitial)),
+            decoration: BoxDecoration(color: p.primary),
           ),
+          // 테마 스위치 섹션
+          ListTile(
+            leading: Icon(isDark ? Icons.dark_mode : Icons.light_mode),
+            title: const Text('다크 모드'),
+            trailing: Switch(
+              value: isDark,
+              onChanged: (value) {
+                context.toggleTheme();
+              },
+            ),
+          ),
+          const Divider(),
           ListTile(
             leading: const Icon(Icons.person),
             title: const Text('프로필'),

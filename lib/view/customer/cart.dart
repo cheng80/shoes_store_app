@@ -4,6 +4,7 @@ import 'package:shoes_store_app/view/cheng/storage/cart_storage.dart';
 import 'package:shoes_store_app/custom/custom_snack_bar.dart';
 import 'package:shoes_store_app/custom/custom_dialog.dart';
 import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
+import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 //  Cart page
@@ -161,9 +162,11 @@ class _CartState extends State<Cart> {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    
     return Scaffold(
       appBar: AppBar(
-        title: Text('Cart', style: config.rLabel),
+        title: Text('Cart', style: config.rLabel.copyWith(color: p.textPrimary)),
         actions: [
           IconButton(
             onPressed: cart.isEmpty ? null : _clearCart,
@@ -178,7 +181,7 @@ class _CartState extends State<Cart> {
               children: [
                 Expanded(
                   child: cart.isEmpty
-                      ? Center(child: Text('장바구니가 비어있음', style: config.rLabel))
+                      ? Center(child: Text('장바구니가 비어있음', style: config.rLabel.copyWith(color: p.textPrimary)))
                       : ListView.builder(
                           itemCount: cart.length,
                           itemBuilder: (context, index) {
@@ -221,16 +224,16 @@ class _CartState extends State<Cart> {
                                         children: [
                                           Text(
                                             name,
-                                            style: config.rLabel,
+                                            style: config.rLabel.copyWith(color: p.textPrimary),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                           const SizedBox(height: 4),
-                                          Text('색상: $color / 사이즈: $size', style: config.rLabel),
+                                          Text('색상: $color / 사이즈: $size', style: config.rLabel.copyWith(color: p.textPrimary)),
                                           const SizedBox(height: 6),
-                                          Text('단가: ${config.priceFormatter(unitPrice)}원', style: config.rLabel),
+                                          Text('단가: ${config.priceFormatter(unitPrice)}원', style: config.rLabel.copyWith(color: p.textPrimary)),
                                           const SizedBox(height: 4),
-                                          Text('합계: ${config.priceFormatter(lineTotal)}원', style: config.rLabel),
+                                          Text('합계: ${config.priceFormatter(lineTotal)}원', style: config.rLabel.copyWith(color: p.textPrimary)),
                                         ],
                                       ),
                                     ),
@@ -244,7 +247,7 @@ class _CartState extends State<Cart> {
                                               onPressed: () => _dec(index),
                                               icon: const Icon(Icons.remove),
                                             ),
-                                            Text('$qty', style: config.rLabel),
+                                            Text('$qty', style: config.rLabel.copyWith(color: p.textPrimary)),
                                             IconButton(
                                               onPressed: () => _inc(index),
                                               icon: const Icon(Icons.add),
@@ -273,18 +276,18 @@ class _CartState extends State<Cart> {
                       Expanded(
                         child: Text(
                           '총액: ${config.priceFormatter(totalPrice)}원',
-                          style: config.rLabel,
+                          style: config.rLabel.copyWith(color: p.textPrimary),
                         ),
                       ),
                       ElevatedButton(
                         onPressed: cart.isEmpty ? null : _goPurchase,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: cart.isEmpty 
-                              ? Colors.grey 
-                              : Theme.of(context).primaryColor,
-                          foregroundColor: Colors.white,
+                              ? p.divider
+                              : p.primary,
+                          foregroundColor: p.textOnPrimary,
                         ),
-                        child: Text('결제 화면', style: config.rLabel),
+                        child: Text('결제 화면', style: config.rLabel.copyWith(color: p.textOnPrimary)),
                       ),
                     ],
                   ),

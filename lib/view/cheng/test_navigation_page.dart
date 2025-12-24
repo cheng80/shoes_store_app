@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:shoes_store_app/config.dart' as config;
+import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:shoes_store_app/database/core/database_manager.dart';
 import 'package:shoes_store_app/database/dummy_data/dummy_data_setting.dart';
 import 'package:shoes_store_app/database/handlers/customer_handler.dart';
@@ -29,14 +30,16 @@ class TestNavigationPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    
     return Scaffold(
-      backgroundColor: const Color(0xFFD9D9D9),
+      backgroundColor: p.background,
       appBar: CustomAppBar(
         title: '네비게이션 테스트',
         centerTitle: true,
         titleTextStyle: config.rLabel,
-        backgroundColor: const Color(0xFFD9D9D9),
-        foregroundColor: Colors.black,
+        backgroundColor: p.background,
+        foregroundColor: p.textPrimary,
       ),
       body: SafeArea(
         child: SingleChildScrollView(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shoes_store_app/custom/custom.dart';
+import 'package:shoes_store_app/theme/app_colors.dart';
 
 /// 고객용 수령 완료 카드 위젯
 /// 고객용 수령 완료 목록 화면에서 사용하는 주문 카드입니다.
@@ -18,6 +19,8 @@ class CustomerReturnCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    
     return CustomCard(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -37,7 +40,7 @@ class CustomerReturnCard extends StatelessWidget {
               '수령일: $orderDate',
               fontSize: 12,
               fontWeight: FontWeight.normal,
-              color: Colors.grey.shade600,
+              color: p.textSecondary,
             ),
         ],
       ),

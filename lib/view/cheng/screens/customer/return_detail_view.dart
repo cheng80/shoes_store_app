@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:shoes_store_app/config.dart' as config;
+import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:shoes_store_app/custom/custom_snack_bar.dart';
 import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/database/handlers/customer_handler.dart';
@@ -303,15 +304,17 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: const Color(0xFFD9D9D9),
+        backgroundColor: p.background,
         appBar: CustomAppBar(
           title: Text('반품 상세', style: config.rLabel),
           centerTitle: true,
           titleTextStyle: config.rLabel,
-          backgroundColor: const Color(0xFFD9D9D9),
-          foregroundColor: Colors.black,
+          backgroundColor: p.background,
+          foregroundColor: p.textPrimary,
         ),
         body: const Center(
           child: CircularProgressIndicator(),
@@ -321,13 +324,13 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
 
     if (_purchase == null || _customer == null) {
       return Scaffold(
-        backgroundColor: const Color(0xFFD9D9D9),
+        backgroundColor: p.background,
         appBar: CustomAppBar(
           title: Text('반품 상세', style: config.rLabel),
           centerTitle: true,
           titleTextStyle: config.rLabel,
-          backgroundColor: const Color(0xFFD9D9D9),
-          foregroundColor: Colors.black,
+          backgroundColor: p.background,
+          foregroundColor: p.textPrimary,
         ),
         body: const Center(
           child: Text('주문 정보를 불러올 수 없습니다.'),
@@ -342,13 +345,13 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
     );
 
     return Scaffold(
-      backgroundColor: const Color(0xFFD9D9D9),
+      backgroundColor: p.background,
       appBar: CustomAppBar(
         title: Text('반품 상세', style: config.rLabel),
         centerTitle: true,
         titleTextStyle: config.rLabel,
-        backgroundColor: const Color(0xFFD9D9D9),
-        foregroundColor: Colors.black,
+        backgroundColor: p.background,
+        foregroundColor: p.textPrimary,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -383,7 +386,7 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
                           _returnStatus,
                           fontSize: 12,
                           fontWeight: FontWeight.normal,
-                          color: Colors.white,
+                          color: p.textOnPrimary,
                         ),
                       ),
                     ],
@@ -456,14 +459,14 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
                                   '사이즈: ${item.size} | 색상: ${item.color} | 수량: ${item.quantity}',
                                   fontSize: 14,
                                   fontWeight: FontWeight.normal,
-                                  color: Colors.grey.shade600,
+                                  color: p.textSecondary,
                                 ),
                               ),
                               CustomText(
                                 '${OrderUtils.formatPrice(item.price * item.quantity)}원',
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.blue.shade700,
+                                color: p.primary,
                               ),
                             ],
                           ),
@@ -474,7 +477,7 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
                             CustomButton(
                               btnText: returnStatusText,
                               buttonType: ButtonType.elevated,
-                              backgroundColor: Colors.red, // 반품 신청 가능: 빨간색
+                              backgroundColor: p.accent, // 반품 신청 가능: 빨간색
                               onCallBack: () => _showReturnConfirmDialog(item),
                               minimumSize: const Size(double.infinity, 40),
                             )
@@ -485,7 +488,7 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
                                 width: double.infinity,
                                 height: 40,
                                 decoration: BoxDecoration(
-                                  color: Colors.grey.shade400,
+                                  color: p.divider,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Center(
@@ -493,7 +496,7 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
                                     returnStatusText,
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white70,
+                                    color: p.textSecondary,
                                   ),
                                 ),
                               ),

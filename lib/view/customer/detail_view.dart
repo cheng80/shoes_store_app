@@ -9,6 +9,7 @@ import 'package:shoes_store_app/model/product/product_image.dart';
 import 'package:shoes_store_app/view/cheng/storage/cart_storage.dart';
 import 'package:shoes_store_app/custom/custom_snack_bar.dart';
 import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
+import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 /// 제품 상세 화면
@@ -309,12 +310,14 @@ class _DetailViewState extends State<DetailView> {
       );
     }
 
+    final p = context.palette;
+    
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: p.cardBackground,
         title: Text(
           productBase!.pName,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: p.textPrimary),
         ),
         centerTitle: true,
       ),
@@ -333,9 +336,9 @@ class _DetailViewState extends State<DetailView> {
                   ),
                 ),
                 if (switching)
-                  const Positioned.fill(
+                  Positioned.fill(
                     child: ColoredBox(
-                      color: Color(0x55FFFFFF),
+                      color: p.textPrimary.withOpacity(0.33),
                       child: Center(child: CircularProgressIndicator()),
                     ),
                   ),
@@ -347,7 +350,7 @@ class _DetailViewState extends State<DetailView> {
               alignment: Alignment.topLeft,
               child: Text(
                 '     상품명: ${productBase!.pName}',
-                style: config.rLabel,
+                style: config.rLabel.copyWith(color: p.textPrimary),
               ),
             ),
 
@@ -356,14 +359,14 @@ class _DetailViewState extends State<DetailView> {
               alignment: Alignment.topLeft,
               child: Text(
                 '     가격: ${config.priceFormatter(product!.basePrice)}',
-                style: config.rLabel,
+                style: config.rLabel.copyWith(color: p.textPrimary),
               ),
             ),
 
             const SizedBox(height: 40),
             Align(
               alignment: Alignment.topLeft,
-              child: Text('     사이즈', style: config.rLabel),
+              child: Text('     사이즈', style: config.rLabel.copyWith(color: p.textPrimary)),
             ),
 
             const SizedBox(height: 25),
@@ -401,18 +404,18 @@ class _DetailViewState extends State<DetailView> {
                           vertical: 10,
                         ),
                         decoration: BoxDecoration(
-                          color: isSelected ? Colors.deepPurple : Colors.blue,
+                          color: isSelected ? p.primary : p.chipUnselectedBg,
                           borderRadius: BorderRadius.circular(12),
                           border: isSelected 
-                              ? Border.all(color: Colors.deepPurple.shade700, width: 2)
-                              : null,
+                              ? Border.all(color: p.primary, width: 2)
+                              : Border.all(color: p.divider),
                         ),
                         child: Align(
                           alignment: Alignment.center,
                           child: Text(
                             size.toString(), 
                             style: config.rLabel.copyWith(
-                              color: isSelected ? Colors.white : Colors.black,
+                              color: isSelected ? p.textOnPrimary : p.textPrimary,
                               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                             ),
                           ),
@@ -427,7 +430,7 @@ class _DetailViewState extends State<DetailView> {
             const SizedBox(height: 25),
             Align(
               alignment: Alignment.topLeft,
-              child: Text('     색상', style: config.rLabel),
+              child: Text('     색상', style: config.rLabel.copyWith(color: p.textPrimary)),
             ),
 
             const SizedBox(height: 25),
@@ -450,12 +453,12 @@ class _DetailViewState extends State<DetailView> {
                       setChipIndex: false,
                     );
                   },
-                  selectedColor: Colors.deepPurple.shade100,
-                  backgroundColor: Colors.grey.shade200,
+                  selectedColor: p.chipSelectedBg,
+                  backgroundColor: p.chipUnselectedBg,
                   labelStyle: TextStyle(
                     color: selectedColorIndex == index
-                        ? Colors.black
-                        : Colors.grey.shade600,
+                        ? p.chipSelectedText
+                        : p.chipUnselectedText,
                   ),
                 );
               }),
@@ -466,7 +469,7 @@ class _DetailViewState extends State<DetailView> {
               alignment: Alignment.topLeft,
               child: Text(
                 '     수량${maxQuantity > 0 ? ' (최대 $maxQuantity)' : ''}',
-                style: config.rLabel,
+                style: config.rLabel.copyWith(color: p.textPrimary),
               ),
             ),
 
@@ -477,7 +480,7 @@ class _DetailViewState extends State<DetailView> {
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.purple.shade50,
+                      color: p.chipUnselectedBg,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Row(
@@ -497,11 +500,11 @@ class _DetailViewState extends State<DetailView> {
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: p.cardBackground,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey.shade300),
+                            border: Border.all(color: p.divider),
                           ),
-                          child: Text('$quantity', style: config.rLabel),
+                          child: Text('$quantity', style: config.rLabel.copyWith(color: p.textPrimary)),
                         ),
                         IconButton(
                           onPressed: quantity >= maxQuantity
@@ -524,8 +527,8 @@ class _DetailViewState extends State<DetailView> {
                       height: 48,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: canPurchase ? Colors.purple.shade50 : Colors.grey.shade300,
-                          foregroundColor: canPurchase ? Colors.black87 : Colors.grey.shade600,
+                          backgroundColor: canPurchase ? p.chipUnselectedBg : p.divider,
+                          foregroundColor: canPurchase ? p.textPrimary : p.textSecondary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
@@ -584,7 +587,7 @@ class _DetailViewState extends State<DetailView> {
                                 setState(() {});
                               }
                             : null,
-                        child: Text('Add Cart', style: config.rLabel),
+                        child: Text('Add Cart', style: config.rLabel.copyWith(color: p.textPrimary)),
                       ),
                     ),
                   ),
@@ -609,15 +612,15 @@ class _DetailViewState extends State<DetailView> {
                     CustomNavigationUtil.toNamed(context, '/cart');
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade400,
-                    foregroundColor: Colors.white,
+                    backgroundColor: p.primary,
+                    foregroundColor: p.textOnPrimary,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Icon(Icons.shopping_cart, size: 20),
                       const SizedBox(width: 8),
-                      Text('장바구니', style: config.rLabel),
+                      Text('장바구니', style: config.rLabel.copyWith(color: p.textOnPrimary)),
                     ],
                   ),
                 ),
@@ -667,10 +670,10 @@ class _DetailViewState extends State<DetailView> {
                         }
                       : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: canPurchase ? Colors.deepPurple : Colors.grey,
-                    foregroundColor: Colors.white,
+                    backgroundColor: canPurchase ? p.primary : p.divider,
+                    foregroundColor: p.textOnPrimary,
                   ),
-                  child: Text("바로 구매", style: config.rLabel),
+                  child: Text("바로 구매", style: config.rLabel.copyWith(color: p.textOnPrimary)),
                 ),
               ),
             ],

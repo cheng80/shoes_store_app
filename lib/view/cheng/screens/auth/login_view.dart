@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:shoes_store_app/config.dart' as config;
+import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:shoes_store_app/custom/custom_snack_bar.dart';
 import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/database/handlers/customer_handler.dart';
@@ -65,15 +66,18 @@ class _LoginViewState extends State<LoginView> {
     return GestureDetector(
       onTap: _unfocusKeyboard,
       behavior: HitTestBehavior.opaque,
-      child: Scaffold(
-        backgroundColor: const Color(0xFFD9D9D9),
-        appBar: CustomAppBar(
-          title: '로그인',
-          centerTitle: true,
-          titleTextStyle: config.rLabel,
-          backgroundColor: const Color(0xFFD9D9D9),
-          foregroundColor: Colors.black,
-        ),
+      child: Builder(
+        builder: (context) {
+          final p = context.palette;
+          return Scaffold(
+            backgroundColor: p.background,
+            appBar: CustomAppBar(
+              title: '로그인',
+              centerTitle: true,
+              titleTextStyle: config.rLabel,
+              backgroundColor: p.background,
+              foregroundColor: p.textPrimary,
+            ),
         body: SafeArea(
           child: SingleChildScrollView(
             child: CustomColumn(
@@ -163,6 +167,8 @@ class _LoginViewState extends State<LoginView> {
             ),
           ),
         ),
+          );
+        },
       ),
     );
   }

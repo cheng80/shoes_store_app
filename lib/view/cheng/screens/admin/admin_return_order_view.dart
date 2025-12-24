@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:shoes_store_app/database/handlers/purchase_handler.dart';
 import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/database/handlers/purchase_item_handler.dart';
@@ -186,6 +187,8 @@ class _AdminReturnOrderViewState
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    
     return Scaffold(
       appBar: CustomAppBar(
         title: '반품 관리',
@@ -305,7 +308,7 @@ class _AdminReturnOrderViewState
             ),
 
             // 세로 디바이더
-            const VerticalDivider(width: 1, thickness: 1, color: Colors.grey),
+            VerticalDivider(width: 1, thickness: 1, color: p.divider),
 
             // 우측 2/3: 주문자 상세 정보
             Expanded(

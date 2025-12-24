@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
+import 'package:shoes_store_app/theme/app_colors.dart';
 
 import 'package:shoes_store_app/custom/custom.dart';
 
@@ -8,6 +9,8 @@ class AdminMobileBlockView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    
     return Scaffold(
       appBar: CustomAppBar(title: '접근 제한', centerTitle: true),
       body: SafeArea(
@@ -23,7 +26,7 @@ class AdminMobileBlockView extends StatelessWidget {
                   child: Icon(
                     Icons.warning_amber_rounded,
                     size: 60,
-                    color: Colors.orange,
+                    color: p.accent,
                   ),
                 ),
                 CustomCard(
