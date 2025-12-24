@@ -10,16 +10,8 @@ import 'package:shoes_store_app/utils/app_logger.dart';
 import 'package:shoes_store_app/view/cheng/custom/custom.dart';
 import 'package:shoes_store_app/view/cheng/screens/auth/login_view.dart';
 
-/// 회원가입 · 약관 동의 화면
-/// 사용자가 회원가입을 진행하는 화면입니다.
-/// 이메일, 비밀번호, 이름, 전화번호를 입력받고 약관에 동의한 후 Customer DB에 저장합니다.
-/// 
-/// [testData] 테스트용 더미 데이터 (선택사항)
-/// - 더미 데이터가 제공되면 폼에 자동으로 입력됩니다.
-/// - 회원가입 로직 검증을 위해 사용됩니다.
+/// 회원가입 화면
 class SignUpView extends StatefulWidget {
-  /// 테스트용 더미 데이터 (선택사항)
-  /// 더미 데이터가 제공되면 폼에 자동으로 입력됩니다.
   final Map<String, String>? testData;
 
   const SignUpView({super.key, this.testData});

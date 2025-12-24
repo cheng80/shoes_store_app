@@ -4,9 +4,6 @@ import 'package:shoes_store_app/model/product/manufacturer.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// Manufacturer 테이블 핸들러
-/// 
-/// Manufacturer 테이블의 모든 CRUD 작업을 담당합니다.
-/// Manufacturer는 제조사 정보를 저장하는 간단한 테이블입니다.
 class ManufacturerHandler {
   /// DatabaseManager 인스턴스
   final DatabaseManager _dbManager = DatabaseManager();

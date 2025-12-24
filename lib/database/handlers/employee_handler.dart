@@ -4,8 +4,6 @@ import 'package:shoes_store_app/model/employee.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// Employee 테이블 핸들러
-/// 
-/// Employee 테이블의 모든 CRUD 작업을 담당합니다.
 class EmployeeHandler {
   /// DatabaseManager 인스턴스
   final DatabaseManager _dbManager = DatabaseManager();

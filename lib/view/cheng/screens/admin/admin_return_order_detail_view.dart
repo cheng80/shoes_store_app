@@ -152,7 +152,8 @@ class _AdminReturnOrderDetailViewState extends State<AdminReturnOrderDetailView>
             final statusNum = OrderStatusUtils.parseStatusToNumber(item.pcStatus);
             String returnStatusText;
             if (statusNum >= 3) {
-              returnStatusText = config.pickupStatus[statusNum] ?? config.pickupStatus[3]!; // '반품 신청'
+              // parseStatusToNumber가 0~5만 반환하므로 null 체크 불필요
+              returnStatusText = config.pickupStatus[statusNum]!;
             } else {
               returnStatusText = config.pickupStatus[3]!; // '반품 신청'
             }
@@ -168,8 +169,9 @@ class _AdminReturnOrderDetailViewState extends State<AdminReturnOrderDetailView>
               final existingStatusNum = OrderStatusUtils.parseStatusToNumber(existingItem.returnStatus);
               final currentStatusNum = OrderStatusUtils.parseStatusToNumber(item.pcStatus);
               final higherStatusNum = existingStatusNum > currentStatusNum ? existingStatusNum : currentStatusNum;
+              // parseStatusToNumber가 0~5만 반환하므로 null 체크 불필요
               final higherStatusText = higherStatusNum >= 3
-                  ? (config.pickupStatus[higherStatusNum] ?? config.pickupStatus[3]!) // '반품 신청'
+                  ? config.pickupStatus[higherStatusNum]!
                   : config.pickupStatus[3]!; // '반품 신청'
 
               orderItemsMap[itemKey] = ReturnItemInfo(
@@ -346,7 +348,7 @@ class _AdminReturnOrderDetailViewState extends State<AdminReturnOrderDetailView>
                       
                       // 상태 텍스트 결정: 반품 완료가 아니면 "반품 신청"
                       final statusText = isReturnCompleted 
-                          ? (config.pickupStatus[5] ?? config.pickupStatus[5]!) // '반품 완료'
+                          ? config.pickupStatus[5]! // '반품 완료'
                           : config.pickupStatus[3]!; // '반품 신청'
                       
                       // pickupDate로부터 30일 경과 확인

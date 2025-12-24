@@ -4,8 +4,6 @@ import 'package:shoes_store_app/model/sale/purchase_item.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// PurchaseItem 테이블 핸들러
-/// 
-/// PurchaseItem 테이블의 모든 CRUD 작업 및 조인 쿼리를 담당합니다.
 class PurchaseItemHandler {
   /// DatabaseManager 인스턴스
   final DatabaseManager _dbManager = DatabaseManager();

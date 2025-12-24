@@ -3,8 +3,6 @@ import 'package:shoes_store_app/model/sale/purchase.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// Purchase 테이블 핸들러
-/// 
-/// Purchase 테이블의 모든 CRUD 작업 및 조인 쿼리를 담당합니다.
 class PurchaseHandler {
   /// DatabaseManager 인스턴스
   final DatabaseManager _dbManager = DatabaseManager();

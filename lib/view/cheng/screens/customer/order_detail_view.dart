@@ -262,7 +262,7 @@ class _OrderDetailViewState extends State<OrderDetailView> {
 
     try {
       final purchaseItems = await _purchaseItemHandler.queryByPurchaseId(_purchase!.id!);
-      final completeStatus = config.pickupStatus[2] ?? config.pickupStatus[2]!; // '제품 수령 완료'
+      final completeStatus = config.pickupStatus[2]!; // '제품 수령 완료'
       
       for (final item in purchaseItems) {
         if (item.id != null) {
@@ -470,7 +470,7 @@ class _OrderDetailViewState extends State<OrderDetailView> {
 
                 // 상태별 버튼 표시
                 // 제품 준비 완료 상태이고 아직 픽업 완료되지 않은 경우에만 활성화
-                if (!_isPickupCompleted && _orderStatus == (config.pickupStatus[1] ?? config.pickupStatus[1]!)) // '제품 준비 완료'
+                if (!_isPickupCompleted && _orderStatus == config.pickupStatus[1]!) // '제품 준비 완료'
                   // 활성화된 픽업 완료 버튼
                   CustomButton(
                     btnText: '픽업 완료',

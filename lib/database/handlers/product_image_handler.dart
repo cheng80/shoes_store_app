@@ -4,9 +4,6 @@ import 'package:shoes_store_app/model/product/product_image.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// ProductImage 테이블 핸들러
-/// 
-/// ProductImage 테이블의 모든 CRUD 작업을 담당합니다.
-/// ProductImage는 ProductBase별로 여러 이미지를 저장할 수 있습니다.
 class ProductImageHandler {
   /// DatabaseManager 인스턴스
   final DatabaseManager _dbManager = DatabaseManager();

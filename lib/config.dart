@@ -1,24 +1,11 @@
 //  Configuration of the App
-/*
-  Create: 10/12/2025 16:43, Creator: Chansol, Park
-  Update log: 
-    DUMMY 9/29/2025 09:53, 'Point X, Description', Creator: Chansol, Park
-    11/29/2025 17:40, 'Point 1, Searchview presets', Creator: Chansol, Park
-    11/29/2025 17:52, 'Point 2, Price format preset', Creator: Chansol, Park
-    12/12/2025 15:55, 'Point 3, PurchaseItem, LoginHistory table added', Creator: Chansol, Park
-    12/12/2025 15:55, 'Point 4, pickupStatus, returnStatus, loginStatus, district added', Creator: zero
-    13/12/2025 21:42, 'Point 5, pickupStatus와 returnStatus를 통합', Creator: zero
-  Version: 1.0
-  Desc: Config for dbName, version, etc.
-*/
+
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-//  DB
-//  For use
-//  '${config.kDBName}${config.kDBFileExt}';
-const String kDBName = 'bookstore';
+
+const String kDBName = 'shoes_store_db';
 const String kDBFileExt = '.db';
 const int kVersion = 1;
 

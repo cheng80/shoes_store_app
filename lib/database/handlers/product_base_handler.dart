@@ -4,9 +4,6 @@ import 'package:shoes_store_app/model/product/product_base.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// ProductBase 테이블 핸들러
-/// 
-/// ProductBase 테이블의 모든 CRUD 작업 및 조인 쿼리를 담당합니다.
-/// ProductBase는 제품의 기본 정보(이름, 색상, 카테고리 등)를 저장하는 테이블입니다.
 class ProductBaseHandler {
   /// DatabaseManager 인스턴스
   final DatabaseManager _dbManager = DatabaseManager();

@@ -134,7 +134,7 @@ class _OrderListViewState extends State<OrderListView> {
               AppLogger.d('주문 ID ${purchase.id}: 30일 경과 - 자동 수령 완료 처리');
               
               /// 모든 PurchaseItem의 pcStatus를 '제품 수령 완료'로 업데이트
-              final completeStatus = config.pickupStatus[2] ?? config.pickupStatus[2]!; // '제품 수령 완료'
+              final completeStatus = config.pickupStatus[2]!; // '제품 수령 완료'
               for (final item in items) {
                 if (item.id != null) {
                   try {
@@ -170,7 +170,8 @@ class _OrderListViewState extends State<OrderListView> {
             AppLogger.d('결정된 주문 상태: ${statusMap[purchase.id!]}');
           } catch (e) {
             AppLogger.e('주문 상태 조회 실패 (ID: ${purchase.id})', error: e);
-            statusMap[purchase.id!] = config.pickupStatus[0] ?? config.pickupStatus[0]!; // '제품 준비 중'
+            // config.pickupStatus[0]은 절대 null이 될 수 없으므로 fallback 불필요
+            statusMap[purchase.id!] = config.pickupStatus[0]!;
           }
         }
       }
@@ -264,9 +265,10 @@ class _OrderListViewState extends State<OrderListView> {
 
   /// 주문 카드 위젯 생성
   Widget _buildOrderCard(Purchase order) {
+    // config.pickupStatus[0]은 절대 null이 될 수 없으므로 fallback 불필요
     String orderStatus = order.id != null 
-        ? _orderStatusMap[order.id] ?? config.pickupStatus[0] ?? config.pickupStatus[0]! // '제품 준비 중'
-        : config.pickupStatus[0] ?? config.pickupStatus[0]!; // '제품 준비 중'
+        ? _orderStatusMap[order.id] ?? config.pickupStatus[0]!
+        : config.pickupStatus[0]!;
     
     final orderDate = order.timeStamp.split(' ').first;
     

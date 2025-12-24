@@ -4,9 +4,6 @@ import 'package:shoes_store_app/model/login_history.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// LoginHistory 테이블 핸들러
-/// 
-/// LoginHistory 테이블의 모든 CRUD 작업을 담당합니다.
-/// LoginHistory는 고객의 로그인 이력을 저장하는 테이블입니다.
 class LoginHistoryHandler {
   /// DatabaseManager 인스턴스
   final DatabaseManager _dbManager = DatabaseManager();
