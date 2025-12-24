@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 import 'package:shoes_store_app/database/handlers/employee_handler.dart';
+import 'package:shoes_store_app/custom/custom_snack_bar.dart';
+import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/model/employee.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
-import 'package:shoes_store_app/view/cheng/custom/custom.dart';
+import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/view/cheng/storage/admin_storage.dart';
 import 'package:shoes_store_app/view/cheng/utils/admin_tablet_utils.dart';
 import 'package:shoes_store_app/view/cheng/screens/admin/admin_mobile_block_view.dart';
@@ -41,7 +42,7 @@ class _AdminLoginViewState extends State<AdminLoginView> {
     /// 태블릿이 아니면 모바일 차단 화면으로 이동
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!isTablet(context)) {
-        Get.off(() => const AdminMobileBlockView());
+        CustomNavigationUtil.off(context, const AdminMobileBlockView());
       } else {
         lockTabletLandscape(context);
       }
@@ -158,12 +159,9 @@ class _AdminLoginViewState extends State<AdminLoginView> {
       }
 
       if (employee == null || employee.ePassword != password) {
-        Get.snackbar(
-          '로그인 실패',
-          '이메일/전화번호 또는 비밀번호가 올바르지 않습니다.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.shade100,
-          colorText: Colors.red.shade900,
+        CustomSnackBar.showError(
+          context,
+          message: '이메일/전화번호 또는 비밀번호가 올바르지 않습니다.',
         );
         return;
       }
@@ -172,23 +170,16 @@ class _AdminLoginViewState extends State<AdminLoginView> {
       
       AdminStorage.saveAdmin(employee);
       
-      Get.snackbar(
-        '로그인 성공',
-        '${employee.eName}님 환영합니다!',
-        snackPosition: SnackPosition.BOTTOM,
+      CustomSnackBar.showSuccess(
+        context,
+        message: '${employee.eName}님 환영합니다!',
       );
-      Get.off(
-        () => const AdminOrderView(),
-        transition: Transition.fadeIn,
-      );
+      CustomNavigationUtil.off(context, const AdminOrderView());
     } catch (error) {
       AppLogger.e('로그인 에러', tag: 'AdminLogin', error: error);
-      Get.snackbar(
-        '오류',
-        '로그인 중 오류가 발생했습니다.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade100,
-        colorText: Colors.red.shade900,
+      CustomSnackBar.showError(
+        context,
+        message: '로그인 중 오류가 발생했습니다.',
       );
     }
   }

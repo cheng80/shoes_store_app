@@ -7,8 +7,9 @@ import 'package:shoes_store_app/model/product/product.dart';
 import 'package:shoes_store_app/model/product/product_base.dart';
 import 'package:shoes_store_app/model/product/product_image.dart';
 import 'package:shoes_store_app/view/cheng/storage/cart_storage.dart';
+import 'package:shoes_store_app/custom/custom_snack_bar.dart';
+import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 /// 제품 상세 화면
 /// 
@@ -118,17 +119,23 @@ class _DetailViewState extends State<DetailView> {
     return maxQuantity > 0;
   }
 
+  bool _initialized = false;
+
   @override
   void initState() {
     super.initState();
-    _initData();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // 페이지가 다시 포커스될 때 장바구니 변경사항 확인
-    _updateQuantityFromCart();
+    if (!_initialized) {
+      _initData();
+      _initialized = true;
+    } else {
+      // 페이지가 다시 포커스될 때 장바구니 변경사항 확인
+      _updateQuantityFromCart();
+    }
   }
 
   /// 장바구니 변경 감지 및 수량 업데이트
@@ -183,7 +190,14 @@ class _DetailViewState extends State<DetailView> {
   /// 
   /// 전달받은 ProductBase ID를 기반으로 제품 정보를 로드합니다.
   Future<void> _initData() async {
-    final int pbidArg = Get.arguments as int;
+    final int? pbidArg = ModalRoute.of(context)?.settings.arguments as int?;
+    if (pbidArg == null) {
+      // arguments가 없으면 이전 화면으로 돌아감
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        CustomNavigationUtil.back(context);
+      });
+      return;
+    }
 
     // 현재 ProductBase 조회
     productBase = await _productBaseHandler.queryById(pbidArg);
@@ -341,7 +355,7 @@ class _DetailViewState extends State<DetailView> {
             Align(
               alignment: Alignment.topLeft,
               child: Text(
-                '     가격: ${config.priceFormatter.format(product!.basePrice)}',
+                '     가격: ${config.priceFormatter(product!.basePrice)}',
                 style: config.rLabel,
               ),
             ),
@@ -529,11 +543,10 @@ class _DetailViewState extends State<DetailView> {
                                 
                                 // 구매 가능한 수량 체크 (최신 재고 기준)
                                 if (quantity > latestMaxQty) {
-                                  Get.snackbar(
-                                    '수량 초과',
-                                    '구매 가능한 최대 수량은 $latestMaxQty개입니다.\n'
-                                    '(다른 사용자가 구매하여 재고가 변경되었을 수 있습니다.)',
-                                    snackPosition: SnackPosition.BOTTOM,
+                                  CustomSnackBar.showError(
+                                    context,
+                                    message: '구매 가능한 최대 수량은 $latestMaxQty개입니다.\n'
+                                        '(다른 사용자가 구매하여 재고가 변경되었을 수 있습니다.)',
                                     duration: const Duration(seconds: 3),
                                   );
                                   
@@ -562,10 +575,9 @@ class _DetailViewState extends State<DetailView> {
                                 // CartStorage를 사용하여 장바구니에 추가
                                 CartStorage.addToCart(item);
 
-                                Get.snackbar(
-                                  '장바구니',
-                                  '담겼음!',
-                                  snackPosition: SnackPosition.BOTTOM,
+                                CustomSnackBar.showSuccess(
+                                  context,
+                                  message: '장바구니에 담겼습니다!',
                                 );
                                 
                                 // 장바구니 상태 변경 후 UI 업데이트
@@ -594,7 +606,7 @@ class _DetailViewState extends State<DetailView> {
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
-                    Get.toNamed('/cart');
+                    CustomNavigationUtil.toNamed(context, '/cart');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue.shade400,
@@ -619,20 +631,18 @@ class _DetailViewState extends State<DetailView> {
                           // 현재 선택된 제품 정보를 바로 구매 화면으로 전달
                           // 장바구니는 거치지 않고 바로 결제 화면으로 이동
                           if (product == null || productBase == null || productImage == null) {
-                            Get.snackbar(
-                              '오류',
-                              '제품 정보를 불러올 수 없습니다.',
-                              snackPosition: SnackPosition.BOTTOM,
+                            CustomSnackBar.showError(
+                              context,
+                              message: '제품 정보를 불러올 수 없습니다.',
                             );
                             return;
                           }
 
                           // 구매 가능한 수량 체크
                           if (quantity > maxQuantity) {
-                            Get.snackbar(
-                              '수량 초과',
-                              '구매 가능한 최대 수량은 $maxQuantity개입니다.',
-                              snackPosition: SnackPosition.BOTTOM,
+                            CustomSnackBar.showError(
+                              context,
+                              message: '구매 가능한 최대 수량은 $maxQuantity개입니다.',
                             );
                             return;
                           }
@@ -649,7 +659,11 @@ class _DetailViewState extends State<DetailView> {
                           };
 
                           // 리스트로 감싸서 전달 (purchase_view는 리스트를 기대함)
-                          Get.toNamed('/purchaseview', arguments: [purchaseItem]);
+                          CustomNavigationUtil.toNamed(
+                            context,
+                            '/purchaseview',
+                            arguments: [purchaseItem],
+                          );
                         }
                       : null,
                   style: ElevatedButton.styleFrom(

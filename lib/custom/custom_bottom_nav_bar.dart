@@ -252,21 +252,35 @@ class _CustomBottomNavBarState extends State<CustomBottomNavBar> {
 
   @override
   Widget build(BuildContext context) {
-    // 현재 페이지 결정
-    final currentPage =
-        widget.currentPage ?? widget.items[widget.currentIndex].page;
+    // IndexedStack을 사용하여 모든 페이지를 유지하면서 현재 페이지만 표시
+    // 이렇게 하면 각 페이지의 상태가 유지되고, key 없이도 정상 동작함
+    final pages = widget.items.map((item) => item.page).toList();
+    
+    // currentPage가 지정된 경우 해당 페이지만 사용, 아니면 IndexedStack 사용
+    if (widget.currentPage != null) {
+      final currentPage = widget.currentPage!;
+      
+      // 현재 페이지가 Scaffold인 경우, bottomNavigationBar를 추가한 새 Scaffold 생성
+      if (currentPage is Scaffold) {
+        return _ScaffoldWithBottomNav(
+          scaffold: currentPage,
+          bottomNavBar: _buildBottomNavBar(),
+        );
+      }
 
-    // 현재 페이지가 Scaffold인 경우, bottomNavigationBar를 추가한 새 Scaffold 생성
-    if (currentPage is Scaffold) {
-      return _ScaffoldWithBottomNav(
-        scaffold: currentPage,
-        bottomNavBar: _buildBottomNavBar(),
+      // Scaffold가 아닌 경우 기본 Scaffold로 감싸기
+      return Scaffold(
+        body: currentPage,
+        bottomNavigationBar: _buildBottomNavBar(),
       );
     }
 
-    // Scaffold가 아닌 경우 기본 Scaffold로 감싸기
+    // IndexedStack을 사용하여 모든 페이지를 유지 (기본 BottomNavigationBar와 동일한 방식)
     return Scaffold(
-      body: currentPage,
+      body: IndexedStack(
+        index: widget.currentIndex,
+        children: pages,
+      ),
       bottomNavigationBar: _buildBottomNavBar(),
     );
   }

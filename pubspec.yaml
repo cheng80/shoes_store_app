@@ -34,23 +34,17 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  # SQFlite & Path & collection
+  # SQFlite & Path
   sqflite: ^2.4.2
   path: ^1.9.1
-  collection: ^1.19.1
-  # goRoute
-  go_router: ^17.0.0
-  # Getx
-  get: ^4.7.3
 
-  #GetX Storage
-  get_storage: ^2.1.1 
-  # intl
-  intl: ^0.20.2
+  # GetStorage (GetX와 독립적으로 사용 가능한 스토리지 패키지)
+  get_storage: ^2.1.1
 
   shared_preferences: ^2.2.2 # StorageUtil에서 사용
   http: ^1.1.0 # NetworkUtil, AddressUtil에서 사용
-  
+  xml: ^6.5.0
+  slide_to_act: ^2.0.2 # 슬라이드-투-액션 버튼
 
 dev_dependencies:
   flutter_test:

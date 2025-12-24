@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shoes_store_app/view/cheng/custom/custom.dart';
+import 'package:shoes_store_app/custom/custom.dart';
 
 /// 고객용 수령 완료 카드 위젯
 /// 고객용 수령 완료 목록 화면에서 사용하는 주문 카드입니다.

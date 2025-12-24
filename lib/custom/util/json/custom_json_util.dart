@@ -185,6 +185,53 @@ class CustomJsonUtil {
     }
   }
 
+  // Map을 포맷팅된 문자열로 변환 (디버깅/표시용)
+  //
+  // 사용 예시:
+  // ```dart
+  // final map = {'name': '홍길동', 'age': 25, 'address': {'city': '서울'}};
+  // final formatted = CustomJsonUtil.formatMap(map);
+  // // name: 홍길동
+  // // age: 25
+  // // address: {
+  // //   city: 서울
+  // // }
+  // ```
+  static String formatMap(Map<String, dynamic> map, {int indent = 0}) {
+    final buffer = StringBuffer();
+    final indentStr = '  ' * indent;
+
+    for (final entry in map.entries) {
+      final key = entry.key;
+      final value = entry.value;
+
+      if (value is Map<String, dynamic>) {
+        buffer.writeln('$indentStr$key: {');
+        buffer.write(formatMap(value, indent: indent + 1));
+        buffer.writeln('$indentStr}');
+      } else if (value is List) {
+        buffer.writeln('$indentStr$key: [');
+        for (int i = 0; i < value.length; i++) {
+          if (value[i] is Map<String, dynamic>) {
+            buffer.writeln('$indentStr  [$i]: {');
+            buffer.write(formatMap(
+              value[i] as Map<String, dynamic>,
+              indent: indent + 2,
+            ));
+            buffer.writeln('$indentStr  }');
+          } else {
+            buffer.writeln('$indentStr  [$i]: ${value[i]}');
+          }
+        }
+        buffer.writeln('$indentStr]');
+      } else {
+        buffer.writeln('$indentStr$key: $value');
+      }
+    }
+
+    return buffer.toString();
+  }
+
   // ============================================
   // JSON 병합/수정
   // ============================================
@@ -286,6 +333,90 @@ class CustomJsonUtil {
     } catch (e) {
       return false;
     }
+  }
+
+  // JSON 객체에서 키로 검색하기 (재귀적 검색)
+  //
+  // 사용 예시:
+  // ```dart
+  // final json = {
+  //   'user': {'name': '홍길동', 'age': 25},
+  //   'admin': {'name': '관리자', 'role': 'admin'},
+  // };
+  // final results = CustomJsonUtil.searchKeys(json, 'name');
+  // // [MapEntry('user.name', '홍길동'), MapEntry('admin.name', '관리자')]
+  //
+  // // 대소문자 구분하여 검색
+  // final results2 = CustomJsonUtil.searchKeys(json, 'Name', caseSensitive: true);
+  //
+  // // 정확한 이름만 검색 (부분 일치 제외)
+  // final results3 = CustomJsonUtil.searchKeys(json, 'name', exactMatch: true);
+  // ```
+  static List<MapEntry<String, dynamic>> searchKeys(
+    Map<String, dynamic> json,
+    String searchKey, {
+    bool caseSensitive = false,
+    bool exactMatch = false,
+  }) {
+    final results = <MapEntry<String, dynamic>>[];
+    final trimmedKey = searchKey.trim();
+
+    if (trimmedKey.isEmpty) {
+      return results;
+    }
+
+    // 검색 키 준비 (대소문자 구분 옵션에 따라)
+    final searchKeyLower = caseSensitive ? trimmedKey : trimmedKey.toLowerCase();
+
+    // Map을 재귀적으로 순회하며 키 검색
+    void searchInMap(dynamic data, String path) {
+      if (data is Map<String, dynamic>) {
+        for (final entry in data.entries) {
+          final currentPath = path.isEmpty ? entry.key : '$path.${entry.key}';
+
+          // 키 매칭 확인
+          bool isMatch = false;
+          if (exactMatch) {
+            // 정확한 이름 매칭
+            if (caseSensitive) {
+              isMatch = entry.key == trimmedKey;
+            } else {
+              isMatch = entry.key.toLowerCase() == searchKeyLower;
+            }
+          } else {
+            // 부분 일치
+            if (caseSensitive) {
+              isMatch = entry.key.contains(trimmedKey);
+            } else {
+              isMatch = entry.key.toLowerCase().contains(searchKeyLower);
+            }
+          }
+
+          if (isMatch) {
+            results.add(MapEntry(currentPath, entry.value));
+          }
+
+          // 값이 Map이나 List인 경우 재귀적으로 검색
+          if (entry.value is Map<String, dynamic>) {
+            searchInMap(entry.value, currentPath);
+          } else if (entry.value is List) {
+            for (int i = 0; i < (entry.value as List).length; i++) {
+              searchInMap(
+                (entry.value as List)[i],
+                '$currentPath[$i]',
+              );
+            }
+          }
+        }
+      } else if (data is List) {
+        for (int i = 0; i < data.length; i++) {
+          searchInMap(data[i], '$path[$i]');
+        }
+      }
+    }
+
+    searchInMap(json, '');
+    return results;
   }
 
   // ============================================

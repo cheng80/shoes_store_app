@@ -22,26 +22,21 @@ class _NoSwipeBackPageRoute<T> extends PageRouteBuilder<T> {
   }) : super(
         pageBuilder: (context, animation, secondaryAnimation) {
           // PopScope로 감싸서 스와이프 백 제스처만 차단 (뒤로가기 버튼은 허용)
+          // canPop을 false로 설정하면 스와이프 백 제스처가 차단되지만,
+          // 뒤로가기 버튼(Navigator.pop())으로 인한 pop은 여전히 동작함
           return PopScope(
-            canPop: false, // 스와이프 백 제스처 차단
+            canPop: false,
             onPopInvokedWithResult: (bool didPop, dynamic result) {
-              // 스와이프 백 제스처로 인한 pop은 무시하고 복구
-              // 뒤로가기 버튼이나 Navigator.pop()으로 인한 pop은 허용
-              if (didPop) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  // 스와이프 백 제스처로 인한 pop만 복구
-                  if (!Navigator.canPop(context)) {
-                    Navigator.push<T>(
-                      context,
-                      _NoSwipeBackPageRoute<T>(
-                        builder: builder,
-                        settings: settings,
-                        transitionType: transitionType,
-                      ),
-                    );
-                  }
-                });
+              // didPop이 false인 경우: canPop이 false여서 pop이 차단된 경우 (정상 동작)
+              // didPop이 true인 경우: Navigator.pop()으로 명시적으로 호출된 경우
+              // 따라서 didPop이 true인 경우는 정상적인 뒤로가기이므로 복구하지 않음
+              // 스와이프 백 제스처는 canPop이 false여서 차단되므로 didPop이 false가 됨
+              if (!didPop) {
+                // pop이 차단된 경우 (스와이프 백 제스처) - 이미 차단되었으므로 아무 작업도 하지 않음
+                return;
               }
+              // didPop이 true인 경우는 Navigator.pop()으로 명시적으로 호출된 정상적인 뒤로가기
+              // 이 경우는 복구하지 않음
             },
             child: builder(context),
           );

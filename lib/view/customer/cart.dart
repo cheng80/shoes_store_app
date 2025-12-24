@@ -1,6 +1,9 @@
 import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/database/handlers/product_handler.dart';
 import 'package:shoes_store_app/view/cheng/storage/cart_storage.dart';
+import 'package:shoes_store_app/custom/custom_snack_bar.dart';
+import 'package:shoes_store_app/custom/custom_dialog.dart';
+import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:flutter/material.dart';
 
 //  Cart page
@@ -10,15 +13,13 @@ import 'package:flutter/material.dart';
     DUMMY 00/00/0000 00:00, 'Point X, Description', Creator: Chansol, Park
     13/12/2025 19:14, 'Point 1, Atcual data attached', Creator: Chansol Park
   Version: 2.0
-  Dependency: SQFlite, Path, collection
+  Dependency: SQFlite, Path
   Desc: Cart page MUST have lists of Products
   Changed: GetStorage -> GlobalStorage (CartStorage)로 변경
 
   DateTime MUST converted using value.toIso8601String()
   Stored DateTime in String MUST converted using DateTime.parse(value);
 */
-
-import 'package:get/get.dart';
 
 class Cart extends StatefulWidget {
   const Cart({super.key});
@@ -95,10 +96,9 @@ class _CartState extends State<Cart> {
     // DB에서 현재 재고 확인
     final product = await _productHandler.queryById(productId);
     if (product == null) {
-      Get.snackbar(
-        '오류',
-        '제품 정보를 찾을 수 없습니다.',
-        snackPosition: SnackPosition.BOTTOM,
+      CustomSnackBar.showError(
+        context,
+        message: '제품 정보를 찾을 수 없습니다.',
       );
       return;
     }
@@ -111,22 +111,15 @@ class _CartState extends State<Cart> {
     // 재고 초과 체크
     if (totalAfterIncrease > product.pQuantity) {
       final maxAvailable = product.pQuantity - currentCartQty;
-      Get.dialog(
-        AlertDialog(
-          title: const Text('수량 초과'),
-          content: Text(
-            '재고가 부족합니다.\n'
+      CustomDialog.show(
+        context,
+        title: '수량 초과',
+        message: '재고가 부족합니다.\n'
             '현재 재고: ${product.pQuantity}개\n'
             '장바구니에 담긴 수량: $currentCartQty개\n'
             '구매 가능한 최대 수량: ${maxAvailable > 0 ? maxAvailable : 0}개',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Get.back(),
-              child: const Text('확인'),
-            ),
-          ],
-        ),
+        type: DialogType.single,
+        confirmText: '확인',
       );
       return;
     }
@@ -150,11 +143,11 @@ class _CartState extends State<Cart> {
 
   void _goPurchase() {
     if (cart.isEmpty) {
-      Get.snackbar('장바구니', '비어있음', snackPosition: SnackPosition.BOTTOM);
+      CustomSnackBar.show(context, message: '장바구니가 비어있습니다.');
       return;
     }
     // 결제 화면으로 이동 + cart 전체 넘김
-    Get.toNamed('/purchaseview', arguments: cart);
+    CustomNavigationUtil.toNamed(context, '/purchaseview', arguments: cart);
   }
 
   /// 장바구니 비우기
@@ -235,9 +228,9 @@ class _CartState extends State<Cart> {
                                           const SizedBox(height: 4),
                                           Text('색상: $color / 사이즈: $size', style: config.rLabel),
                                           const SizedBox(height: 6),
-                                          Text('단가: ${config.priceFormatter.format(unitPrice)}원', style: config.rLabel),
+                                          Text('단가: ${config.priceFormatter(unitPrice)}원', style: config.rLabel),
                                           const SizedBox(height: 4),
-                                          Text('합계: ${config.priceFormatter.format(lineTotal)}원', style: config.rLabel),
+                                          Text('합계: ${config.priceFormatter(lineTotal)}원', style: config.rLabel),
                                         ],
                                       ),
                                     ),
@@ -279,7 +272,7 @@ class _CartState extends State<Cart> {
                     children: [
                       Expanded(
                         child: Text(
-                          '총액: ${config.priceFormatter.format(totalPrice)}원',
+                          '총액: ${config.priceFormatter(totalPrice)}원',
                           style: config.rLabel,
                         ),
                       ),

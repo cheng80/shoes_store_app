@@ -2,8 +2,10 @@ import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/database/handlers/login_history_handler.dart';
 import 'package:shoes_store_app/model/login_history.dart';
 import 'package:shoes_store_app/view/cheng/storage/user_storage.dart';
+import 'package:shoes_store_app/custom/custom_snack_bar.dart';
+import 'package:shoes_store_app/custom/custom_dialog.dart';
+import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 /// 주소 및 결제 방법 설정 화면
 /// 
@@ -159,7 +161,10 @@ class _AddressPaymentViewState extends State<AddressPaymentView> {
 
     final userId = UserStorage.getUserId();
     if (userId == null) {
-      Get.snackbar('오류', '로그인된 사용자 정보가 없습니다.', snackPosition: SnackPosition.BOTTOM);
+      CustomSnackBar.showError(
+        context,
+        message: '로그인된 사용자 정보가 없습니다.',
+      );
       return;
     }
 
@@ -180,28 +185,25 @@ class _AddressPaymentViewState extends State<AddressPaymentView> {
 
       await _loginHistoryHandler.insertData(loginHistory);
 
-      Get.defaultDialog(
+      CustomDialog.show(
+        context,
         title: '입력 성공',
-        middleText: '수령 지점: $district\n결제 방법: $payment',
-        barrierDismissible: false,
-        textConfirm: '확인',
-        confirmTextColor: Colors.white,
+        message: '수령 지점: $district\n결제 방법: $payment',
+        type: DialogType.single,
+        confirmText: '확인',
         onConfirm: () {
           _paymentController.text = '';
-          Get.back();
-          Get.back();
+          CustomNavigationUtil.back(context);
+          CustomNavigationUtil.back(context);
         },
       );
     } catch (e) {
-      Get.defaultDialog(
+      CustomDialog.show(
+        context,
         title: '입력 실패',
-        middleText: '입력에 실패하였습니다: $e',
-        barrierDismissible: false,
-        textConfirm: '확인',
-        confirmTextColor: Colors.white,
-        onConfirm: () {
-          Get.back();
-        },
+        message: '입력에 실패하였습니다: $e',
+        type: DialogType.single,
+        confirmText: '확인',
       );
     }
   }

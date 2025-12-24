@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 import 'package:shoes_store_app/config.dart' as config;
+import 'package:shoes_store_app/custom/custom_snack_bar.dart';
+import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/database/handlers/customer_handler.dart';
 import 'package:shoes_store_app/database/handlers/login_history_handler.dart';
 import 'package:shoes_store_app/model/customer.dart';
 import 'package:shoes_store_app/model/login_history.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
-import 'package:shoes_store_app/view/cheng/custom/custom.dart';
+import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/view/cheng/screens/auth/login_view.dart';
 
 /// 회원가입 화면
@@ -555,17 +556,14 @@ class _SignUpViewState extends State<SignUpView> {
       });
 
       if (insertedId > 0) {
-        Get.snackbar(
-          '회원가입 성공',
-          '회원가입이 완료되었습니다. 로그인해주세요.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green.shade100,
-          colorText: Colors.green.shade900,
+        CustomSnackBar.showSuccess(
+          context,
+          message: '회원가입이 완료되었습니다. 로그인해주세요.',
           duration: const Duration(seconds: 2),
         );
 
         await Future.delayed(const Duration(milliseconds: 500));
-        Get.offAll(() => const LoginView());
+        CustomNavigationUtil.offAll(context, const LoginView());
       } else {
         CustomSnackBar.showError(context, message: '회원가입에 실패했습니다. 다시 시도해주세요.');
       }

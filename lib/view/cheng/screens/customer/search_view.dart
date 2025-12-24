@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 import 'package:shoes_store_app/database/handlers/manufacturer_handler.dart';
+import 'package:shoes_store_app/custom/custom_dialog.dart';
+import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/database/handlers/product_base_handler.dart';
 import 'package:shoes_store_app/database/handlers/product_handler.dart';
 import 'package:shoes_store_app/model/product/manufacturer.dart';
@@ -216,7 +217,7 @@ class _SearchViewState extends State<SearchView> {
             child: IconButton(
               icon: const Icon(Icons.shopping_cart),
               onPressed: () {
-                Get.toNamed('/cart');
+                CustomNavigationUtil.toNamed(context, '/cart');
               },
               tooltip: '장바구니',
             ),
@@ -279,7 +280,11 @@ class _SearchViewState extends State<SearchView> {
                       return GestureDetector(
                         onTap: () {
                           if (pbid == null) return;
-                          Get.toNamed('/detailview', arguments: pbid);
+                          CustomNavigationUtil.toNamed(
+                            context,
+                            '/detailview',
+                            arguments: pbid,
+                          );
                         },
                         child: Card(
                           elevation: 3,
@@ -370,7 +375,10 @@ class _SearchViewState extends State<SearchView> {
             onTap: () async {
               Navigator.of(context).pop(); // 드로워 닫기
               // 개인정보 수정 페이지로 이동하고 결과를 받아서 사용자 정보 갱신
-              final result = await Get.to(() => const UserProfileEditView());
+              final result = await CustomNavigationUtil.to(
+                context,
+                const UserProfileEditView(),
+              );
               // 개인정보 수정이 완료되면 사용자 정보를 다시 로드하여 drawer 갱신
               if (result == true) {
                 _loadUserInfo();
@@ -385,7 +393,7 @@ class _SearchViewState extends State<SearchView> {
             title: const Text('장바구니'),
             onTap: () {
               Navigator.of(context).pop(); // 드로워 닫기
-              Get.toNamed('/cart');
+              CustomNavigationUtil.toNamed(context, '/cart');
             },
           ),
           ListTile(
@@ -393,7 +401,7 @@ class _SearchViewState extends State<SearchView> {
             title: const Text('주문 내역'),
             onTap: () {
               Navigator.of(context).pop(); // 드로워 닫기
-              Get.to(() => const OrderListView());
+              CustomNavigationUtil.to(context, const OrderListView());
             },
           ),
           ListTile(
@@ -401,7 +409,7 @@ class _SearchViewState extends State<SearchView> {
             title: const Text('수령 / 반품 내역'),
             onTap: () {
               Navigator.of(context).pop(); // 드로워 닫기
-              Get.to(() => const ReturnListView());
+              CustomNavigationUtil.to(context, const ReturnListView());
             },
           ),
           ListTile(
@@ -409,7 +417,7 @@ class _SearchViewState extends State<SearchView> {
             title: const Text('배송지, 결제 방법 수정'),
             onTap: () {
               Navigator.of(context).pop(); // 드로워 닫기
-              Get.to(() => const AddressPaymentView());
+              CustomNavigationUtil.to(context, const AddressPaymentView());
             },
           ),
           ListTile(
@@ -418,26 +426,19 @@ class _SearchViewState extends State<SearchView> {
             onTap: () {
               Navigator.of(context).pop(); // 드로워 닫기
               // 로그아웃 확인 다이얼로그
-              Get.dialog(
-                AlertDialog(
-                  title: const Text('로그아웃'),
-                  content: const Text('정말 로그아웃하시겠습니까?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Get.back(),
-                      child: const Text('취소'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        // 사용자 정보 삭제
-                        UserStorage.clearUser();
-                        // 로그인 화면으로 이동 (모든 페이지 제거)
-                        Get.offAll(() => const LoginView());
-                      },
-                      child: const Text('로그아웃'),
-                    ),
-                  ],
-                ),
+              CustomDialog.show(
+                context,
+                title: '로그아웃',
+                message: '정말 로그아웃하시겠습니까?',
+                type: DialogType.dual,
+                confirmText: '로그아웃',
+                cancelText: '취소',
+                onConfirm: () {
+                  // 사용자 정보 삭제
+                  UserStorage.clearUser();
+                  // 로그인 화면으로 이동 (모든 페이지 제거)
+                  CustomNavigationUtil.offAll(context, const LoginView());
+                },
               );
             },
           ),
@@ -447,7 +448,7 @@ class _SearchViewState extends State<SearchView> {
             title: const Text('테스트 페이지로 이동'),
             onTap: () {
               Navigator.of(context).pop(); // 드로워 닫기
-              Get.to(() => const TestNavigationPage());
+              CustomNavigationUtil.to(context, const TestNavigationPage());
             },
           ),
         ],

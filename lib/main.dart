@@ -9,24 +9,12 @@ import 'package:shoes_store_app/view/customer/detail_view.dart';
 import 'package:shoes_store_app/view/customer/purchase_view.dart';
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
-// final GoRouter router = GoRouter(
-
-//   initialLocation: config.routeLogin,
-//   routes: [
-//     GoRoute(path: config.routeLogin, builder: (context, state) => SearchView()),
-//     GoRoute(
-//       path: config.routeSettings,
-//       builder: (context, state) => SettingPage(),
-//     ),
-//   ],
-// );
 Future<void> main() async {
-  // GetStorage 초기화 (get_storage 사용 전 필수)
+  // GetStorage 초기화 (get_storage는 GetX와 독립적으로 사용 가능)
   await GetStorage.init();
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -77,13 +65,11 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
+    return MaterialApp(
       title: 'Flutter Demo',
-      // routerConfig: router,
       themeMode: _themeMode,
       theme: ThemeData(
         brightness: Brightness.light,
-
         colorSchemeSeed: _seedColor,
       ),
       darkTheme: ThemeData(
@@ -91,15 +77,14 @@ class _MyAppState extends State<MyApp> {
         colorSchemeSeed: _seedColor,
       ),
       initialRoute: '/',
-      getPages: [
-        GetPage(name: '/', page: () => LoginView(),),
-        GetPage(name: '/cart', page: () => Cart(),),
-        GetPage(name: '/searchview', page: () => SearchView(),),
-        GetPage(name: '/detailview', page: () => DetailView(),),
-        GetPage(name: '/purchaseview', page: () => PurchaseView(),),
-        // GetPage(name: '/returnview', page: () => ReturnView(),),
-        GetPage(name: '/address-payment', page: () => AddressPaymentView()),
-      ],
+      routes: {
+        '/': (context) => const LoginView(),
+        '/cart': (context) => const Cart(),
+        '/searchview': (context) => const SearchView(),
+        '/detailview': (context) => const DetailView(),
+        '/purchaseview': (context) => const PurchaseView(),
+        '/address-payment': (context) => const AddressPaymentView(),
+      },
       debugShowCheckedModeBanner: false,
     );
   }

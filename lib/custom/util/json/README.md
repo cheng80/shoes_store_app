@@ -55,6 +55,15 @@ final formatted = CustomJsonUtil.format('{"name":"홍길동","age":25}');
 
 // 압축 (공백 제거)
 final compressed = CustomJsonUtil.compress(formatted);
+
+// Map을 포맷팅된 문자열로 변환 (디버깅/표시용)
+final map = {'name': '홍길동', 'age': 25, 'address': {'city': '서울'}};
+final formattedMap = CustomJsonUtil.formatMap(map);
+// name: 홍길동
+// age: 25
+// address: {
+//   city: 서울
+// }
 ```
 
 ### 5. JSON 병합/수정
@@ -74,6 +83,23 @@ CustomJsonUtil.setValue(json, 'user.email', 'hong@example.com');
 
 // 경로로 값 삭제하기
 CustomJsonUtil.removeValue(json, 'user.age');
+
+// 키로 검색하기 (재귀적 검색)
+final json = {
+  'user': {'name': '홍길동', 'age': 25, 'userName': 'hong123'},
+  'admin': {'name': '관리자', 'role': 'admin'},
+};
+final results = CustomJsonUtil.searchKeys(json, 'name');
+// [MapEntry('user.name', '홍길동'), MapEntry('user.userName', 'hong123'), MapEntry('admin.name', '관리자')]
+
+// 대소문자 구분하여 검색
+final results2 = CustomJsonUtil.searchKeys(json, 'Name', caseSensitive: true);
+// 대소문자를 구분하므로 "Name"과 정확히 일치하는 키만 찾음
+
+// 정확한 이름만 검색 (부분 일치 제외)
+final results3 = CustomJsonUtil.searchKeys(json, 'name', exactMatch: true);
+// [MapEntry('user.name', '홍길동'), MapEntry('admin.name', '관리자')]
+// "userName"은 제외됨 (정확히 "name"인 키만 찾음)
 ```
 
 ## 사용 사례
@@ -119,6 +145,7 @@ final responseJson = CustomJsonUtil.decode(response.body);
 
 - `format(String jsonString)` - JSON 포맷팅 (들여쓰기)
 - `compress(String jsonString)` - JSON 압축 (공백 제거)
+- `formatMap(Map map, {int indent})` - Map을 포맷팅된 문자열로 변환 (디버깅/표시용)
 
 ### 병합/수정
 
@@ -126,6 +153,9 @@ final responseJson = CustomJsonUtil.decode(response.body);
 - `getValue(Map json, String path)` - 경로로 값 가져오기
 - `setValue(Map json, String path, dynamic value)` - 경로로 값 설정
 - `removeValue(Map json, String path)` - 경로로 값 삭제
+- `searchKeys(Map json, String searchKey, {bool caseSensitive, bool exactMatch})` - 키로 검색 (재귀적 검색)
+  - `caseSensitive`: true면 대소문자 구분 (기본값: false)
+  - `exactMatch`: true면 정확한 이름만 검색, false면 부분 일치 (기본값: false)
 
 ### 안전 변환
 

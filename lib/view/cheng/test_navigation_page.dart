@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/database/core/database_manager.dart';
@@ -7,7 +6,10 @@ import 'package:shoes_store_app/database/dummy_data/dummy_data_setting.dart';
 import 'package:shoes_store_app/database/handlers/customer_handler.dart';
 import 'package:shoes_store_app/database/handlers/login_history_handler.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
-import 'package:shoes_store_app/view/cheng/custom/custom.dart';
+import 'package:shoes_store_app/custom/custom.dart';
+import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
+import 'package:shoes_store_app/custom/custom_dialog.dart';
+import 'package:shoes_store_app/custom/custom_snack_bar.dart';
 import 'package:shoes_store_app/view/cheng/screens/admin/admin_mobile_block_view.dart';
 import 'package:shoes_store_app/view/cheng/screens/admin/admin_order_view.dart';
 import 'package:shoes_store_app/view/cheng/screens/admin/admin_return_order_view.dart';
@@ -174,12 +176,12 @@ class TestNavigationPage extends StatelessWidget {
 
   /// 로그인 화면으로 이동
   void _navigateToLogin(BuildContext context) {
-    Get.to(() => const LoginView());
+    CustomNavigationUtil.to(context, const LoginView());
   }
 
   /// 회원가입 화면으로 이동
   void _navigateToSignUp(BuildContext context) {
-    Get.to(() => const SignUpView());
+    CustomNavigationUtil.to(context, const SignUpView());
   }
 
   /// 회원가입 화면으로 이동 (더미 데이터 포함)
@@ -200,47 +202,47 @@ class TestNavigationPage extends StatelessWidget {
     };
 
     // 더미 데이터와 함께 회원가입 화면으로 이동
-    Get.to(() => SignUpView(testData: testData));
+    CustomNavigationUtil.to(context, SignUpView(testData: testData));
   }
 
   /// 사용자 프로필 수정 화면으로 이동
   void _navigateToUserProfileEdit(BuildContext context) {
-    Get.to(() => const UserProfileEditView());
+    CustomNavigationUtil.to(context, const UserProfileEditView());
   }
 
   /// 관리자 로그인 화면으로 이동
   void _navigateToAdminLogin(BuildContext context) {
-    Get.to(() => const AdminLoginView());
+    CustomNavigationUtil.to(context, const AdminLoginView());
   }
 
   /// 관리자 모바일 차단 화면으로 이동
   void _navigateToAdminBlock(BuildContext context) {
-    Get.to(() => const AdminMobileBlockView());
+    CustomNavigationUtil.to(context, const AdminMobileBlockView());
   }
 
   /// 주문 관리 화면으로 이동
   void _navigateToOrderView(BuildContext context) {
-    Get.to(() => const AdminOrderView());
+    CustomNavigationUtil.to(context, const AdminOrderView());
   }
 
   /// 반품 관리 화면으로 이동
   void _navigateToReturnOrderView(BuildContext context) {
-    Get.to(() => const AdminReturnOrderView());
+    CustomNavigationUtil.to(context, const AdminReturnOrderView());
   }
 
   /// 고객용 주문 목록 화면으로 이동
   void _navigateToCustomerOrderList(BuildContext context) {
-    Get.to(() => const OrderListView());
+    CustomNavigationUtil.to(context, const OrderListView());
   }
 
   /// 고객용 반품 목록 화면으로 이동
   void _navigateToCustomerReturnList(BuildContext context) {
-    Get.to(() => const ReturnListView());
+    CustomNavigationUtil.to(context, const ReturnListView());
   }
 
   /// 검색 화면으로 이동
   void _navigateToSearchView(BuildContext context) {
-    Get.to(() => const SearchView());
+    CustomNavigationUtil.to(context, const SearchView());
   }
 
   /// DB 초기화 및 더미 데이터 재삽입
@@ -248,36 +250,32 @@ class TestNavigationPage extends StatelessWidget {
   /// 기존 DB를 삭제하고 새로 초기화한 후 더미 데이터를 삽입합니다.
   /// GetStorage의 초기화 플래그도 리셋합니다.
   Future<void> _reinitializeDatabase(BuildContext context) async {
+    // 확인 다이얼로그 표시
+    CustomDialog.show(
+      context,
+      title: 'DB 초기화',
+      message: '데이터베이스를 초기화하고 더미 데이터를 재삽입하시겠습니까?\n\n⚠️ 기존의 모든 데이터가 삭제됩니다.',
+      type: DialogType.dual,
+      confirmText: '확인',
+      cancelText: '취소',
+      onConfirm: () {
+        CustomNavigationUtil.back(context);
+        _performDatabaseReinitialization(context);
+      },
+      onCancel: () {
+        CustomNavigationUtil.back(context);
+      },
+    );
+  }
+
+  /// 실제 DB 초기화 작업 수행
+  Future<void> _performDatabaseReinitialization(BuildContext context) async {
     try {
-      // 확인 다이얼로그 표시
-      final shouldProceed = await Get.dialog<bool>(
-        AlertDialog(
-          title: const Text('DB 초기화'),
-          content: const Text(
-            '데이터베이스를 초기화하고 더미 데이터를 재삽입하시겠습니까?\n\n'
-            '⚠️ 기존의 모든 데이터가 삭제됩니다.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Get.back(result: false),
-              child: const Text('취소'),
-            ),
-            TextButton(
-              onPressed: () => Get.back(result: true),
-              child: const Text('확인'),
-            ),
-          ],
-        ),
-      );
-
-      if (shouldProceed != true) {
-        return;
-      }
-
       // 로딩 표시
-      Get.dialog(
-        const Center(child: CircularProgressIndicator()),
+      showDialog(
+        context: context,
         barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
       // 데이터베이스 초기화
@@ -305,31 +303,33 @@ class TestNavigationPage extends StatelessWidget {
       await storage.write(config.kStorageKeyDBInitialized, true);
 
       // 로딩 닫기
-      Get.back();
+      if (context.mounted) {
+        CustomNavigationUtil.back(context);
+      }
 
       // 성공 메시지 표시
-      Get.snackbar(
-        '초기화 완료',
-        '데이터베이스가 초기화되고 더미 데이터가 삽입되었습니다.',
-        snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(seconds: 2),
-      );
+      if (context.mounted) {
+        CustomSnackBar.showSuccess(
+          context,
+          message: '데이터베이스가 초기화되고 더미 데이터가 삽입되었습니다.',
+        );
+      }
 
       AppLogger.d('DB 초기화 및 더미 데이터 재삽입 완료', tag: 'TestNavigation');
     } catch (e, stackTrace) {
       // 로딩 닫기
-      Get.back();
+      if (context.mounted) {
+        CustomNavigationUtil.back(context);
+      }
 
       AppLogger.e('DB 초기화 실패', tag: 'TestNavigation', error: e, stackTrace: stackTrace);
       
-      Get.snackbar(
-        '초기화 실패',
-        '데이터베이스 초기화 중 오류가 발생했습니다: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade100,
-        colorText: Colors.red.shade900,
-        duration: const Duration(seconds: 5),
-      );
+      if (context.mounted) {
+        CustomSnackBar.showError(
+          context,
+          message: '데이터베이스 초기화 중 오류가 발생했습니다: $e',
+        );
+      }
     }
   }
 
@@ -353,11 +353,9 @@ class TestNavigationPage extends StatelessWidget {
         print('=' * 60);
         print('\n💡 팁: 회원가입 화면(더미 데이터) 버튼을 눌러 테스트 데이터를 추가하세요.');
         print('=' * 60 + '\n');
-        Get.snackbar(
-          '알림',
-          '등록된 사용자가 없습니다.\n회원가입 화면(더미 데이터) 버튼을 눌러 테스트 데이터를 추가하세요.',
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 3),
+        CustomSnackBar.show(
+          context,
+          message: '등록된 사용자가 없습니다.\n회원가입 화면(더미 데이터) 버튼을 눌러 테스트 데이터를 추가하세요.',
         );
         return;
       }
@@ -383,10 +381,9 @@ class TestNavigationPage extends StatelessWidget {
       print('\n총 ${allCustomers.length}명의 사용자가 등록되어 있습니다.');
       print('=' * 60 + '\n');
 
-      Get.snackbar(
-        '출력 완료',
-        '터미널에 등록된 모든 사용자 ${allCustomers.length}명을 출력했습니다.',
-        snackPosition: SnackPosition.BOTTOM,
+      CustomSnackBar.showSuccess(
+        context,
+        message: '터미널에 등록된 모든 사용자 ${allCustomers.length}명을 출력했습니다.',
       );
     } catch (e, stackTrace) {
       AppLogger.e('사용자 정보 조회 에러', tag: 'TestNavigation', error: e, stackTrace: stackTrace);
@@ -398,13 +395,9 @@ class TestNavigationPage extends StatelessWidget {
       print('스택 트레이스:');
       print(stackTrace);
       print('=' * 60 + '\n');
-      Get.snackbar(
-        '에러',
-        '사용자 정보를 가져오는 중 오류가 발생했습니다: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade100,
-        colorText: Colors.red.shade900,
-        duration: const Duration(seconds: 5),
+      CustomSnackBar.showError(
+        context,
+        message: '사용자 정보를 가져오는 중 오류가 발생했습니다: $e',
       );
     }
   }
@@ -429,11 +422,9 @@ class TestNavigationPage extends StatelessWidget {
         print('=' * 60);
         print('\n💡 팁: 회원가입을 하면 로그인 히스토리가 자동으로 생성됩니다.');
         print('=' * 60 + '\n');
-        Get.snackbar(
-          '알림',
-          '등록된 로그인 히스토리가 없습니다.\n회원가입을 하면 로그인 히스토리가 자동으로 생성됩니다.',
-          snackPosition: SnackPosition.BOTTOM,
-          duration: const Duration(seconds: 3),
+        CustomSnackBar.show(
+          context,
+          message: '등록된 로그인 히스토리가 없습니다.\n회원가입을 하면 로그인 히스토리가 자동으로 생성됩니다.',
         );
         return;
       }
@@ -461,10 +452,9 @@ class TestNavigationPage extends StatelessWidget {
       print('\n총 ${allLoginHistory.length}개의 로그인 히스토리가 등록되어 있습니다.');
       print('=' * 60 + '\n');
 
-      Get.snackbar(
-        '출력 완료',
-        '터미널에 등록된 모든 로그인 히스토리 ${allLoginHistory.length}개를 출력했습니다.',
-        snackPosition: SnackPosition.BOTTOM,
+      CustomSnackBar.showSuccess(
+        context,
+        message: '터미널에 등록된 모든 로그인 히스토리 ${allLoginHistory.length}개를 출력했습니다.',
       );
     } catch (e, stackTrace) {
       AppLogger.e('로그인 히스토리 조회 에러', tag: 'TestNavigation', error: e, stackTrace: stackTrace);
@@ -476,13 +466,9 @@ class TestNavigationPage extends StatelessWidget {
       print('스택 트레이스:');
       print(stackTrace);
       print('=' * 60 + '\n');
-      Get.snackbar(
-        '에러',
-        '로그인 히스토리 정보를 가져오는 중 오류가 발생했습니다: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade100,
-        colorText: Colors.red.shade900,
-        duration: const Duration(seconds: 5),
+      CustomSnackBar.showError(
+        context,
+        message: '로그인 히스토리 정보를 가져오는 중 오류가 발생했습니다: $e',
       );
     }
   }

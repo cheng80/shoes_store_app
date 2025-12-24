@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 
-import 'package:shoes_store_app/view/cheng/custom/custom.dart';
+import 'package:shoes_store_app/custom/custom.dart';
 
 class AdminMobileBlockView extends StatelessWidget {
   const AdminMobileBlockView({super.key});
@@ -96,6 +96,6 @@ class AdminMobileBlockView extends StatelessWidget {
 
   /// 확인 버튼 클릭 처리
   void _handleConfirm(BuildContext context) {
-    Get.back();
+    CustomNavigationUtil.back(context);
   }
 }

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 import 'package:shoes_store_app/config.dart' as config;
+import 'package:shoes_store_app/custom/custom_snack_bar.dart';
+import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/database/handlers/customer_handler.dart';
 import 'package:shoes_store_app/database/handlers/product_handler.dart';
 import 'package:shoes_store_app/database/handlers/purchase_handler.dart';
@@ -10,7 +11,7 @@ import 'package:shoes_store_app/model/customer.dart';
 import 'package:shoes_store_app/model/sale/purchase.dart';
 import 'package:shoes_store_app/model/sale/purchase_item.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
-import 'package:shoes_store_app/view/cheng/custom/custom.dart';
+import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/view/cheng/storage/user_storage.dart';
 import 'package:shoes_store_app/utils/order_status_colors.dart';
 import 'package:shoes_store_app/utils/order_status_utils.dart';
@@ -102,7 +103,7 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
       final userId = UserStorage.getUserId();
       if (userId == null) {
         AppLogger.w('사용자 정보가 없습니다.');
-        Get.back();
+        CustomNavigationUtil.back(context);
         return;
       }
 
@@ -113,16 +114,16 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
       final purchase = await _purchaseHandler.queryById(widget.purchaseId);
       if (purchase == null) {
         AppLogger.w('주문을 찾을 수 없습니다: ${widget.purchaseId}');
-        Get.snackbar('오류', '주문을 찾을 수 없습니다.');
-        Get.back();
+        CustomSnackBar.showError(context, message: '주문을 찾을 수 없습니다.');
+        CustomNavigationUtil.back(context);
         return;
       }
 
       /// 현재 사용자(Customer id)의 주문인지 확인
       if (purchase.cid != userId) {
         AppLogger.w('권한이 없습니다. 주문 소유자(cid): ${purchase.cid}, 현재 사용자(cid): $userId');
-        Get.snackbar('오류', '권한이 없습니다.');
-        Get.back();
+        CustomSnackBar.showError(context, message: '권한이 없습니다.');
+        CustomNavigationUtil.back(context);
         return;
       }
       
@@ -292,7 +293,7 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
       }
     } catch (e, stackTrace) {
       AppLogger.e('반품 상세 로드 실패', error: e, stackTrace: stackTrace);
-      Get.snackbar('오류', '주문 정보를 불러올 수 없습니다.');
+      CustomSnackBar.showError(context, message: '주문 정보를 불러올 수 없습니다.');
       setState(() {
         _isLoading = false;
       });
@@ -628,14 +629,13 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
       }
 
       /// 스낵바로 알림 표시
-      Get.snackbar(
-        config.pickupStatus[5]!, // '반품 완료'
-        '${item.productName}의 반품이 완료되었습니다.',
-        snackPosition: SnackPosition.BOTTOM,
+      CustomSnackBar.showSuccess(
+        context,
+        message: '${item.productName}의 반품이 완료되었습니다.',
       );
     } catch (e, stackTrace) {
       AppLogger.e('반품 완료 처리 실패', error: e, stackTrace: stackTrace);
-      Get.snackbar('오류', '반품 완료 처리에 실패했습니다.');
+      CustomSnackBar.showError(context, message: '반품 완료 처리에 실패했습니다.');
     }
   }
 }

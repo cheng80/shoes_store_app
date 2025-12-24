@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 import 'package:shoes_store_app/config.dart' as config;
+import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/database/handlers/purchase_handler.dart';
 import 'package:shoes_store_app/database/handlers/purchase_item_handler.dart';
 import 'package:shoes_store_app/model/sale/purchase.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
-import 'package:shoes_store_app/view/cheng/custom/custom.dart';
+import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/view/cheng/storage/user_storage.dart';
 import 'package:shoes_store_app/utils/order_status_utils.dart';
 import 'package:shoes_store_app/view/cheng/widgets/customer/customer_order_card.dart';
@@ -213,8 +213,9 @@ class _ReturnListViewState extends State<ReturnListView> {
     return GestureDetector(
       onTap: () async {
         if (order.id != null) {
-          await Get.to(
-            () => ReturnDetailView(purchaseId: order.id!),
+          await CustomNavigationUtil.to(
+            context,
+            ReturnDetailView(purchaseId: order.id!),
           );
           _loadOrders();
         }

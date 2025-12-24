@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shoes_store_app/view/cheng/custom/custom.dart';
+import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/utils/order_status_colors.dart';
 
 /// 주문 카드 기본 위젯

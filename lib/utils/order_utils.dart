@@ -1,11 +1,11 @@
-import 'package:intl/intl.dart';
+import 'package:shoes_store_app/custom/custom_common_util.dart';
 
 /// 주문 관련 유틸리티
 class OrderUtils {
   /// 주문 코드 생성 (userId_yyyyMMddHHmmss)
   static String generateOrderCode(int userId) {
     final now = DateTime.now();
-    final dateTimeStr = DateFormat('yyyyMMddHHmmss').format(now);
+    final dateTimeStr = CustomCommonUtil.formatDate(now, 'yyyyMMddHHmmss');
     return '${userId}_$dateTimeStr';
   }
 

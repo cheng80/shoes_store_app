@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 import 'package:shoes_store_app/config.dart' as config;
+import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/database/handlers/purchase_handler.dart';
 import 'package:shoes_store_app/database/handlers/purchase_item_handler.dart';
 import 'package:shoes_store_app/model/sale/purchase.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
-import 'package:shoes_store_app/view/cheng/custom/custom.dart';
+import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/view/cheng/storage/admin_storage.dart';
 import 'package:shoes_store_app/view/cheng/utils/admin_tablet_utils.dart';
 import 'package:shoes_store_app/utils/order_status_utils.dart';
@@ -200,15 +200,15 @@ class _AdminOrderViewState
             icon: Icons.assignment_return,
             menuType: AdminMenuType.returnManagement,
             onTap: () {
-              Get.off(
-                () => const AdminReturnOrderView(),
-                transition: Transition.noTransition,
-              );
+              CustomNavigationUtil.off(context, const AdminReturnOrderView());
             },
           ),
         ],
         onProfileEditTap: () async {
-          final result = await Get.to(() => const AdminProfileEditView());
+          final result = await CustomNavigationUtil.to(
+            context,
+            const AdminProfileEditView(),
+          );
           if (result == true) {
             AppLogger.d('관리자 개인정보 수정 완료 - drawer 갱신', tag: 'OrderView');
             setState(() {});

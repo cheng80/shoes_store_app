@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
-import 'package:shoes_store_app/view/cheng/custom/custom.dart';
-import 'package:shoes_store_app/view/cheng/theme/app_colors.dart';
+import 'package:shoes_store_app/custom/custom.dart';
+import 'package:shoes_store_app/custom/custom_dialog.dart';
+import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
+import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:shoes_store_app/view/cheng/storage/admin_storage.dart';
 import 'package:shoes_store_app/view/cheng/test_navigation_page.dart';
 import 'package:shoes_store_app/view/cheng/screens/auth/admin_login_view.dart';
@@ -83,7 +84,7 @@ class AdminDrawer extends StatelessWidget {
           icon: item.icon,
           selected: item.menuType == currentMenu,
           onTap: () {
-            Get.back();
+            CustomNavigationUtil.back(context);
             if (item.menuType != currentMenu) {
               item.onTap();
             }
@@ -100,7 +101,7 @@ class AdminDrawer extends StatelessWidget {
               btnText: '개인정보 수정',
               buttonType: ButtonType.outlined,
               onCallBack: () {
-                Get.back();
+                CustomNavigationUtil.back(context);
                 onProfileEditTap?.call();
               },
               minimumSize: const Size(double.infinity, 48),
@@ -109,8 +110,8 @@ class AdminDrawer extends StatelessWidget {
               btnText: '테스트 페이지로 이동',
               buttonType: ButtonType.outlined,
               onCallBack: () {
-                Get.back();
-                Get.to(() => const TestNavigationPage());
+                CustomNavigationUtil.back(context);
+                CustomNavigationUtil.to(context, const TestNavigationPage());
               },
               minimumSize: const Size(double.infinity, 48),
             ),
@@ -118,25 +119,18 @@ class AdminDrawer extends StatelessWidget {
               btnText: '로그아웃',
               buttonType: ButtonType.outlined,
               onCallBack: () {
-                Get.back();
-                Get.dialog(
-                  AlertDialog(
-                    title: const Text('로그아웃'),
-                    content: const Text('정말 로그아웃하시겠습니까?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Get.back(),
-                        child: const Text('취소'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          AdminStorage.clearAdmin();
-                          Get.offAll(() => const AdminLoginView());
-                        },
-                        child: const Text('로그아웃'),
-                      ),
-                    ],
-                  ),
+                CustomNavigationUtil.back(context);
+                CustomDialog.show(
+                  context,
+                  title: '로그아웃',
+                  message: '정말 로그아웃하시겠습니까?',
+                  type: DialogType.dual,
+                  confirmText: '로그아웃',
+                  cancelText: '취소',
+                  onConfirm: () {
+                    AdminStorage.clearAdmin();
+                    CustomNavigationUtil.offAll(context, const AdminLoginView());
+                  },
                 );
               },
               minimumSize: const Size(double.infinity, 48),

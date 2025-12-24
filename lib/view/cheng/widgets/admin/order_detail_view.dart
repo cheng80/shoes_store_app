@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:shoes_store_app/view/cheng/custom/custom.dart';
+import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/view/cheng/widgets/customer/customer_info_card.dart';
 import 'package:shoes_store_app/utils/order_utils.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 
 import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/database/handlers/customer_handler.dart';
@@ -9,7 +9,7 @@ import 'package:shoes_store_app/model/customer.dart';
 import 'package:shoes_store_app/model/sale/purchase.dart';
 import 'package:shoes_store_app/model/sale/purchase_item.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
-import 'package:shoes_store_app/view/cheng/custom/custom.dart';
+import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/view/cheng/storage/user_storage.dart';
 import 'package:shoes_store_app/utils/order_status_utils.dart';
 import 'package:shoes_store_app/view/cheng/widgets/customer/customer_order_card.dart';
@@ -275,10 +275,14 @@ class _OrderListViewState extends State<OrderListView> {
     return GestureDetector(
       onTap: () async {
         if (order.id != null) {
-          await Get.to(
-            () => OrderDetailView(purchaseId: order.id!),
+          final result = await CustomNavigationUtil.to(
+            context,
+            OrderDetailView(purchaseId: order.id!),
           );
-          _loadOrders();
+          // 픽업 완료 등으로 상태가 변경된 경우에만 목록 갱신
+          if (result == true) {
+            _loadOrders();
+          }
         }
       },
       child: CustomerOrderCard(

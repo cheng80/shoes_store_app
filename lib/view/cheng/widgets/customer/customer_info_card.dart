@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shoes_store_app/view/cheng/custom/custom.dart';
+import 'package:shoes_store_app/custom/custom.dart';
 
 /// 주문자 상세 정보 카드 위젯
 /// 주문 관리와 반품 관리 화면에서 공통으로 사용하는 주문자 정보 표시 카드입니다.

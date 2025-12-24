@@ -1,14 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 import 'package:shoes_store_app/config.dart' as config;
+import 'package:shoes_store_app/custom/custom_snack_bar.dart';
+import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/database/handlers/customer_handler.dart';
 import 'package:shoes_store_app/database/handlers/login_history_handler.dart';
 import 'package:shoes_store_app/model/customer.dart';
 import 'package:shoes_store_app/model/login_history.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
-import 'package:shoes_store_app/view/cheng/custom/custom.dart';
+import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/view/cheng/storage/user_storage.dart';
 import 'package:shoes_store_app/view/cheng/utils/admin_tablet_utils.dart';
 import 'package:shoes_store_app/view/cheng/screens/admin/admin_mobile_block_view.dart';
@@ -174,12 +175,11 @@ class _LoginViewState extends State<LoginView> {
   /// 로그인 성공 후 처리
   void _handleLoginSuccess(Customer customer) {
     UserStorage.saveUser(customer);
-    Get.snackbar(
-      '로그인 성공',
-      '${customer.cName}님 환영합니다!',
-      snackPosition: SnackPosition.BOTTOM,
+    CustomSnackBar.showSuccess(
+      context,
+      message: '${customer.cName}님 환영합니다!',
     );
-    Get.offAll(() => const cheng_search.SearchView());
+    CustomNavigationUtil.offAll(context, const cheng_search.SearchView());
   }
 
   /// 로그인 차단 처리
@@ -300,23 +300,17 @@ class _LoginViewState extends State<LoginView> {
         return true;
       } else {
         AppLogger.e('알 수 없는 로그인 상태 - Customer ID: ${customer.id}, Status: "$currentStatus"', tag: 'Login');
-        Get.snackbar(
-          '오류',
-          '로그인 상태를 확인할 수 없습니다.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.shade100,
-          colorText: Colors.red.shade900,
+        CustomSnackBar.showError(
+          context,
+          message: '로그인 상태를 확인할 수 없습니다.',
         );
         return false;
       }
     } else {
       AppLogger.e('알 수 없는 로그인 상태 - Customer ID: ${customer.id}, Status: "$currentStatus", StatusKey: $statusKey', tag: 'Login');
-      Get.snackbar(
-        '오류',
-        '로그인 상태를 확인할 수 없습니다.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade100,
-        colorText: Colors.red.shade900,
+      CustomSnackBar.showError(
+        context,
+        message: '로그인 상태를 확인할 수 없습니다.',
       );
       return false;
     }
@@ -338,9 +332,9 @@ class _LoginViewState extends State<LoginView> {
       final isTabletDevice = isTablet(context);
       
       if (isTabletDevice) {
-        Get.to(() => const AdminLoginView());
+        CustomNavigationUtil.to(context, const AdminLoginView());
       } else {
-        Get.to(() => const AdminMobileBlockView());
+        CustomNavigationUtil.to(context, const AdminMobileBlockView());
       }
       return;
     }
@@ -374,24 +368,18 @@ class _LoginViewState extends State<LoginView> {
 
       if (customer == null || customer.cPassword != password) {
         AppLogger.d('로그인 실패 - 입력값과 일치하는 고객 정보 없음', tag: 'Login');
-        Get.snackbar(
-          '로그인 실패',
-          '이메일/전화번호 또는 비밀번호가 올바르지 않습니다.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.shade100,
-          colorText: Colors.red.shade900,
+        CustomSnackBar.showError(
+          context,
+          message: '이메일/전화번호 또는 비밀번호가 올바르지 않습니다.',
         );
         return;
       }
       
       if (customer.id == null) {
         AppLogger.e('Customer ID가 null입니다 - 로그인 처리 불가', tag: 'Login');
-        Get.snackbar(
-          '오류',
-          '로그인 처리 중 오류가 발생했습니다.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.shade100,
-          colorText: Colors.red.shade900,
+        CustomSnackBar.showError(
+          context,
+          message: '로그인 처리 중 오류가 발생했습니다.',
         );
         return;
       }
@@ -419,12 +407,9 @@ class _LoginViewState extends State<LoginView> {
       }
     } catch (error, stackTrace) {
       AppLogger.e('로그인 처리 중 예외 발생', tag: 'Login', error: error, stackTrace: stackTrace);
-      Get.snackbar(
-        '오류',
-        '로그인 중 오류가 발생했습니다.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade100,
-        colorText: Colors.red.shade900,
+      CustomSnackBar.showError(
+        context,
+        message: '로그인 중 오류가 발생했습니다.',
       );
     }
   }
@@ -457,11 +442,11 @@ class _LoginViewState extends State<LoginView> {
 
   /// 회원가입 화면으로 이동
   void _navigateToSignUp() {
-    Get.to(() => const SignUpView());
+    CustomNavigationUtil.to(context, const SignUpView());
   }
 
   /// 테스트 페이지로 이동
   void _navigateToTestPage() {
-    Get.to(() => const TestNavigationPage());
+    CustomNavigationUtil.to(context, const TestNavigationPage());
   }
 }

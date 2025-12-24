@@ -8,8 +8,9 @@ import 'package:shoes_store_app/model/sale/purchase_item.dart';
 import 'package:shoes_store_app/utils/order_utils.dart';
 import 'package:shoes_store_app/view/cheng/storage/user_storage.dart';
 import 'package:shoes_store_app/view/cheng/storage/cart_storage.dart';
+import 'package:shoes_store_app/custom/custom_bottom_sheet.dart';
+import 'package:shoes_store_app/view/customer/payment_sheet_content.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 /// 결제 화면
 /// 
@@ -29,18 +30,26 @@ class _PurchaseViewState extends State<PurchaseView> {
   final _loginHistoryHandler = LoginHistoryHandler();
 
   late final List<Map<String, dynamic>> cart;
+  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
+  }
 
-    // Cart 화면에서 전달받은 장바구니 리스트
-    final raw = Get.arguments;
-    final List list = (raw is List) ? raw : [];
-    cart = list.map<Map<String, dynamic>>((e) {
-      if (e is Map<String, dynamic>) return e;
-      return Map<String, dynamic>.from(e as Map);
-    }).toList();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      // Cart 화면에서 전달받은 장바구니 리스트
+      final raw = ModalRoute.of(context)?.settings.arguments;
+      final List list = (raw is List) ? raw : [];
+      cart = list.map<Map<String, dynamic>>((e) {
+        if (e is Map<String, dynamic>) return e;
+        return Map<String, dynamic>.from(e as Map);
+      }).toList();
+      _initialized = true;
+    }
   }
 
   /// 동적 값을 int로 변환
@@ -207,175 +216,18 @@ class _PurchaseViewState extends State<PurchaseView> {
         print('저장된 district 로드 실패: $e');
       }
     }
-    
-    final RxString district = (savedDistrict ?? districts.first).obs;
-    final RxBool confirmed = false.obs;
 
-    Get.bottomSheet(
-      SafeArea(
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 48,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.black12,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              const SizedBox(height: 14),
-
-              Row(
-                children: [
-                  const Icon(Icons.payment),
-                  const SizedBox(width: 8),
-                  Text("결제 확인", style: config.rLabel),
-                  const Spacer(),
-                  IconButton(onPressed: () => Get.back(), icon: const Icon(Icons.close)),
-                ],
-              ),
-              const SizedBox(height: 10),
-
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text("수령 지점(자치구)", style: config.rLabel),
-              ),
-              const SizedBox(height: 8),
-
-              Obx(
-                () => Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black12),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: DropdownButton<String>(
-                    value: district.value,
-                    isExpanded: true,
-                    underline: const SizedBox.shrink(),
-                    style: config.rLabel,
-                    items: districts
-                        .map((d) => DropdownMenuItem(value: d, child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Text(d, style: config.rLabel),
-                        )))
-                        .toList(),
-                    onChanged: (v) {
-                      if (v != null) district.value = v;
-                    },
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 14),
-
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text("결제수단", style: config.rLabel),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black12),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Text("카드(더미)", style: config.rLabel),
-              ),
-
-              const SizedBox(height: 14),
-
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black12),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(child: Text("총액", style: config.rLabel)),
-                    Text("${config.priceFormatter.format(totalPrice)}원", style: config.rLabel),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              Obx(
-                () => SlideToBuyBar(
-                  enabled: !confirmed.value,
-                  label: confirmed.value ? "결제 처리중..." : "오른쪽으로 밀어서 결제 확정",
-                  onConfirmed: () async {
-                    confirmed.value = true;
-
-                    // 결제 처리: DB 저장 및 장바구니 정리
-                    try {
-                      await _savePurchaseItemsToDb();
-                      
-                      // 장바구니 비우기 (구매 성공 시에만)
-                      _clearCart();
-
-                      Get.back(); // sheet 닫기
-                      Get.snackbar(
-                        "구매 완료",
-                        "수령지: ${district.value} / 총액: ${config.priceFormatter.format(totalPrice)}원",
-                        snackPosition: SnackPosition.BOTTOM,
-                      );
-
-                      // 결제 완료 후 검색 화면으로 이동
-                      Get.offAllNamed('/searchview');
-                    } catch (e) {
-                      // 구매 실패 시 에러 메시지 표시 및 상태 복구
-                      confirmed.value = false;
-                      Get.back(); // sheet 닫기
-                      Get.dialog(
-                        AlertDialog(
-                          title: const Text('구매 실패'),
-                          content: Text(
-                            e.toString().replaceFirst('Exception: ', ''),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Get.back(); // 다이얼로그 닫기
-                                
-                                // 바로 구매로 온 사용자의 경우 장바구니에 데이터가 없을 수 있으므로
-                                // 현재 구매하려던 상품들을 장바구니에 저장
-                                // (이미 장바구니에 있는 경우 CartStorage.addToCart가 중복 처리)
-                                for (final item in cart) {
-                                  CartStorage.addToCart(item);
-                                }
-                                
-                                // 장바구니 화면으로 이동하여 사용자가 수량 조정 가능하도록 함
-                                Get.toNamed('/cart');
-                              },
-                              child: const Text('장바구니로 이동'),
-                            ),
-                            TextButton(
-                              onPressed: () => Get.back(),
-                              child: const Text('확인'),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    await CustomBottomSheet.show(
+      context: context,
       isScrollControlled: true,
+      child: PaymentSheetContent(
+        initialDistrict: savedDistrict ?? districts.first,
+        districts: districts,
+        totalPrice: totalPrice,
+        cart: cart,
+        onSavePurchase: _savePurchaseItemsToDb,
+        onClearCart: _clearCart,
+      ),
     );
   }
 
@@ -433,7 +285,7 @@ class _PurchaseViewState extends State<PurchaseView> {
                               Text('색상: $color / 사이즈: $size', style: config.rLabel),
                               const SizedBox(height: 6),
                               Text('수량: $qty', style: config.rLabel),
-                              Text('합계: ${config.priceFormatter.format(lineTotal)}원', style: config.rLabel),
+                              Text('합계: ${config.priceFormatter(lineTotal)}원', style: config.rLabel),
                             ],
                           ),
                         ),
@@ -450,7 +302,7 @@ class _PurchaseViewState extends State<PurchaseView> {
             child: Row(
               children: [
                 Expanded(
-                  child: Text('총액: ${config.priceFormatter.format(totalPrice)}원', style: config.rLabel),
+                  child: Text('총액: ${config.priceFormatter(totalPrice)}원', style: config.rLabel),
                 ),
                 ElevatedButton(
                   onPressed: _openPaymentSheet,
@@ -461,106 +313,6 @@ class _PurchaseViewState extends State<PurchaseView> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class SlideToBuyBar extends StatefulWidget {
-  final bool enabled;
-  final String label;
-  final Future<void> Function() onConfirmed;
-
-  const SlideToBuyBar({
-    super.key,
-    required this.enabled,
-    required this.label,
-    required this.onConfirmed,
-  });
-
-  @override
-  State<SlideToBuyBar> createState() => _SlideToBuyBarState();
-}
-
-class _SlideToBuyBarState extends State<SlideToBuyBar> {
-  double _t = 0.0;
-  bool _done = false;
-
-  @override
-  Widget build(BuildContext context) {
-    const h = 56.0;
-    const knob = 52.0;
-
-    return LayoutBuilder(
-      builder: (context, c) {
-        final maxX = (c.maxWidth - knob).clamp(0, double.infinity);
-        final x = maxX * _t;
-
-        return Container(
-          height: h,
-          decoration: BoxDecoration(
-            color: Colors.black12,
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    widthFactor: _t.clamp(0.0, 1.0),
-                    child: Container(color: Colors.blue.withOpacity(0.35)),
-                  ),
-                ),
-              ),
-              Center(child: Text(widget.label, style: config.rLabel)),
-              Positioned(
-                left: x,
-                top: (h - knob) / 2,
-                child: GestureDetector(
-                  onHorizontalDragUpdate: (d) {
-                    if (!widget.enabled || _done) return;
-                    final next = ((_t * maxX) + d.delta.dx) / maxX;
-                    setState(() => _t = next.clamp(0.0, 1.0));
-                  },
-                  onHorizontalDragEnd: (_) async {
-                    if (!widget.enabled || _done) return;
-                    if (_t > 0.92) {
-                      setState(() {
-                        _t = 1.0;
-                        _done = true;
-                      });
-                      await widget.onConfirmed();
-                    } else {
-                      setState(() => _t = 0.0);
-                    }
-                  },
-                  child: Container(
-                    width: knob,
-                    height: knob,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: const [
-                        BoxShadow(
-                          blurRadius: 10,
-                          offset: Offset(0, 4),
-                          color: Colors.black26,
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      _done ? Icons.check : Icons.double_arrow_rounded,
-                      color: Colors.blue,
-                      size: 26,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

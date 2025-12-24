@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 import 'package:shoes_store_app/config.dart' as config;
+import 'package:shoes_store_app/custom/custom_snack_bar.dart';
+import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/database/handlers/customer_handler.dart';
 import 'package:shoes_store_app/model/customer.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
-import 'package:shoes_store_app/view/cheng/custom/custom.dart';
+import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/view/cheng/storage/user_storage.dart';
 
 /// 사용자 개인정보 수정 화면
@@ -75,34 +76,25 @@ class _UserProfileEditViewState extends State<UserProfileEditView> {
             _phoneController.text = latestCustomer.cPhoneNumber;
           });
         } else {
-          Get.back();
-          Get.snackbar(
-            '오류',
-            '사용자 정보를 찾을 수 없습니다.',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red.shade100,
-            colorText: Colors.red.shade900,
+          CustomNavigationUtil.back(context);
+          CustomSnackBar.showError(
+            context,
+            message: '사용자 정보를 찾을 수 없습니다.',
           );
         }
       } catch (error) {
         AppLogger.e('사용자 정보 로드 에러', tag: 'UserProfileEdit', error: error);
-        Get.back();
-        Get.snackbar(
-          '오류',
-          '사용자 정보를 불러오는 중 오류가 발생했습니다.',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.shade100,
-          colorText: Colors.red.shade900,
+        CustomNavigationUtil.back(context);
+        CustomSnackBar.showError(
+          context,
+          message: '사용자 정보를 불러오는 중 오류가 발생했습니다.',
         );
       }
     } else {
-      Get.back();
-      Get.snackbar(
-        '오류',
-        '로그인 정보를 찾을 수 없습니다.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade100,
-        colorText: Colors.red.shade900,
+      CustomNavigationUtil.back(context);
+      CustomSnackBar.showError(
+        context,
+        message: '로그인 정보를 찾을 수 없습니다.',
       );
     }
   }
@@ -323,12 +315,9 @@ class _UserProfileEditViewState extends State<UserProfileEditView> {
       
       AppLogger.d('사용자 개인정보 수정 완료', tag: 'UserProfileEdit');
 
-      Get.snackbar(
-        '수정 완료',
-        '개인정보가 수정되었습니다.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.shade100,
-        colorText: Colors.green.shade900,
+      CustomSnackBar.showSuccess(
+        context,
+        message: '개인정보가 수정되었습니다.',
       );
 
       return true;

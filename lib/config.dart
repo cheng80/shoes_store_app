@@ -2,7 +2,7 @@
 
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:shoes_store_app/custom/custom_common_util.dart';
 
 
 const String kDBName = 'shoes_store_db';
@@ -29,7 +29,7 @@ const String kStorageKeyDBInitialized = 'db_initialized';  //  DB 초기화 완�
 //  Formats
 const String dateFormat = 'yyyy-MM-dd';
 const String dateTimeFormat = 'yyyy-MM-dd HH:mm:ss';
-final NumberFormat priceFormatter = NumberFormat('#,###.##');
+String priceFormatter(int price) => CustomCommonUtil.formatNumber(price);
 const int minPasswordLength = 8;
 const int maxPasswordLength = 20;
 

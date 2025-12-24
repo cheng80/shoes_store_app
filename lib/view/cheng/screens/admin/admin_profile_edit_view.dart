@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 
 import 'package:shoes_store_app/database/handlers/employee_handler.dart';
+import 'package:shoes_store_app/custom/custom_snack_bar.dart';
+import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/model/employee.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
-import 'package:shoes_store_app/view/cheng/custom/custom.dart';
+import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/view/cheng/storage/admin_storage.dart';
 import 'package:shoes_store_app/view/cheng/utils/admin_tablet_utils.dart';
 import 'package:shoes_store_app/view/cheng/screens/admin/admin_mobile_block_view.dart';
@@ -52,7 +53,7 @@ class _AdminProfileEditViewState extends State<AdminProfileEditView> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!isTablet(context)) {
-        Get.off(() => const AdminMobileBlockView());
+        CustomNavigationUtil.off(context, const AdminMobileBlockView());
       } else {
         lockTabletLandscape(context);
       }
@@ -80,13 +81,10 @@ class _AdminProfileEditViewState extends State<AdminProfileEditView> {
         _phoneController.text = admin.ePhoneNumber;
       });
     } else {
-      Get.back();
-      Get.snackbar(
-        '오류',
-        '관리자 정보를 찾을 수 없습니다.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade100,
-        colorText: Colors.red.shade900,
+      CustomNavigationUtil.back(context);
+      CustomSnackBar.showError(
+        context,
+        message: '관리자 정보를 찾을 수 없습니다.',
       );
     }
   }
@@ -321,12 +319,9 @@ class _AdminProfileEditViewState extends State<AdminProfileEditView> {
       
       AppLogger.d('관리자 개인정보 수정 완료', tag: 'AdminProfileEdit');
 
-      Get.snackbar(
-        '수정 완료',
-        '개인정보가 수정되었습니다.',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.green.shade100,
-        colorText: Colors.green.shade900,
+      CustomSnackBar.showSuccess(
+        context,
+        message: '개인정보가 수정되었습니다.',
       );
 
       return true;
