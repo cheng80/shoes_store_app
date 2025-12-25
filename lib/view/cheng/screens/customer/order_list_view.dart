@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/theme/app_colors.dart';
 
 import 'package:shoes_store_app/config.dart' as config;
@@ -264,6 +263,36 @@ class _OrderListViewState extends State<OrderListView> {
     return cleaned;
   }
 
+  /// 주문 날짜 포맷팅 (날짜만 있으면 날짜만, 시간이 있으면 날짜 시분까지)
+  String _formatOrderDate(String timeStamp) {
+    try {
+      // DateTime 파싱 (ISO 8601 형식 또는 일반 형식)
+      DateTime dateTime;
+      if (timeStamp.contains('T')) {
+        // ISO 8601 형식: 2025-12-26T01:45:17.6658615 -> T를 공백으로 변경 후 파싱
+        dateTime = DateTime.parse(timeStamp.replaceFirst('T', ' '));
+      } else {
+        // 일반 형식: 2025-12-26 또는 2025-12-26 01:45:17
+        dateTime = DateTime.parse(timeStamp);
+      }
+      
+      // 시간이 있는지 확인 (시/분이 0이 아니거나 초/밀리초가 있는지)
+      final hasTime = dateTime.hour != 0 || dateTime.minute != 0 || 
+                      dateTime.second != 0 || dateTime.millisecond != 0;
+      
+      if (hasTime) {
+        // 날짜 + 시분: yyyy-MM-dd HH:mm
+        return CustomCommonUtil.formatDate(dateTime, 'yyyy-MM-dd HH:mm');
+      } else {
+        // 날짜만: yyyy-MM-dd
+        return CustomCommonUtil.formatDate(dateTime, 'yyyy-MM-dd');
+      }
+    } catch (e) {
+      // 파싱 실패 시 원본 반환 (fallback)
+      return timeStamp.split(' ').first.replaceAll('T', ' ').split('.').first;
+    }
+  }
+
   /// 주문 카드 위젯 생성
   Widget _buildOrderCard(Purchase order) {
     // config.pickupStatus[0]은 절대 null이 될 수 없으므로 fallback 불필요
@@ -271,7 +300,7 @@ class _OrderListViewState extends State<OrderListView> {
         ? _orderStatusMap[order.id] ?? config.pickupStatus[0]!
         : config.pickupStatus[0]!;
     
-    final orderDate = order.timeStamp.split(' ').first;
+    final orderDate = _formatOrderDate(order.timeStamp);
     
     return GestureDetector(
       onTap: () async {
@@ -309,11 +338,10 @@ class _OrderListViewState extends State<OrderListView> {
   Widget _buildEmptyMessage() {
     return Center(
       child: CustomPadding(
-        padding: const EdgeInsets.symmetric(vertical: 32),
+        padding: const EdgeInsets.symmetric(vertical: config.extraLargeSpacing),
         child: CustomText(
           '주문 내역이 없습니다.',
-          fontSize: 14,
-          fontWeight: FontWeight.normal,
+          style: config.bodyTextStyle,
           textAlign: TextAlign.center,
         ),
       ),
@@ -352,7 +380,7 @@ class _OrderListViewState extends State<OrderListView> {
           children: [
             CustomText(
               label,
-              fontSize: 12,
+              style: config.smallTextStyle,
               fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
             ),
             Icon(icon, size: 16),
@@ -371,17 +399,17 @@ class _OrderListViewState extends State<OrderListView> {
       appBar: CustomAppBar(
         title: '주문 내역',
         centerTitle: true,
-        titleTextStyle: config.rLabel,
+        titleTextStyle: config.boldLabelStyle,
         backgroundColor: p.background,
         foregroundColor: p.textPrimary,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: CustomPadding(
-            padding: const EdgeInsets.all(16),
+            padding: config.screenPadding,
             child: CustomColumn(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: 16,
+              spacing: config.defaultSpacing,
               children: [
                 CustomTextField(
                   controller: _searchController,
@@ -401,8 +429,7 @@ class _OrderListViewState extends State<OrderListView> {
 
                 CustomText(
                   '주문 내역 (수령 예상일로 부터 30일이 지난 주문은 자동으로 수령 완료 처리 됩니다.)',
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                  style: config.titleStyle,
                 ),
 
                 if (_isLoading)

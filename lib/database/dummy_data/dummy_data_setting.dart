@@ -341,7 +341,6 @@ class DummyDataSetting {
         cid: cid,
         loginTime: item['loginTime'] as String,
         lStatus: item['lStatus'] as String,
-        lVersion: (item['lVersion'] as num).toDouble(),
         lAddress: item['lAddress'] as String,
         lPaymentMethod: item['lPaymentMethod'] as String,
       );

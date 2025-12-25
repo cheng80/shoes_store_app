@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:shoes_store_app/utils/order_utils.dart';
@@ -32,10 +33,10 @@ class CustomerOrderCard extends StatelessWidget {
     
     return CustomCard(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      padding: config.screenPadding,
       child: CustomColumn(
         crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 8,
+        spacing: config.smallSpacing,
         children: [
           // 주문 ID와 상태를 한 줄에 표시
           CustomRow(
@@ -44,21 +45,18 @@ class CustomerOrderCard extends StatelessWidget {
               // 주문 ID (굵은 글씨)
               CustomText(
                 orderId,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+                style: config.mediumTextStyle.copyWith(fontWeight: FontWeight.bold),
               ),
               // 주문 상태 (배지 형태로 표시)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: OrderStatusColors.getStatusColor(orderStatus),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: config.defaultBorderRadius,
                 ),
                 child: CustomText(
                   orderStatus,
-                  fontSize: 12,
-                  fontWeight: FontWeight.normal,
-                  color: p.textOnPrimary,
+                  style: config.smallTextStyle.copyWith(color: p.textOnPrimary),
                 ),
               ),
             ],
@@ -67,16 +65,13 @@ class CustomerOrderCard extends StatelessWidget {
           if (orderDate != null)
             CustomText(
               '주문일: $orderDate',
-              fontSize: 12,
-              fontWeight: FontWeight.normal,
-              color: p.textSecondary,
+              style: config.smallTextStyle.copyWith(color: p.textSecondary),
             ),
           // 총 주문 금액 표시 (있는 경우)
           if (totalPrice != null)
             CustomText(
               '총 금액: ${OrderUtils.formatPrice(totalPrice!)}원',
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
+              style: config.bodyTextStyle.copyWith(fontWeight: FontWeight.bold),
               color: p.primary,
             ),
         ],

@@ -23,7 +23,7 @@ class ManufacturerHandler {
   Future<List<Manufacturer>> queryAll() async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableManufacturer,
+      config.tableManufacturer,
       orderBy: 'id ASC',
     );
     return results.map((e) => Manufacturer.fromMap(e)).toList();
@@ -36,7 +36,7 @@ class ManufacturerHandler {
   Future<Manufacturer?> queryById(int id) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableManufacturer,
+      config.tableManufacturer,
       where: 'id = ?',
       whereArgs: [id],
       limit: 1,
@@ -52,7 +52,7 @@ class ManufacturerHandler {
   Future<Manufacturer?> queryByName(String name) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableManufacturer,
+      config.tableManufacturer,
       where: 'mName = ?',
       whereArgs: [name],
       limit: 1,
@@ -72,7 +72,7 @@ class ManufacturerHandler {
   Future<int> insertData(Manufacturer manufacturer) async {
     final db = await _getDatabase();
     final map = manufacturer.toMap(includeId: false);
-    return await db.insert(config.kTableManufacturer, map);
+    return await db.insert(config.tableManufacturer, map);
   }
 
   // ============================================
@@ -91,7 +91,7 @@ class ManufacturerHandler {
     final db = await _getDatabase();
     final map = manufacturer.toMap(includeId: false);
     return await db.update(
-      config.kTableManufacturer,
+      config.tableManufacturer,
       map,
       where: 'id = ?',
       whereArgs: [manufacturer.id],
@@ -111,7 +111,7 @@ class ManufacturerHandler {
   Future<int> deleteData(int id) async {
     final db = await _getDatabase();
     return await db.delete(
-      config.kTableManufacturer,
+      config.tableManufacturer,
       where: 'id = ?',
       whereArgs: [id],
     );

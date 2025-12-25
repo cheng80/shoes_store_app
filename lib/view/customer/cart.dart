@@ -1,5 +1,6 @@
 import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/database/handlers/product_handler.dart';
+import 'package:shoes_store_app/custom/custom_common_util.dart';
 import 'package:shoes_store_app/view/cheng/storage/cart_storage.dart';
 import 'package:shoes_store_app/custom/custom_snack_bar.dart';
 import 'package:shoes_store_app/custom/custom_dialog.dart';
@@ -148,7 +149,7 @@ class _CartState extends State<Cart> {
       return;
     }
     // 결제 화면으로 이동 + cart 전체 넘김
-    CustomNavigationUtil.toNamed(context, '/purchaseview', arguments: cart);
+    CustomNavigationUtil.toNamed(context, config.routePurchaseView, arguments: cart);
   }
 
   /// 장바구니 비우기
@@ -166,7 +167,7 @@ class _CartState extends State<Cart> {
     
     return Scaffold(
       appBar: AppBar(
-        title: Text('Cart', style: config.rLabel.copyWith(color: p.textPrimary)),
+        title: Text('Cart', style: config.boldLabelStyle.copyWith(color: p.textPrimary)),
         actions: [
           IconButton(
             onPressed: cart.isEmpty ? null : _clearCart,
@@ -181,7 +182,7 @@ class _CartState extends State<Cart> {
               children: [
                 Expanded(
                   child: cart.isEmpty
-                      ? Center(child: Text('장바구니가 비어있음', style: config.rLabel.copyWith(color: p.textPrimary)))
+                      ? Center(child: Text('장바구니가 비어있음', style: config.boldLabelStyle.copyWith(color: p.textPrimary)))
                       : ListView.builder(
                           itemCount: cart.length,
                           itemBuilder: (context, index) {
@@ -224,16 +225,16 @@ class _CartState extends State<Cart> {
                                         children: [
                                           Text(
                                             name,
-                                            style: config.rLabel.copyWith(color: p.textPrimary),
+                                            style: config.boldLabelStyle.copyWith(color: p.textPrimary),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                           const SizedBox(height: 4),
-                                          Text('색상: $color / 사이즈: $size', style: config.rLabel.copyWith(color: p.textPrimary)),
+                                          Text('색상: $color / 사이즈: $size', style: config.boldLabelStyle.copyWith(color: p.textPrimary)),
                                           const SizedBox(height: 6),
-                                          Text('단가: ${config.priceFormatter(unitPrice)}원', style: config.rLabel.copyWith(color: p.textPrimary)),
+                                          Text('단가: ${CustomCommonUtil.formatNumber(unitPrice)}원', style: config.boldLabelStyle.copyWith(color: p.textPrimary)),
                                           const SizedBox(height: 4),
-                                          Text('합계: ${config.priceFormatter(lineTotal)}원', style: config.rLabel.copyWith(color: p.textPrimary)),
+                                          Text('합계: ${CustomCommonUtil.formatNumber(lineTotal)}원', style: config.boldLabelStyle.copyWith(color: p.textPrimary)),
                                         ],
                                       ),
                                     ),
@@ -247,7 +248,7 @@ class _CartState extends State<Cart> {
                                               onPressed: () => _dec(index),
                                               icon: const Icon(Icons.remove),
                                             ),
-                                            Text('$qty', style: config.rLabel.copyWith(color: p.textPrimary)),
+                                            Text('$qty', style: config.boldLabelStyle.copyWith(color: p.textPrimary)),
                                             IconButton(
                                               onPressed: () => _inc(index),
                                               icon: const Icon(Icons.add),
@@ -275,8 +276,8 @@ class _CartState extends State<Cart> {
                     children: [
                       Expanded(
                         child: Text(
-                          '총액: ${config.priceFormatter(totalPrice)}원',
-                          style: config.rLabel.copyWith(color: p.textPrimary),
+                          '총액: ${CustomCommonUtil.formatNumber(totalPrice)}원',
+                          style: config.boldLabelStyle.copyWith(color: p.textPrimary),
                         ),
                       ),
                       ElevatedButton(
@@ -287,7 +288,7 @@ class _CartState extends State<Cart> {
                               : p.primary,
                           foregroundColor: p.textOnPrimary,
                         ),
-                        child: Text('결제 화면', style: config.rLabel.copyWith(color: p.textOnPrimary)),
+                        child: Text('결제 화면', style: config.boldLabelStyle.copyWith(color: p.textOnPrimary)),
                       ),
                     ],
                   ),

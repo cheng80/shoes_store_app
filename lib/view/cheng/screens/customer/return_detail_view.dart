@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/theme/app_colors.dart';
-import 'package:shoes_store_app/custom/custom_snack_bar.dart';
-import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/database/handlers/customer_handler.dart';
 import 'package:shoes_store_app/database/handlers/product_handler.dart';
 import 'package:shoes_store_app/database/handlers/purchase_handler.dart';
@@ -310,9 +308,9 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
       return Scaffold(
         backgroundColor: p.background,
         appBar: CustomAppBar(
-          title: Text('반품 상세', style: config.rLabel),
+          title: Text('반품 상세', style: config.boldLabelStyle),
           centerTitle: true,
-          titleTextStyle: config.rLabel,
+          titleTextStyle: config.boldLabelStyle,
           backgroundColor: p.background,
           foregroundColor: p.textPrimary,
         ),
@@ -326,9 +324,9 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
       return Scaffold(
         backgroundColor: p.background,
         appBar: CustomAppBar(
-          title: Text('반품 상세', style: config.rLabel),
+          title: Text('반품 상세', style: config.boldLabelStyle),
           centerTitle: true,
-          titleTextStyle: config.rLabel,
+          titleTextStyle: config.boldLabelStyle,
           backgroundColor: p.background,
           foregroundColor: p.textPrimary,
         ),
@@ -347,30 +345,29 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
     return Scaffold(
       backgroundColor: p.background,
       appBar: CustomAppBar(
-        title: Text('반품 상세', style: config.rLabel),
+        title: Text('반품 상세', style: config.boldLabelStyle),
         centerTitle: true,
-        titleTextStyle: config.rLabel,
+        titleTextStyle: config.boldLabelStyle,
         backgroundColor: p.background,
         foregroundColor: p.textPrimary,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: CustomPadding(
-            padding: const EdgeInsets.all(16),
+            padding: config.screenPadding,
             child: CustomColumn(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: 16,
+              spacing: config.defaultSpacing,
               children: [
                 // 주문 ID 표시 및 반품 상태
                 CustomCard(
-                  padding: const EdgeInsets.all(16),
+                  padding: config.screenPadding,
                   child: CustomRow(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       CustomText(
                         '주문번호: ${_purchase?.orderCode ?? widget.purchaseId.toString()}',
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        style: config.mediumTextStyle.copyWith(fontWeight: FontWeight.bold),
                       ),
                       // 반품 상태 배지
                       Container(
@@ -380,12 +377,11 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
                         ),
                         decoration: BoxDecoration(
                           color: OrderStatusColors.getStatusColor(_returnStatus),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: config.defaultBorderRadius,
                         ),
                         child: CustomText(
                           _returnStatus,
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
+                          style: config.smallTextStyle,
                           color: p.textOnPrimary,
                         ),
                       ),
@@ -403,16 +399,14 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
                 // 주문 상품들 제목
                 CustomText(
                   '주문 상품',
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                  style: config.titleStyle,
                 ),
 
                 // 주문 상품 리스트 (각 상품을 카드로 표시, 반품 버튼 포함)
                 if (_orderItems.isEmpty)
                   CustomText(
                     '주문 상품이 없습니다.',
-                    fontSize: 14,
-                    fontWeight: FontWeight.normal,
+                    style: config.bodyTextStyle,
                     textAlign: TextAlign.center,
                   )
                 else
@@ -447,8 +441,7 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
                           // 상품명
                           CustomText(
                             item.productName,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                            style: config.mediumTextStyle.copyWith(fontWeight: FontWeight.bold),
                           ),
                           // 상품 정보 (사이즈, 색상, 수량)
                           CustomRow(
@@ -457,15 +450,12 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
                               Expanded(
                                 child: CustomText(
                                   '사이즈: ${item.size} | 색상: ${item.color} | 수량: ${item.quantity}',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.normal,
-                                  color: p.textSecondary,
+                                  style: config.bodyTextStyle.copyWith(color: p.textSecondary),
                                 ),
                               ),
                               CustomText(
                                 '${OrderUtils.formatPrice(item.price * item.quantity)}원',
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
+                                style: config.bodyTextStyle.copyWith(fontWeight: FontWeight.bold),
                                 color: p.primary,
                               ),
                             ],
@@ -494,8 +484,7 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
                                 child: Center(
                                   child: CustomText(
                                     returnStatusText,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
+                                    style: config.bodyTextStyle.copyWith(fontWeight: FontWeight.bold),
                                     color: p.textSecondary,
                                   ),
                                 ),
@@ -508,19 +497,17 @@ class _ReturnDetailViewState extends State<ReturnDetailView> {
 
                 // 총 주문 금액 표시 카드
                 CustomCard(
-                  padding: const EdgeInsets.all(16),
+                  padding: config.screenPadding,
                   child: CustomRow(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       CustomText(
                         '총 주문 금액',
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        style: config.mediumTextStyle.copyWith(fontWeight: FontWeight.bold),
                       ),
                       CustomText(
                         '${OrderUtils.formatPrice(totalPrice)}원',
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        style: config.titleStyle,
                         color: Colors.blue.shade700,
                       ),
                     ],

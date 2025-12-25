@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 
+import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:shoes_store_app/database/handlers/purchase_handler.dart';
-import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/database/handlers/purchase_item_handler.dart';
 import 'package:shoes_store_app/model/sale/purchase.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
 import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/view/cheng/storage/admin_storage.dart';
-import 'package:shoes_store_app/view/cheng/utils/admin_tablet_utils.dart';
+import 'package:shoes_store_app/utils/admin_tablet_utils.dart';
 import 'package:shoes_store_app/utils/order_status_utils.dart';
 import 'package:shoes_store_app/view/cheng/widgets/admin/admin_drawer.dart';
 import 'package:shoes_store_app/view/cheng/widgets/admin/return_order_card.dart';
 import 'package:shoes_store_app/view/cheng/screens/admin/admin_return_order_detail_view.dart';
 import 'package:shoes_store_app/view/cheng/screens/admin/admin_order_view.dart';
-import 'package:shoes_store_app/view/cheng/screens/admin/admin_profile_edit_view.dart';
 
 /// 관리자/직원 반품 관리 화면
 /// 태블릿에서 가로 모드로 강제 표시되는 반품 관리 화면입니다.
@@ -205,23 +204,23 @@ class _AdminReturnOrderViewState
             label: '주문 관리',
             icon: Icons.shopping_cart,
             menuType: AdminMenuType.orderManagement,
-            onTap: () {
-              CustomNavigationUtil.off(context, const AdminOrderView());
+            onTap: (ctx) {
+              CustomNavigationUtil.off(ctx, const AdminOrderView());
             },
           ),
           AdminDrawerMenuItem(
             label: '반품 관리',
             icon: Icons.assignment_return,
             menuType: AdminMenuType.returnManagement,
-            onTap: () {
+            onTap: (_) {
               // 현재 페이지이므로 아무 동작 없음
             },
           ),
         ],
         onProfileEditTap: () async {
-          final result = await CustomNavigationUtil.to(
+          final result = await CustomNavigationUtil.toNamed(
             context,
-            const AdminProfileEditView(),
+            config.routeAdminProfileEdit,
           );
           if (result == true) {
             AppLogger.d('관리자 개인정보 수정 완료 - drawer 갱신', tag: 'ReturnOrderView');
@@ -239,10 +238,10 @@ class _AdminReturnOrderViewState
               flex: 1,
               child: SingleChildScrollView(
                 child: CustomPadding(
-                  padding: const EdgeInsets.all(16),
+                  padding: config.screenPadding,
                   child: CustomColumn(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                    spacing: 12,
+                    spacing: config.mediumSpacing,
                     children: [
                       // 검색 필터
                       CustomTextField(
@@ -255,8 +254,7 @@ class _AdminReturnOrderViewState
                       // 주문 목록 제목
                       CustomText(
                         '반품 주문 목록',
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        style: config.titleStyle,
                       ),
 
                       // 반품 주문 목록 리스트 표시
@@ -264,7 +262,7 @@ class _AdminReturnOrderViewState
                       if (_isLoading)
                         const Center(
                           child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 32),
+                            padding: EdgeInsets.symmetric(vertical: config.extraLargeSpacing),
                             child: CircularProgressIndicator(),
                           ),
                         )
@@ -272,8 +270,7 @@ class _AdminReturnOrderViewState
                         Center(
                           child: CustomText(
                             '반품 주문이 없습니다.',
-                            fontSize: 14,
-                            fontWeight: FontWeight.normal,
+                            style: config.bodyTextStyle,
                             textAlign: TextAlign.center,
                           ),
                         )
@@ -315,13 +312,12 @@ class _AdminReturnOrderViewState
               flex: 2,
               child: SingleChildScrollView(
                 child: CustomPadding(
-                  padding: const EdgeInsets.all(16),
+                  padding: config.screenPadding,
                   child: _selectedOrderId == null
                       ? Center(
                           child: CustomText(
                             '데이터 없음',
-                            fontSize: 18,
-                            fontWeight: FontWeight.normal,
+                            style: config.titleStyle.copyWith(fontWeight: FontWeight.normal),
                             textAlign: TextAlign.center,
                           ),
                         )

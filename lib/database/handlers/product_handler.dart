@@ -15,7 +15,7 @@ class ProductHandler {
   Future<List<Product>> queryAll() async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableProduct,
+      config.tableProduct,
       orderBy: 'id ASC',
     );
     return results.map((e) => Product.fromMap(e)).toList();
@@ -25,7 +25,7 @@ class ProductHandler {
   Future<Product?> queryById(int id) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableProduct,
+      config.tableProduct,
       where: 'id = ?',
       whereArgs: [id],
       limit: 1,
@@ -38,7 +38,7 @@ class ProductHandler {
   Future<List<Product>> queryByProductBaseId(int pbid) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableProduct,
+      config.tableProduct,
       where: 'pbid = ?',
       whereArgs: [pbid],
       orderBy: 'size ASC',
@@ -50,7 +50,7 @@ class ProductHandler {
   Future<List<Product>> queryByManufacturerId(int mfid) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableProduct,
+      config.tableProduct,
       where: 'mfid = ?',
       whereArgs: [mfid],
       orderBy: 'id ASC',
@@ -62,7 +62,7 @@ class ProductHandler {
   Future<List<Product>> queryBySize(int size) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableProduct,
+      config.tableProduct,
       where: 'size = ?',
       whereArgs: [size],
       orderBy: 'id ASC',
@@ -142,7 +142,7 @@ class ProductHandler {
   Future<int> insertData(Product product) async {
     final db = await _getDatabase();
     final map = product.toMap(includeId: false);
-    return await db.insert(config.kTableProduct, map);
+    return await db.insert(config.tableProduct, map);
   }
 
   /// 제품 정보 수정
@@ -154,7 +154,7 @@ class ProductHandler {
     final db = await _getDatabase();
     final map = product.toMap(includeId: false);
     return await db.update(
-      config.kTableProduct,
+      config.tableProduct,
       map,
       where: 'id = ?',
       whereArgs: [product.id],
@@ -165,7 +165,7 @@ class ProductHandler {
   Future<int> updateQuantity(int id, int quantity) async {
     final db = await _getDatabase();
     return await db.update(
-      config.kTableProduct,
+      config.tableProduct,
       {'pQuantity': quantity},
       where: 'id = ?',
       whereArgs: [id],
@@ -176,7 +176,7 @@ class ProductHandler {
   Future<int> deleteData(int id) async {
     final db = await _getDatabase();
     return await db.delete(
-      config.kTableProduct,
+      config.tableProduct,
       where: 'id = ?',
       whereArgs: [id],
     );

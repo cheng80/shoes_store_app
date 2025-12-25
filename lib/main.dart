@@ -3,10 +3,18 @@ import 'package:shoes_store_app/theme/theme_provider.dart';
 import 'package:shoes_store_app/database/core/database_manager.dart';
 import 'package:shoes_store_app/database/dummy_data/dummy_data_setting.dart';
 import 'package:shoes_store_app/view/cheng/screens/auth/login_view.dart';
+import 'package:shoes_store_app/view/cheng/screens/auth/admin_login_view.dart';
 import 'package:shoes_store_app/view/cheng/screens/customer/search_view.dart';
+import 'package:shoes_store_app/view/cheng/screens/customer/order_list_view.dart';
+import 'package:shoes_store_app/view/cheng/screens/customer/return_list_view.dart';
+import 'package:shoes_store_app/view/cheng/screens/customer/user_profile_edit_view.dart';
+import 'package:shoes_store_app/view/cheng/screens/admin/admin_mobile_block_view.dart';
+import 'package:shoes_store_app/view/cheng/screens/admin/admin_order_view.dart';
+import 'package:shoes_store_app/view/cheng/screens/admin/admin_return_order_view.dart';
+import 'package:shoes_store_app/view/cheng/screens/admin/admin_profile_edit_view.dart';
+import 'package:shoes_store_app/view/cheng/test_navigation_page.dart';
 import 'package:shoes_store_app/view/customer/address_payment_view.dart';
 import 'package:shoes_store_app/view/customer/cart.dart';
-import 'package:shoes_store_app/view/customer/detail_view.dart';
 import 'package:shoes_store_app/view/customer/purchase_view.dart';
 
 import 'package:flutter/material.dart';
@@ -21,13 +29,13 @@ Future<void> main() async {
 
   // GetStorage에서 DB 초기화 완료 여부 확인
   final storage = GetStorage();
-  final isDBInitialized = storage.read<bool>(config.kStorageKeyDBInitialized) ?? false;
+  final isDBInitialized = storage.read<bool>(config.storageKeyDBInitialized) ?? false;
 
   // DB가 초기화되지 않았을 때만 초기화 및 더미 데이터 삽입
   if (!isDBInitialized) {
     // 데이터베이스 초기화 (DatabaseManager 사용)
     final dbPath = await getDatabasesPath();
-    final path = join(dbPath, '${config.kDBName}${config.kDBFileExt}');
+    final path = join(dbPath, '${config.dbName}${config.dbFileExt}');
     
     // DatabaseManager 인스턴스 가져오기
     final dbManager = DatabaseManager();
@@ -46,7 +54,7 @@ Future<void> main() async {
     await dummyDataSetting.insertAllDummyData();
     
     // 초기화 완료 플래그 저장
-    await storage.write(config.kStorageKeyDBInitialized, true);
+    await storage.write(config.storageKeyDBInitialized, true);
   }
   
   runApp(const MyApp());
@@ -90,14 +98,22 @@ class _MyAppState extends State<MyApp> {
           brightness: Brightness.dark,
           colorSchemeSeed: _seedColor,
         ),
-        initialRoute: '/',
+        initialRoute: config.routeLogin,
         routes: {
-          '/': (context) => const LoginView(),
-          '/cart': (context) => const Cart(),
-          '/searchview': (context) => const SearchView(),
-          '/detailview': (context) => const DetailView(),
-          '/purchaseview': (context) => const PurchaseView(),
-          '/address-payment': (context) => const AddressPaymentView(),
+          config.routeLogin: (context) => const LoginView(),
+          config.routeCart: (context) => const Cart(),
+          config.routeSearchView: (context) => const SearchView(),
+          config.routePurchaseView: (context) => const PurchaseView(),
+          config.routeAddressPayment: (context) => const AddressPaymentView(),
+          config.routeAdminLogin: (context) => const AdminLoginView(),
+          config.routeAdminMobileBlock: (context) => const AdminMobileBlockView(),
+          config.routeAdminOrderView: (context) => const AdminOrderView(),
+          config.routeAdminReturnOrderView: (context) => const AdminReturnOrderView(),
+          config.routeOrderListView: (context) => const OrderListView(),
+          config.routeReturnListView: (context) => const ReturnListView(),
+          config.routeUserProfileEdit: (context) => const UserProfileEditView(),
+          config.routeAdminProfileEdit: (context) => const AdminProfileEditView(),
+          config.routeTestNavigationPage: (context) => const TestNavigationPage(),
         },
         debugShowCheckedModeBanner: false,
       ),

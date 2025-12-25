@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 
 import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/theme/app_colors.dart';
-import 'package:shoes_store_app/custom/custom_snack_bar.dart';
-import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/database/handlers/customer_handler.dart';
 import 'package:shoes_store_app/database/handlers/login_history_handler.dart';
 import 'package:shoes_store_app/model/customer.dart';
@@ -12,11 +10,8 @@ import 'package:shoes_store_app/model/login_history.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
 import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/view/cheng/storage/user_storage.dart';
-import 'package:shoes_store_app/view/cheng/utils/admin_tablet_utils.dart';
-import 'package:shoes_store_app/view/cheng/screens/admin/admin_mobile_block_view.dart';
+import 'package:shoes_store_app/utils/admin_tablet_utils.dart';
 import 'package:shoes_store_app/view/cheng/screens/customer/search_view.dart' as cheng_search;
-import 'package:shoes_store_app/view/cheng/test_navigation_page.dart';
-import 'package:shoes_store_app/view/cheng/screens/auth/admin_login_view.dart';
 import 'package:shoes_store_app/view/cheng/screens/auth/signup_view.dart';
 
 class LoginView extends StatefulWidget {
@@ -74,7 +69,7 @@ class _LoginViewState extends State<LoginView> {
             appBar: CustomAppBar(
               title: '로그인',
               centerTitle: true,
-              titleTextStyle: config.rLabel,
+              titleTextStyle: config.boldLabelStyle,
               backgroundColor: p.background,
               foregroundColor: p.textPrimary,
             ),
@@ -87,7 +82,7 @@ class _LoginViewState extends State<LoginView> {
               CustomPadding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
-                  vertical: 24,
+                  vertical: config.largeSpacing,
                 ),
                 child: GestureDetector(
                   onTap: _handleLogoTap,
@@ -107,12 +102,12 @@ class _LoginViewState extends State<LoginView> {
                 ),
               ),
               CustomPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding: config.formHorizontalPadding,
                 child: Form(
                   key: _formKey,
                   child: CustomColumn(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                    spacing: 16,
+                    spacing: config.defaultSpacing,
                     children: [
                       CustomTextField(
                         controller: _idController,
@@ -133,22 +128,22 @@ class _LoginViewState extends State<LoginView> {
                         required: true,
                         requiredMessage: '비밀번호를 입력해주세요',
                       ),
-                      const SizedBox(height: 24),
+                      config.largeVerticalSpacing,
 
                       CustomButton(
                         btnText: '로그인',
                         buttonType: ButtonType.elevated,
                         onCallBack: _handleLogin,
-                        minimumSize: const Size(double.infinity, 56),
+                        minimumSize: Size(double.infinity, config.defaultButtonHeight),
                       ),
 
-                      const SizedBox(height: 16),
+                      config.defaultVerticalSpacing,
 
                       CustomButton(
                         btnText: '회원가입',
                         buttonType: ButtonType.outlined,
                         onCallBack: _navigateToSignUp,
-                        minimumSize: const Size(double.infinity, 56),
+                        minimumSize: Size(double.infinity, config.defaultButtonHeight),
                       ),
 
                       const SizedBox(height: 16),
@@ -157,7 +152,7 @@ class _LoginViewState extends State<LoginView> {
                         btnText: '테스트 페이지로 이동',
                         buttonType: ButtonType.outlined,
                         onCallBack: _navigateToTestPage,
-                        minimumSize: const Size(double.infinity, 56),
+                        minimumSize: Size(double.infinity, config.defaultButtonHeight),
                       ),
                     ],
                   ),
@@ -221,21 +216,14 @@ class _LoginViewState extends State<LoginView> {
   /// 반환값: true면 휴면 처리되어 로그인 차단, false면 정상 진행
   Future<bool> _checkDormantAccount(LoginHistory loginHistory, Customer customer) async {
     try {
-      final loginTimeStr = loginHistory.loginTime;
-      DateTime lastLoginDateTime;
-      
-      if (loginTimeStr.length == 16) {
-        lastLoginDateTime = DateTime.parse('$loginTimeStr:00');
-      } else {
-        lastLoginDateTime = DateTime.parse(loginTimeStr);
-      }
-      
+      // ISO 8601 형식으로 통일되었으므로 직접 파싱 가능
+      final lastLoginDateTime = DateTime.parse(loginHistory.loginTime);
       final now = DateTime.now();
       final daysDifference = now.difference(lastLoginDateTime).inDays;
       
       AppLogger.d('마지막 로그인: $lastLoginDateTime, 현재: $now, 차이: $daysDifference일', tag: 'Login');
       
-      if (daysDifference >= 180) {
+      if (daysDifference >= config.dormantAccountDays) {
         AppLogger.w('6개월 이상 미접속 - 휴면 회원 처리', tag: 'Login', error: 'Customer ID: ${customer.id}');
         
         await _loginHistoryHandler.updateStatusByCustomerId(
@@ -256,14 +244,9 @@ class _LoginViewState extends State<LoginView> {
   /// 로그인 시간 업데이트
   Future<void> _updateLoginTime(Customer customer) async {
     try {
-      final currentTime = CustomCommonUtil.formatDate(
-        DateTime.now(),
-        'yyyy-MM-dd HH:mm',
-      );
-      
       await _loginHistoryHandler.updateLoginTimeByCustomerId(
         customer.id!,
-        currentTime,
+        DateTime.now().toIso8601String(),
       );
       
       AppLogger.d('로그인 히스토리 업데이트 성공 - Customer ID: ${customer.id}', tag: 'Login');
@@ -338,9 +321,9 @@ class _LoginViewState extends State<LoginView> {
       final isTabletDevice = isTablet(context);
       
       if (isTabletDevice) {
-        CustomNavigationUtil.to(context, const AdminLoginView());
+        CustomNavigationUtil.toNamed(context, config.routeAdminLogin);
       } else {
-        CustomNavigationUtil.to(context, const AdminMobileBlockView());
+        CustomNavigationUtil.toNamed(context, config.routeAdminMobileBlock);
       }
       return;
     }
@@ -422,18 +405,10 @@ class _LoginViewState extends State<LoginView> {
 
   /// 로그인 히스토리 생성
   Future<void> _createLoginHistory(Customer customer) async {
-    final currentTime = CustomCommonUtil.formatDate(
-      DateTime.now(),
-      'yyyy-MM-dd HH:mm',
-    );
-    
-    final double dVersion = config.kVersion.toDouble();
-    
     final newLoginHistory = LoginHistory(
       cid: customer.id,
-      loginTime: currentTime,
+      loginTime: DateTime.now().toIso8601String(),
       lStatus: config.loginStatus[0] as String, // '활동 회원'
-      lVersion: dVersion,
       lAddress: '',
       lPaymentMethod: '',
     );
@@ -453,6 +428,6 @@ class _LoginViewState extends State<LoginView> {
 
   /// 테스트 페이지로 이동
   void _navigateToTestPage() {
-    CustomNavigationUtil.to(context, const TestNavigationPage());
+    CustomNavigationUtil.toNamed(context, config.routeTestNavigationPage);
   }
 }

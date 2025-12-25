@@ -8,9 +8,6 @@ import 'package:shoes_store_app/database/handlers/customer_handler.dart';
 import 'package:shoes_store_app/database/handlers/login_history_handler.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
 import 'package:shoes_store_app/custom/custom.dart';
-import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
-import 'package:shoes_store_app/custom/custom_dialog.dart';
-import 'package:shoes_store_app/custom/custom_snack_bar.dart';
 import 'package:shoes_store_app/view/cheng/screens/admin/admin_mobile_block_view.dart';
 import 'package:shoes_store_app/view/cheng/screens/admin/admin_order_view.dart';
 import 'package:shoes_store_app/view/cheng/screens/admin/admin_return_order_view.dart';
@@ -37,18 +34,18 @@ class TestNavigationPage extends StatelessWidget {
       appBar: CustomAppBar(
         title: '네비게이션 테스트',
         centerTitle: true,
-        titleTextStyle: config.rLabel,
+        titleTextStyle: config.boldLabelStyle,
         backgroundColor: p.background,
         foregroundColor: p.textPrimary,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: CustomPadding(
-            padding: const EdgeInsets.all(24),
+            padding: config.largePadding,
             child: CustomColumn(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: 16,
+              spacing: config.defaultSpacing,
               children: [
                 CustomText(
                   '페이지 이동 테스트',
@@ -56,79 +53,79 @@ class TestNavigationPage extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 16),
+                config.defaultVerticalSpacing,
                 CustomButton(
                   btnText: 'DB 초기화 및 더미 데이터 재삽입',
                   buttonType: ButtonType.elevated,
                   onCallBack: () => _reinitializeDatabase(context),
-                  minimumSize: const Size(double.infinity, 56),
+                  minimumSize: Size(double.infinity, config.defaultButtonHeight),
                 ),
-                const SizedBox(height: 16),
+                config.defaultVerticalSpacing,
                 CustomButton(
                   btnText: '로그인 화면',
                   buttonType: ButtonType.elevated,
                   onCallBack: () => _navigateToLogin(context),
-                  minimumSize: const Size(double.infinity, 56),
+                  minimumSize: Size(double.infinity, config.defaultButtonHeight),
                 ),
                 CustomButton(
                   btnText: '회원가입 화면',
                   buttonType: ButtonType.elevated,
                   onCallBack: () => _navigateToSignUp(context),
-                  minimumSize: const Size(double.infinity, 56),
+                  minimumSize: Size(double.infinity, config.defaultButtonHeight),
                 ),
                 CustomButton(
                   btnText: '회원가입 화면 (더미 데이터)',
                   buttonType: ButtonType.elevated,
                   onCallBack: () => _navigateToSignUpWithTestData(context),
-                  minimumSize: const Size(double.infinity, 56),
+                  minimumSize: Size(double.infinity, config.defaultButtonHeight),
                 ),
                 CustomButton(
                   btnText: '사용자 프로필 수정 화면',
                   buttonType: ButtonType.elevated,
                   onCallBack: () => _navigateToUserProfileEdit(context),
-                  minimumSize: const Size(double.infinity, 56),
+                  minimumSize: Size(double.infinity, config.defaultButtonHeight),
                 ),
                 CustomButton(
                   btnText: '관리자 로그인 화면',
                   buttonType: ButtonType.elevated,
                   onCallBack: () => _navigateToAdminLogin(context),
-                  minimumSize: const Size(double.infinity, 56),
+                  minimumSize: Size(double.infinity, config.defaultButtonHeight),
                 ),
                 CustomButton(
                   btnText: '관리자 모바일 차단 화면',
                   buttonType: ButtonType.elevated,
                   onCallBack: () => _navigateToAdminBlock(context),
-                  minimumSize: const Size(double.infinity, 56),
+                  minimumSize: Size(double.infinity, config.defaultButtonHeight),
                 ),
                 CustomButton(
                   btnText: '주문 관리 화면',
                   buttonType: ButtonType.elevated,
                   onCallBack: () => _navigateToOrderView(context),
-                  minimumSize: const Size(double.infinity, 56),
+                  minimumSize: Size(double.infinity, config.defaultButtonHeight),
                 ),
                 CustomButton(
                   btnText: '반품 관리 화면',
                   buttonType: ButtonType.elevated,
                   onCallBack: () => _navigateToReturnOrderView(context),
-                  minimumSize: const Size(double.infinity, 56),
+                  minimumSize: Size(double.infinity, config.defaultButtonHeight),
                 ),
                 CustomButton(
                   btnText: '고객용 주문 목록 화면',
                   buttonType: ButtonType.elevated,
                   onCallBack: () => _navigateToCustomerOrderList(context),
-                  minimumSize: const Size(double.infinity, 56),
+                  minimumSize: Size(double.infinity, config.defaultButtonHeight),
                 ),
                 CustomButton(
                   btnText: '고객용 반품 목록 화면',
                   buttonType: ButtonType.elevated,
                   onCallBack: () => _navigateToCustomerReturnList(context),
-                  minimumSize: const Size(double.infinity, 56),
+                  minimumSize: Size(double.infinity, config.defaultButtonHeight),
                 ),
                 CustomButton(
                   btnText: '검색 화면',
                   buttonType: ButtonType.elevated,
                   onCallBack: () => _navigateToSearchView(context),
-                  minimumSize: const Size(double.infinity, 56),
+                  minimumSize: Size(double.infinity, config.defaultButtonHeight),
                 ),
                 const SizedBox(height: 32),
                 CustomText(
@@ -141,13 +138,13 @@ class TestNavigationPage extends StatelessWidget {
                       btnText: '모든 사용자 출력',
                       buttonType: ButtonType.elevated,
                       onCallBack: () => _printRecentCustomers(context),
-                      minimumSize: const Size(double.infinity, 56),
+                      minimumSize: Size(double.infinity, config.defaultButtonHeight),
                     ),
                     CustomButton(
                       btnText: '로그인 히스토리 전체 출력',
                       buttonType: ButtonType.elevated,
                       onCallBack: () => _printAllLoginHistory(context),
-                      minimumSize: const Size(double.infinity, 56),
+                      minimumSize: Size(double.infinity, config.defaultButtonHeight),
                     ),
                 // const SizedBox(height: 32),
                 // CustomText(
@@ -283,7 +280,7 @@ class TestNavigationPage extends StatelessWidget {
 
       // 데이터베이스 초기화
       final dbPath = await getDatabasesPath();
-      final path = join(dbPath, '${config.kDBName}${config.kDBFileExt}');
+      final path = join(dbPath, '${config.dbName}${config.dbFileExt}');
       
       // DatabaseManager 인스턴스 가져오기
       final dbManager = DatabaseManager();
@@ -303,7 +300,7 @@ class TestNavigationPage extends StatelessWidget {
       
       // 초기화 완료 플래그 저장
       final storage = GetStorage();
-      await storage.write(config.kStorageKeyDBInitialized, true);
+      await storage.write(config.storageKeyDBInitialized, true);
 
       // 로딩 닫기
       if (context.mounted) {
@@ -441,12 +438,20 @@ class TestNavigationPage extends StatelessWidget {
       
       for (int i = 0; i < allLoginHistory.length; i++) {
         final history = allLoginHistory[i];
+        // ISO 8601 형식을 yyyy-MM-dd HH:mm 형식으로 변환
+        String formattedLoginTime;
+        try {
+          final loginDateTime = DateTime.parse(history.loginTime);
+          formattedLoginTime = CustomCommonUtil.formatDate(loginDateTime, 'yyyy-MM-dd HH:mm');
+        } catch (e) {
+          formattedLoginTime = history.loginTime; // 파싱 실패 시 원본 표시
+        }
+        
         print('\n[${i + 1}번째 로그인 히스토리]');
         print('  ID: ${history.id}');
         print('  Customer ID (cid): ${history.cid}');
-        print('  로그인 시간 (loginTime): ${history.loginTime}');
+        print('  로그인 시간 (loginTime): $formattedLoginTime');
         print('  상태 (lStatus): ${history.lStatus}');
-        print('  버전 (lVersion): ${history.lVersion}');
         print('  주소 (lAddress): "${history.lAddress}"');
         print('  결제 방법 (lPaymentMethod): "${history.lPaymentMethod}"');
         print('-' * 60);

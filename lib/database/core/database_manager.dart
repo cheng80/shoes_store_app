@@ -10,15 +10,15 @@ class DatabaseManager {
   Future<Database> initializeDB() async {
     if (_db != null) return _db!;
 
-    final String dbName = '${config.kDBName}${config.kDBFileExt}';
-    final int dVersion = config.kVersion;
+    final String dbName = '${config.dbName}${config.dbFileExt}';
+    final int dbVersion = config.schemaVersion;
 
     final path = join(await getDatabasesPath(), dbName);
     print("Database Path: $path");
 
     _db = await openDatabase(
       path,
-      version: dVersion,
+      version: dbVersion,
       onCreate: (db, version) async {
         await _createTables(db);
         await _createIndexes(db);
@@ -126,7 +126,6 @@ class DatabaseManager {
         cid INTEGER,
         loginTime TEXT,
         lStatus TEXT,
-        lVersion REAL,
         lAddress TEXT,
         lPaymentMethod TEXT
       )

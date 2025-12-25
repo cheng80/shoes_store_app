@@ -23,7 +23,7 @@ class ProductBaseHandler {
   Future<List<ProductBase>> queryAll() async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableProductBase,
+      config.tableProductBase,
       orderBy: 'id ASC',
     );
     return results.map((e) => ProductBase.fromMap(e)).toList();
@@ -36,7 +36,7 @@ class ProductBaseHandler {
   Future<ProductBase?> queryById(int id) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableProductBase,
+      config.tableProductBase,
       where: 'id = ?',
       whereArgs: [id],
       limit: 1,
@@ -52,7 +52,7 @@ class ProductBaseHandler {
   Future<ProductBase?> queryByName(String name) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableProductBase,
+      config.tableProductBase,
       where: 'pName = ?',
       whereArgs: [name],
       limit: 1,
@@ -68,7 +68,7 @@ class ProductBaseHandler {
   Future<List<ProductBase>> queryByColor(String color) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableProductBase,
+      config.tableProductBase,
       where: 'pColor = ?',
       whereArgs: [color],
       orderBy: 'id ASC',
@@ -83,7 +83,7 @@ class ProductBaseHandler {
   Future<List<ProductBase>> queryByCategory(String category) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableProductBase,
+      config.tableProductBase,
       where: 'pCategory = ?',
       whereArgs: [category],
       orderBy: 'id ASC',
@@ -112,7 +112,7 @@ class ProductBaseHandler {
     
     // ProductBase 정보 조회
     final baseResults = await db.query(
-      config.kTableProductBase,
+      config.tableProductBase,
       where: 'id = ?',
       whereArgs: [id],
       limit: 1,
@@ -122,7 +122,7 @@ class ProductBaseHandler {
     
     // 이미지 목록 조회
     final imageResults = await db.query(
-      config.kTableProductImage,
+      config.tableProductImage,
       where: 'pbid = ?',
       whereArgs: [id],
       orderBy: 'id ASC',
@@ -173,7 +173,7 @@ class ProductBaseHandler {
   Future<int> insertData(ProductBase productBase) async {
     final db = await _getDatabase();
     final map = productBase.toMap(includeId: false);
-    return await db.insert(config.kTableProductBase, map);
+    return await db.insert(config.tableProductBase, map);
   }
 
   // ============================================
@@ -192,7 +192,7 @@ class ProductBaseHandler {
     final db = await _getDatabase();
     final map = productBase.toMap(includeId: false);
     return await db.update(
-      config.kTableProductBase,
+      config.tableProductBase,
       map,
       where: 'id = ?',
       whereArgs: [productBase.id],
@@ -212,7 +212,7 @@ class ProductBaseHandler {
   Future<int> deleteData(int id) async {
     final db = await _getDatabase();
     return await db.delete(
-      config.kTableProductBase,
+      config.tableProductBase,
       where: 'id = ?',
       whereArgs: [id],
     );

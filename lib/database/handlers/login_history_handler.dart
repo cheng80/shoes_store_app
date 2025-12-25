@@ -23,7 +23,7 @@ class LoginHistoryHandler {
   Future<List<LoginHistory>> queryAll() async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableLoginHistory,
+      config.tableLoginHistory,
       orderBy: 'loginTime DESC',
     );
     return results.map((e) => LoginHistory.fromMap(e)).toList();
@@ -36,7 +36,7 @@ class LoginHistoryHandler {
   Future<LoginHistory?> queryById(int id) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableLoginHistory,
+      config.tableLoginHistory,
       where: 'id = ?',
       whereArgs: [id],
       limit: 1,
@@ -59,7 +59,7 @@ class LoginHistoryHandler {
   Future<List<LoginHistory>> queryByCustomerId(int cid) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableLoginHistory,
+      config.tableLoginHistory,
       where: 'cid = ?',
       whereArgs: [cid],
       orderBy: 'loginTime DESC',
@@ -83,7 +83,6 @@ class LoginHistoryHandler {
   ///   cid: customerId,
   ///   loginTime: DateTime.now().toIso8601String(),
   ///   lStatus: '활동 회원',
-  ///   lVersion: 1.0,
   ///   lAddress: '서울시 강남구',
   ///   lPaymentMethod: '카드',
   /// );
@@ -92,7 +91,7 @@ class LoginHistoryHandler {
   Future<int> insertData(LoginHistory history) async {
     final db = await _getDatabase();
     final map = history.toMap(includeId: false);
-    return await db.insert(config.kTableLoginHistory, map);
+    return await db.insert(config.tableLoginHistory, map);
   }
 
   // ============================================
@@ -110,7 +109,7 @@ class LoginHistoryHandler {
     final db = await _getDatabase();
     final map = history.toMap(includeId: false);
     return await db.update(
-      config.kTableLoginHistory,
+      config.tableLoginHistory,
       map,
       where: 'id = ?',
       whereArgs: [history.id],
@@ -125,7 +124,7 @@ class LoginHistoryHandler {
   Future<int> updateStatusByCustomerId(int cid, String status) async {
     final db = await _getDatabase();
     return await db.update(
-      config.kTableLoginHistory,
+      config.tableLoginHistory,
       {'lStatus': status},
       where: 'cid = ?',
       whereArgs: [cid],
@@ -140,7 +139,7 @@ class LoginHistoryHandler {
   Future<int> updateLoginTimeByCustomerId(int cid, String loginTime) async {
     final db = await _getDatabase();
     return await db.update(
-      config.kTableLoginHistory,
+      config.tableLoginHistory,
       {'loginTime': loginTime},
       where: 'cid = ?',
       whereArgs: [cid],
@@ -158,7 +157,7 @@ class LoginHistoryHandler {
   Future<int> deleteData(int id) async {
     final db = await _getDatabase();
     return await db.delete(
-      config.kTableLoginHistory,
+      config.tableLoginHistory,
       where: 'id = ?',
       whereArgs: [id],
     );

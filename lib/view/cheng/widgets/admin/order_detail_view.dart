@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/view/cheng/widgets/customer/customer_info_card.dart';
 import 'package:shoes_store_app/utils/order_utils.dart';
@@ -52,7 +53,7 @@ class OrderDetailView extends StatelessWidget {
 
     return CustomColumn(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      spacing: 16,
+      spacing: config.defaultSpacing,
       children: [
         // 주문자 상세 정보 카드
         CustomerInfoCard(
@@ -62,13 +63,13 @@ class OrderDetailView extends StatelessWidget {
         ),
 
         // 주문 상품들
-        CustomText('주문 상품들', fontSize: 18, fontWeight: FontWeight.bold),
+        CustomText('주문 상품들', style: config.titleStyle),
 
         // 주문 상품 리스트 (각 상품을 카드로 표시)
         ...orderItems.map((item) {
           return CustomCard(
             margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.all(12),
+            padding: config.mediumPadding,
             child: CustomRow(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -77,7 +78,7 @@ class OrderDetailView extends StatelessWidget {
                   flex: 2,
                   child: CustomText(
                     item['productName'] as String,
-                    fontSize: 14,
+                    style: config.bodyTextStyle,
                     fontWeight: FontWeight.normal,
                   ),
                 ),
@@ -86,7 +87,7 @@ class OrderDetailView extends StatelessWidget {
                   width: 60,
                   child: CustomText(
                     '${item['size']}',
-                    fontSize: 14,
+                    style: config.bodyTextStyle,
                     fontWeight: FontWeight.normal,
                     textAlign: TextAlign.center,
                   ),
@@ -96,7 +97,7 @@ class OrderDetailView extends StatelessWidget {
                   width: 60,
                   child: CustomText(
                     item['color'] as String,
-                    fontSize: 14,
+                    style: config.bodyTextStyle,
                     fontWeight: FontWeight.normal,
                     textAlign: TextAlign.center,
                   ),
@@ -106,7 +107,7 @@ class OrderDetailView extends StatelessWidget {
                   width: 40,
                   child: CustomText(
                     '${item['quantity']}',
-                    fontSize: 14,
+                    style: config.bodyTextStyle,
                     fontWeight: FontWeight.normal,
                     textAlign: TextAlign.center,
                   ),
@@ -116,7 +117,7 @@ class OrderDetailView extends StatelessWidget {
                   width: 100,
                   child: CustomText(
                     '${OrderUtils.formatPrice(item['price'] as int)}원',
-                    fontSize: 14,
+                    style: config.bodyTextStyle,
                     fontWeight: FontWeight.normal,
                     textAlign: TextAlign.right,
                   ),
@@ -132,8 +133,7 @@ class OrderDetailView extends StatelessWidget {
           children: [
             CustomText(
               '총 가격: ${OrderUtils.formatPrice(totalPrice)}원',
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+              style: config.mediumTextStyle.copyWith(fontWeight: FontWeight.bold),
             ),
           ],
         ),

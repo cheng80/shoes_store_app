@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/theme/app_colors.dart';
-import 'package:shoes_store_app/custom/custom_snack_bar.dart';
-import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/database/handlers/customer_handler.dart';
 import 'package:shoes_store_app/model/customer.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
@@ -113,7 +111,7 @@ class _UserProfileEditViewState extends State<UserProfileEditView> {
             appBar: CustomAppBar(
               title: '개인정보 수정',
               centerTitle: true,
-              titleTextStyle: config.rLabel,
+              titleTextStyle: config.boldLabelStyle,
               backgroundColor: p.background,
               foregroundColor: p.textPrimary,
             ),
@@ -121,20 +119,19 @@ class _UserProfileEditViewState extends State<UserProfileEditView> {
           child: Center(
             child: SingleChildScrollView(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 600),
+                constraints: BoxConstraints(maxWidth: config.dialogMaxWidth),
                 child: CustomPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                  padding: config.userProfileEditPadding,
                   child: Form(
                     key: _formKey,
                     child: CustomColumn(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      spacing: 24,
+                      spacing: config.largeSpacing,
                       children: [
                         // 개인정보 수정 타이틀
                         CustomText(
                           '개인정보 수정',
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
+                          style: config.largeTitleStyle,
                           textAlign: TextAlign.center,
                         ),
 
@@ -197,7 +194,7 @@ class _UserProfileEditViewState extends State<UserProfileEditView> {
                           btnText: '수정하기',
                           buttonType: ButtonType.elevated,
                           onCallBack: _handleUpdate,
-                          minimumSize: const Size(double.infinity, 56),
+                          minimumSize: Size(double.infinity, config.defaultButtonHeight),
                         ),
                       ],
                     ),
@@ -264,21 +261,22 @@ class _UserProfileEditViewState extends State<UserProfileEditView> {
       type: DialogType.dual,
       confirmText: '확인',
       cancelText: '취소',
-      borderRadius: 12,
+      borderRadius: config.defaultDialogBorderRadius,
       autoDismissOnConfirm: false,
       onConfirm: () async {
         try {
           final success = await _performUpdate();
           if (success) {
+            // 다이얼로그 닫기
             if (context.mounted) {
               Navigator.of(context).pop();
             }
-            Future.delayed(const Duration(milliseconds: 100), () {
-              if (scaffoldContext.mounted) {
-                Navigator.of(scaffoldContext).pop(true);
-              }
-            });
+            // 화면 닫기 (true 반환하여 상위 화면에 성공 알림)
+            if (scaffoldContext.mounted) {
+              Navigator.of(scaffoldContext).pop(true);
+            }
           } else {
+            // 실패 시 다이얼로그만 닫기
             if (context.mounted) {
               Navigator.of(context).pop();
             }

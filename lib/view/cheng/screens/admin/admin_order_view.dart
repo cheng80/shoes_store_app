@@ -2,19 +2,17 @@ import 'package:flutter/material.dart';
 
 import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/theme/app_colors.dart';
-import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/database/handlers/purchase_handler.dart';
 import 'package:shoes_store_app/database/handlers/purchase_item_handler.dart';
 import 'package:shoes_store_app/model/sale/purchase.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
 import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/view/cheng/storage/admin_storage.dart';
-import 'package:shoes_store_app/view/cheng/utils/admin_tablet_utils.dart';
+import 'package:shoes_store_app/utils/admin_tablet_utils.dart';
 import 'package:shoes_store_app/utils/order_status_utils.dart';
 import 'package:shoes_store_app/view/cheng/widgets/admin/admin_drawer.dart';
 import 'package:shoes_store_app/view/cheng/screens/admin/admin_order_detail_view.dart';
 import 'package:shoes_store_app/view/cheng/widgets/admin/order_card.dart';
-import 'package:shoes_store_app/view/cheng/screens/admin/admin_profile_edit_view.dart';
 import 'package:shoes_store_app/view/cheng/screens/admin/admin_return_order_view.dart';
 
 /// 관리자/직원 주문 관리 화면
@@ -107,7 +105,6 @@ class _AdminOrderViewState
       /// 각 주문의 상태와 고객명 계산
       final statusMap = <int, String>{};
       final customerNameMap = <int, String>{};
-      final now = DateTime.now();
       
       /// 고객별로 그룹화하여 조회 (최적화)
       final customerIds = purchases
@@ -141,12 +138,10 @@ class _AdminOrderViewState
             /// PurchaseItem 조회
             final items = await _purchaseItemHandler.queryByPurchaseId(purchase.id!);
             
-            /// 주문 상태 결정 (관리자 화면: showActualStatus=false로 고객 화면과 동일하게 표시)
-            final status = OrderStatusUtils.determineOrderStatusForAdmin(
-              items, 
-              purchase, 
-              now: now,
-              showActualStatus: false, // 목록에서는 고객 화면과 동일하게 표시
+            /// 주문 상태 결정 (주문 관리 화면: 반품 상태 무시하고 status 2 이상이면 "제품 수령 완료"로 표시)
+            final status = OrderStatusUtils.determineOrderStatusForOrderManagement(
+              items,
+              purchase,
             );
             statusMap[purchase.id!] = status;
           } catch (e) {
@@ -194,7 +189,7 @@ class _AdminOrderViewState
             label: '주문 관리',
             icon: Icons.shopping_cart,
             menuType: AdminMenuType.orderManagement,
-            onTap: () {
+            onTap: (_) {
               // 현재 페이지이므로 아무 동작 없음
             },
           ),
@@ -202,15 +197,15 @@ class _AdminOrderViewState
             label: '반품 관리',
             icon: Icons.assignment_return,
             menuType: AdminMenuType.returnManagement,
-            onTap: () {
-              CustomNavigationUtil.off(context, const AdminReturnOrderView());
+            onTap: (ctx) {
+              CustomNavigationUtil.off(ctx, const AdminReturnOrderView());
             },
           ),
         ],
         onProfileEditTap: () async {
-          final result = await CustomNavigationUtil.to(
+          final result = await CustomNavigationUtil.toNamed(
             context,
-            const AdminProfileEditView(),
+            config.routeAdminProfileEdit,
           );
           if (result == true) {
             AppLogger.d('관리자 개인정보 수정 완료 - drawer 갱신', tag: 'OrderView');
@@ -231,7 +226,7 @@ class _AdminOrderViewState
                   padding: const EdgeInsets.all(16),
                   child: CustomColumn(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                    spacing: 12,
+                    spacing: config.mediumSpacing,
                     children: [
                       // 검색 필터
                       CustomTextField(
@@ -244,8 +239,7 @@ class _AdminOrderViewState
                       // 주문 목록 제목
                       CustomText(
                         '주문 목록',
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        style: config.titleStyle,
                       ),
 
                       // 주문 목록 리스트 표시
@@ -253,7 +247,7 @@ class _AdminOrderViewState
                       if (_isLoading)
                         const Center(
                           child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 32),
+                            padding: EdgeInsets.symmetric(vertical: config.extraLargeSpacing),
                             child: CircularProgressIndicator(),
                           ),
                         )
@@ -261,8 +255,7 @@ class _AdminOrderViewState
                         Center(
                           child: CustomText(
                             '주문이 없습니다.',
-                            fontSize: 14,
-                            fontWeight: FontWeight.normal,
+                            style: config.bodyTextStyle,
                             textAlign: TextAlign.center,
                           ),
                         )
@@ -309,8 +302,7 @@ class _AdminOrderViewState
                       ? Center(
                           child: CustomText(
                             '데이터 없음',
-                            fontSize: 18,
-                            fontWeight: FontWeight.normal,
+                            style: config.titleStyle.copyWith(fontWeight: FontWeight.normal),
                             textAlign: TextAlign.center,
                           ),
                         )

@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 
+import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:shoes_store_app/database/handlers/employee_handler.dart';
-import 'package:shoes_store_app/custom/custom_snack_bar.dart';
-import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/model/employee.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
 import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/view/cheng/storage/admin_storage.dart';
-import 'package:shoes_store_app/view/cheng/utils/admin_tablet_utils.dart';
+import 'package:shoes_store_app/utils/admin_tablet_utils.dart';
 import 'package:shoes_store_app/view/cheng/screens/admin/admin_mobile_block_view.dart';
 
 /// 관리자 개인정보 수정 화면
@@ -108,20 +107,19 @@ class _AdminProfileEditViewState extends State<AdminProfileEditView> {
           child: Center(
             child: SingleChildScrollView(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 600),
+                constraints: BoxConstraints(maxWidth: config.dialogMaxWidth),
                 child: CustomPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
+                  padding: config.profileEditPadding,
                   child: Form(
                     key: _formKey,
                     child: CustomColumn(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      spacing: 24,
+                      spacing: config.largeSpacing,
                       children: [
                         // 개인정보 수정 타이틀
                         CustomText(
                           '개인정보 수정',
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
+                          style: config.largeTitleStyle,
                           textAlign: TextAlign.center,
                         ),
 
@@ -184,7 +182,7 @@ class _AdminProfileEditViewState extends State<AdminProfileEditView> {
                           btnText: '수정하기',
                           buttonType: ButtonType.elevated,
                           onCallBack: _handleUpdate,
-                          minimumSize: const Size(double.infinity, 56),
+                          minimumSize: Size(double.infinity, config.defaultButtonHeight),
                         ),
                       ],
                     ),
@@ -262,21 +260,22 @@ class _AdminProfileEditViewState extends State<AdminProfileEditView> {
       type: DialogType.dual,
       confirmText: '확인',
       cancelText: '취소',
-      borderRadius: 12,
+      borderRadius: config.defaultDialogBorderRadius,
       autoDismissOnConfirm: false,
       onConfirm: () async {
         try {
           final success = await _performUpdate();
           if (success) {
+            // 다이얼로그 닫기
             if (context.mounted) {
               Navigator.of(context).pop();
             }
-            Future.delayed(const Duration(milliseconds: 100), () {
-              if (scaffoldContext.mounted) {
-                Navigator.of(scaffoldContext).pop(true);
-              }
-            });
+            // 화면 닫기 (true 반환하여 상위 화면에 성공 알림)
+            if (scaffoldContext.mounted) {
+              Navigator.of(scaffoldContext).pop(true);
+            }
           } else {
+            // 실패 시 다이얼로그만 닫기
             if (context.mounted) {
               Navigator.of(context).pop();
             }

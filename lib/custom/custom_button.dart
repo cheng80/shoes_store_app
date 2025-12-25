@@ -48,8 +48,9 @@ class CustomButton extends StatelessWidget {
   // String인 경우 CustomText로 자동 변환, Widget인 경우 그대로 사용
   final dynamic btnText;
 
-  // 버튼 클릭 시 실행될 콜백 함수 (필수)
-  final VoidCallback onCallBack;
+  // 버튼 클릭 시 실행될 콜백 함수
+  // null로 설정하면 버튼이 비활성화됩니다
+  final VoidCallback? onCallBack;
 
   // 버튼 타입 (기본값: ButtonType.text)
   final ButtonType buttonType;
@@ -89,7 +90,7 @@ class CustomButton extends StatelessWidget {
   CustomButton({
     super.key,
     required this.btnText,
-    required this.onCallBack,
+    this.onCallBack,
     this.buttonType = ButtonType.text,
     this.backgroundColor,
     this.foregroundColor,
@@ -150,6 +151,7 @@ class CustomButton extends StatelessWidget {
     }
 
     // 버튼 타입에 따라 적절한 버튼 위젯 반환
+    // onCallBack이 null이면 버튼이 비활성화됩니다
     switch (buttonType) {
       case ButtonType.text:
         return TextButton(

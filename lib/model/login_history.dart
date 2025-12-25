@@ -7,8 +7,6 @@ class LoginHistory {
   int? cid; //  Customer ID
   final String loginTime;
   final String lStatus;
-  final double lVersion;
-  //  Point 1
   final String lAddress;
   final String lPaymentMethod;
 
@@ -18,7 +16,6 @@ class LoginHistory {
     this.cid,
     required this.loginTime,
     required this.lStatus,
-    required this.lVersion,
     required this.lAddress,
     required this.lPaymentMethod,
   });
@@ -28,7 +25,6 @@ class LoginHistory {
       cid = map['cid'] as int?,
       loginTime = map['loginTime'] as String,
       lStatus = map['lStatus'] as String,
-      lVersion = (map['lVersion'] as num).toDouble(),
       lAddress = map['lAddress'] as String,
       lPaymentMethod = map['lPaymentMethod'] as String;
 
@@ -37,7 +33,6 @@ class LoginHistory {
       'cid': cid,
       'loginTime': loginTime,
       'lStatus': lStatus,
-      'lVersion': lVersion,
       'lAddress': lAddress,
       'lPaymentMethod': lPaymentMethod,
     };
@@ -54,7 +49,6 @@ class LoginHistory {
     'cid',
     'loginTime',
     'lStatus',
-    'lVersion',
     'lAddress',
     'lPaymentMethod',
   ];

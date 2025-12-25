@@ -21,7 +21,7 @@ class EmployeeHandler {
   Future<List<Employee>> queryAll() async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.tTableEmployee,
+      config.tableEmployee,
       orderBy: 'id ASC',
     );
     return results.map((e) => Employee.fromMap(e)).toList();
@@ -31,7 +31,7 @@ class EmployeeHandler {
   Future<Employee?> queryById(int id) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.tTableEmployee,
+      config.tableEmployee,
       where: 'id = ?',
       whereArgs: [id],
       limit: 1,
@@ -44,7 +44,7 @@ class EmployeeHandler {
   Future<Employee?> queryByEmail(String email) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.tTableEmployee,
+      config.tableEmployee,
       where: 'eEmail = ?',
       whereArgs: [email],
       limit: 1,
@@ -57,7 +57,7 @@ class EmployeeHandler {
   Future<Employee?> queryByPhoneNumber(String phoneNumber) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.tTableEmployee,
+      config.tableEmployee,
       where: 'ePhoneNumber = ?',
       whereArgs: [phoneNumber],
       limit: 1,
@@ -70,7 +70,7 @@ class EmployeeHandler {
   Future<Employee?> queryByIdentifier(String identifier) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.tTableEmployee,
+      config.tableEmployee,
       where: 'eEmail = ? OR ePhoneNumber = ?',
       whereArgs: [identifier, identifier],
       limit: 1,
@@ -83,7 +83,7 @@ class EmployeeHandler {
   Future<List<Employee>> queryByRole(String role) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.tTableEmployee,
+      config.tableEmployee,
       where: 'eRole = ?',
       whereArgs: [role],
       orderBy: 'id ASC',
@@ -99,7 +99,7 @@ class EmployeeHandler {
   Future<int> insertData(Employee employee) async {
     final db = await _getDatabase();
     final map = employee.toMap(includeId: false);
-    return await db.insert(config.tTableEmployee, map);
+    return await db.insert(config.tableEmployee, map);
   }
 
   // ============================================
@@ -115,7 +115,7 @@ class EmployeeHandler {
     final db = await _getDatabase();
     final map = employee.toMap(includeId: false);
     return await db.update(
-      config.tTableEmployee,
+      config.tableEmployee,
       map,
       where: 'id = ?',
       whereArgs: [employee.id],
@@ -130,7 +130,7 @@ class EmployeeHandler {
   Future<int> deleteData(int id) async {
     final db = await _getDatabase();
     return await db.delete(
-      config.tTableEmployee,
+      config.tableEmployee,
       where: 'id = ?',
       whereArgs: [id],
     );
