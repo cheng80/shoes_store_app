@@ -70,6 +70,143 @@ async def get_product_bases(
         conn.close()
 
 
+# ============================================
+# 복합 쿼리 - /list/* 엔드포인트 (/{id} 보다 먼저 정의해야 함)
+# ============================================
+
+@router.get("/list/with_first_image")
+async def get_product_bases_list_with_first_image():
+    """ProductBase 목록 + 첫 번째 이미지 조인 조회"""
+    conn = connect_db()
+    curs = conn.cursor()
+    
+    try:
+        sql = """
+        SELECT 
+            ProductBase.id,
+            ProductBase.pName,
+            ProductBase.pDescription,
+            ProductBase.pColor,
+            ProductBase.pGender,
+            ProductBase.pStatus,
+            ProductBase.pCategory,
+            ProductBase.pModelNumber,
+            (SELECT imagePath FROM ProductImage 
+             WHERE ProductImage.pbid = ProductBase.id 
+             LIMIT 1) as firstImage
+        FROM ProductBase
+        ORDER BY ProductBase.id ASC
+        """
+        curs.execute(sql)
+        rows = curs.fetchall()
+        
+        result = [
+            {
+                'id': row[0],
+                'pName': row[1],
+                'pDescription': row[2],
+                'pColor': row[3],
+                'pGender': row[4],
+                'pStatus': row[5],
+                'pCategory': row[6],
+                'pModelNumber': row[7],
+                'firstImage': row[8]
+            }
+            for row in rows
+        ]
+        
+        return {'results': result}
+    except Exception as e:
+        return {'result': 'Error', 'message': str(e)}
+    finally:
+        conn.close()
+
+
+@router.get("/list/full_detail")
+async def get_product_bases_list_full_detail():
+    """
+    ProductBase 전체 상세 목록 (검색 화면용)
+    ProductBase + 첫 번째 이미지 + 대표 Product(첫번째) + Manufacturer 통합 조회
+    """
+    conn = connect_db()
+    curs = conn.cursor()
+    
+    try:
+        # 복잡한 조인을 한번에 처리
+        sql = """
+        SELECT 
+            pb.id AS pb_id,
+            pb.pName,
+            pb.pDescription,
+            pb.pColor,
+            pb.pGender,
+            pb.pStatus,
+            pb.pCategory,
+            pb.pModelNumber,
+            (SELECT imagePath FROM ProductImage 
+             WHERE ProductImage.pbid = pb.id 
+             LIMIT 1) AS firstImage,
+            p.id AS product_id,
+            p.size,
+            p.basePrice,
+            p.discountRate,
+            p.stock,
+            m.id AS manufacturer_id,
+            m.mName AS manufacturerName,
+            m.mDescription AS manufacturerDescription
+        FROM ProductBase pb
+        LEFT JOIN Product p ON p.pbid = pb.id AND p.id = (
+            SELECT MIN(id) FROM Product WHERE pbid = pb.id
+        )
+        LEFT JOIN Manufacturer m ON p.mfid = m.id
+        ORDER BY pb.id ASC
+        """
+        curs.execute(sql)
+        rows = curs.fetchall()
+        
+        result = []
+        for row in rows:
+            item = {
+                'id': row[0],
+                'pName': row[1],
+                'pDescription': row[2],
+                'pColor': row[3],
+                'pGender': row[4],
+                'pStatus': row[5],
+                'pCategory': row[6],
+                'pModelNumber': row[7],
+                'firstImage': row[8],
+                'representativeProduct': None,
+                'manufacturer': None
+            }
+            
+            # 대표 Product 정보
+            if row[9] is not None:
+                item['representativeProduct'] = {
+                    'id': row[9],
+                    'size': row[10],
+                    'basePrice': row[11],
+                    'discountRate': row[12],
+                    'stock': row[13]
+                }
+            
+            # Manufacturer 정보
+            if row[14] is not None:
+                item['manufacturer'] = {
+                    'id': row[14],
+                    'mName': row[15],
+                    'mDescription': row[16]
+                }
+            
+            result.append(item)
+        
+        return {'results': result}
+    except Exception as e:
+        return {'result': 'Error', 'message': str(e)}
+    finally:
+        conn.close()
+
+
 @router.get("/{product_base_id}")
 async def get_product_base(product_base_id: int):
     """ID로 ProductBase 조회"""
@@ -183,7 +320,7 @@ async def delete_product_base(product_base_id: int):
 
 
 # ============================================
-# 복합 쿼리 - 별도 엔드포인트
+# 복합 쿼리 - /{id}/* 엔드포인트
 # ============================================
 
 @router.get("/{product_base_id}/with_images")
@@ -222,47 +359,6 @@ async def get_product_base_with_images(product_base_id: int):
         }
         
         return {'result': result}
-    except Exception as e:
-        return {'result': 'Error', 'message': str(e)}
-    finally:
-        conn.close()
-
-
-@router.get("/list/with_first_image")
-async def get_product_bases_list_with_first_image():
-    """ProductBase 목록 + 첫 번째 이미지 조인 조회"""
-    conn = connect_db()
-    curs = conn.cursor()
-    
-    try:
-        sql = """
-        SELECT 
-            ProductBase.*,
-            (SELECT imagePath FROM ProductImage 
-             WHERE ProductImage.pbid = ProductBase.id 
-             LIMIT 1) as firstImage
-        FROM ProductBase
-        ORDER BY ProductBase.id ASC
-        """
-        curs.execute(sql)
-        rows = curs.fetchall()
-        
-        result = [
-            {
-                'id': row[0],
-                'pName': row[1],
-                'pDescription': row[2],
-                'pColor': row[3],
-                'pGender': row[4],
-                'pStatus': row[5],
-                'pCategory': row[6],
-                'pModelNumber': row[7],
-                'firstImage': row[8]
-            }
-            for row in rows
-        ]
-        
-        return {'results': result}
     except Exception as e:
         return {'result': 'Error', 'message': str(e)}
     finally:

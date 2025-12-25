@@ -76,6 +76,66 @@ async def get_products(
         conn.close()
 
 
+# ============================================
+# 복합 쿼리 (JOIN) - /list/* 엔드포인트 (/{id} 보다 먼저 정의해야 함)
+# ============================================
+
+@router.get("/list/with_base")
+async def get_products_list_with_base(pbid: int = Query(..., description="ProductBase ID")):
+    """ProductBase별 제품 목록 + ProductBase 정보 조인 조회"""
+    conn = connect_db()
+    curs = conn.cursor()
+    
+    try:
+        sql = """
+        SELECT 
+            Product.id,
+            Product.pbid,
+            Product.mfid,
+            Product.size,
+            Product.basePrice,
+            Product.pQuantity,
+            ProductBase.pName,
+            ProductBase.pDescription,
+            ProductBase.pColor,
+            ProductBase.pGender,
+            ProductBase.pStatus,
+            ProductBase.pCategory,
+            ProductBase.pModelNumber
+        FROM Product
+        JOIN ProductBase ON Product.pbid = ProductBase.id
+        WHERE Product.pbid = %s
+        ORDER BY Product.size ASC
+        """
+        curs.execute(sql, (pbid,))
+        rows = curs.fetchall()
+        
+        result = [
+            {
+                'id': row[0],
+                'pbid': row[1],
+                'mfid': row[2],
+                'size': row[3],
+                'basePrice': row[4],
+                'pQuantity': row[5],
+                'pName': row[6],
+                'pDescription': row[7],
+                'pColor': row[8],
+                'pGender': row[9],
+                'pStatus': row[10],
+                'pCategory': row[11],
+                'pModelNumber': row[12]
+            }
+            for row in rows
+        ]
+        
+        return {'results': result}
+    except Exception as e:
+        return {'result': 'Error', 'message': str(e)}
+    finally:
+        conn.close()
+
+
 @router.get("/{product_id}")
 async def get_product(product_id: int):
     """ID로 제품 조회"""
@@ -183,7 +243,7 @@ async def delete_product(product_id: int):
 
 
 # ============================================
-# 복합 쿼리 (JOIN) - 별도 엔드포인트
+# 복합 쿼리 (JOIN) - /{id}/* 엔드포인트
 # ============================================
 
 @router.get("/{product_id}/with_base")
@@ -283,57 +343,6 @@ async def get_product_with_base_and_manufacturer(product_id: int):
         }
         
         return {'result': result}
-    except Exception as e:
-        return {'result': 'Error', 'message': str(e)}
-    finally:
-        conn.close()
-
-
-@router.get("/list/with_base")
-async def get_products_list_with_base(pbid: int = Query(..., description="ProductBase ID")):
-    """ProductBase별 제품 목록 + ProductBase 정보 조인 조회"""
-    conn = connect_db()
-    curs = conn.cursor()
-    
-    try:
-        sql = """
-        SELECT 
-            Product.*,
-            ProductBase.pName,
-            ProductBase.pDescription,
-            ProductBase.pColor,
-            ProductBase.pGender,
-            ProductBase.pStatus,
-            ProductBase.pCategory,
-            ProductBase.pModelNumber
-        FROM Product
-        JOIN ProductBase ON Product.pbid = ProductBase.id
-        WHERE Product.pbid = %s
-        ORDER BY Product.size ASC
-        """
-        curs.execute(sql, (pbid,))
-        rows = curs.fetchall()
-        
-        result = [
-            {
-                'id': row[0],
-                'pbid': row[1],
-                'mfid': row[2],
-                'size': row[3],
-                'basePrice': row[4],
-                'pQuantity': row[5],
-                'pName': row[6],
-                'pDescription': row[7],
-                'pColor': row[8],
-                'pGender': row[9],
-                'pStatus': row[10],
-                'pCategory': row[11],
-                'pModelNumber': row[12]
-            }
-            for row in rows
-        ]
-        
-        return {'results': result}
     except Exception as e:
         return {'result': 'Error', 'message': str(e)}
     finally:

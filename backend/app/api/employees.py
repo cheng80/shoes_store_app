@@ -1,9 +1,10 @@
 """
 Employee API
-RESTful 기본 CRUD
+RESTful 기본 CRUD + 필터링
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
+from typing import Optional
 from app.models.all_models import Employee
 from app.database.connection import connect_db
 
@@ -11,14 +12,48 @@ router = APIRouter()
 
 
 @router.get("")
-async def get_employees():
-    """모든 직원 조회"""
+async def get_employees(
+    email: Optional[str] = Query(None, description="이메일로 필터"),
+    phone: Optional[str] = Query(None, description="전화번호로 필터"),
+    identifier: Optional[str] = Query(None, description="이메일 또는 전화번호로 필터 (OR 조건)"),
+    role: Optional[str] = Query(None, description="역할로 필터"),
+    order_by: str = Query("id", description="정렬 기준"),
+    order: str = Query("asc", description="정렬 방향 (asc, desc)")
+):
+    """직원 조회 (필터링 및 정렬 가능)"""
     conn = connect_db()
     curs = conn.cursor()
     
     try:
-        sql = "SELECT id, eEmail, ePhoneNumber, eName, ePassword, eRole FROM Employee ORDER BY id ASC"
-        curs.execute(sql)
+        conditions = []
+        params = []
+        
+        if identifier:
+            # 이메일 또는 전화번호로 검색 (OR 조건)
+            conditions.append("(eEmail = %s OR ePhoneNumber = %s)")
+            params.extend([identifier, identifier])
+        else:
+            if email:
+                conditions.append("eEmail = %s")
+                params.append(email)
+            if phone:
+                conditions.append("ePhoneNumber = %s")
+                params.append(phone)
+        
+        if role:
+            conditions.append("eRole = %s")
+            params.append(role)
+        
+        where_clause = " AND ".join(conditions) if conditions else "1=1"
+        order_direction = "DESC" if order.lower() == "desc" else "ASC"
+        
+        sql = f"""
+        SELECT id, eEmail, ePhoneNumber, eName, ePassword, eRole 
+        FROM Employee 
+        WHERE {where_clause}
+        ORDER BY {order_by} {order_direction}
+        """
+        curs.execute(sql, params)
         rows = curs.fetchall()
         
         result = [

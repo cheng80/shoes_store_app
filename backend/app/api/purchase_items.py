@@ -67,6 +67,126 @@ async def get_purchase_items(
         conn.close()
 
 
+# ============================================
+# 복합 쿼리 (JOIN) - /list/* 엔드포인트 (/{id} 보다 먼저 정의해야 함)
+# ============================================
+
+@router.get("/list/with_product")
+async def get_purchase_items_list_with_product(pcid: int = Query(..., description="Purchase ID")):
+    """주문별 항목 + 제품 정보 조인 조회"""
+    conn = connect_db()
+    curs = conn.cursor()
+    
+    try:
+        sql = """
+        SELECT 
+            PurchaseItem.id,
+            PurchaseItem.pid,
+            PurchaseItem.pcid,
+            PurchaseItem.pcQuantity,
+            PurchaseItem.pcStatus,
+            Product.size,
+            Product.basePrice,
+            Product.pQuantity,
+            Product.pbid,
+            Product.mfid
+        FROM PurchaseItem
+        JOIN Product ON PurchaseItem.pid = Product.id
+        WHERE PurchaseItem.pcid = %s
+        ORDER BY PurchaseItem.id ASC
+        """
+        curs.execute(sql, (pcid,))
+        rows = curs.fetchall()
+        
+        result = [
+            {
+                'id': row[0],
+                'pid': row[1],
+                'pcid': row[2],
+                'pcQuantity': row[3],
+                'pcStatus': row[4],
+                'size': row[5],
+                'basePrice': row[6],
+                'pQuantity': row[7],
+                'pbid': row[8],
+                'mfid': row[9]
+            }
+            for row in rows
+        ]
+        
+        return {'results': result}
+    except Exception as e:
+        return {'result': 'Error', 'message': str(e)}
+    finally:
+        conn.close()
+
+
+@router.get("/list/full_detail")
+async def get_purchase_items_list_full_detail(pcid: int = Query(..., description="Purchase ID")):
+    """주문별 항목 전체 상세 정보 조회 (서브쿼리 포함)"""
+    conn = connect_db()
+    curs = conn.cursor()
+    
+    try:
+        sql = """
+        SELECT 
+            PurchaseItem.id,
+            PurchaseItem.pid,
+            PurchaseItem.pcid,
+            PurchaseItem.pcQuantity,
+            PurchaseItem.pcStatus,
+            Product.size,
+            Product.basePrice,
+            Product.pQuantity,
+            ProductBase.pName,
+            ProductBase.pDescription,
+            ProductBase.pColor,
+            ProductBase.pGender,
+            ProductBase.pCategory,
+            ProductBase.pModelNumber,
+            Manufacturer.mName,
+            (SELECT imagePath FROM ProductImage 
+            WHERE ProductImage.pbid = ProductBase.id 
+            LIMIT 1) as imagePath
+        FROM PurchaseItem
+        JOIN Product ON PurchaseItem.pid = Product.id
+        JOIN ProductBase ON Product.pbid = ProductBase.id
+        JOIN Manufacturer ON Product.mfid = Manufacturer.id
+        WHERE PurchaseItem.pcid = %s
+        ORDER BY PurchaseItem.id ASC
+        """
+        curs.execute(sql, (pcid,))
+        rows = curs.fetchall()
+        
+        result = [
+            {
+                'id': row[0],
+                'pid': row[1],
+                'pcid': row[2],
+                'pcQuantity': row[3],
+                'pcStatus': row[4],
+                'size': row[5],
+                'basePrice': row[6],
+                'pQuantity': row[7],
+                'pName': row[8],
+                'pDescription': row[9],
+                'pColor': row[10],
+                'pGender': row[11],
+                'pCategory': row[12],
+                'pModelNumber': row[13],
+                'mName': row[14],
+                'imagePath': row[15]
+            }
+            for row in rows
+        ]
+        
+        return {'results': result}
+    except Exception as e:
+        return {'result': 'Error', 'message': str(e)}
+    finally:
+        conn.close()
+
+
 @router.get("/{purchase_item_id}")
 async def get_purchase_item(purchase_item_id: int):
     """ID로 주문 항목 조회"""
@@ -168,7 +288,7 @@ async def delete_purchase_item(purchase_item_id: int):
 
 
 # ============================================
-# 복합 쿼리 (JOIN) - 별도 엔드포인트
+# 복합 쿼리 (JOIN) - /{id}/* 엔드포인트
 # ============================================
 
 @router.get("/{purchase_item_id}/with_product")
@@ -210,52 +330,6 @@ async def get_purchase_item_with_product(purchase_item_id: int):
         }
         
         return {'result': result}
-    except Exception as e:
-        return {'result': 'Error', 'message': str(e)}
-    finally:
-        conn.close()
-
-
-@router.get("/list/with_product")
-async def get_purchase_items_list_with_product(pcid: int = Query(..., description="Purchase ID")):
-    """주문별 항목 + 제품 정보 조인 조회"""
-    conn = connect_db()
-    curs = conn.cursor()
-    
-    try:
-        sql = """
-        SELECT 
-            PurchaseItem.*,
-            Product.size,
-            Product.basePrice,
-            Product.pQuantity,
-            Product.pbid,
-            Product.mfid
-        FROM PurchaseItem
-        JOIN Product ON PurchaseItem.pid = Product.id
-        WHERE PurchaseItem.pcid = %s
-        ORDER BY PurchaseItem.id ASC
-        """
-        curs.execute(sql, (pcid,))
-        rows = curs.fetchall()
-        
-        result = [
-            {
-                'id': row[0],
-                'pid': row[1],
-                'pcid': row[2],
-                'pcQuantity': row[3],
-                'pcStatus': row[4],
-                'size': row[5],
-                'basePrice': row[6],
-                'pQuantity': row[7],
-                'pbid': row[8],
-                'mfid': row[9]
-            }
-            for row in rows
-        ]
-        
-        return {'results': result}
     except Exception as e:
         return {'result': 'Error', 'message': str(e)}
     finally:
@@ -317,68 +391,6 @@ async def get_purchase_item_full_detail(purchase_item_id: int):
         }
         
         return {'result': result}
-    except Exception as e:
-        return {'result': 'Error', 'message': str(e)}
-    finally:
-        conn.close()
-
-
-@router.get("/list/full_detail")
-async def get_purchase_items_list_full_detail(pcid: int = Query(..., description="Purchase ID")):
-    """주문별 항목 전체 상세 정보 조회 (서브쿼리 포함)"""
-    conn = connect_db()
-    curs = conn.cursor()
-    
-    try:
-        sql = """
-        SELECT 
-            PurchaseItem.*,
-            Product.size,
-            Product.basePrice,
-            Product.pQuantity,
-            ProductBase.pName,
-            ProductBase.pDescription,
-            ProductBase.pColor,
-            ProductBase.pGender,
-            ProductBase.pCategory,
-            ProductBase.pModelNumber,
-            Manufacturer.mName,
-            (SELECT imagePath FROM ProductImage 
-            WHERE ProductImage.pbid = ProductBase.id 
-            LIMIT 1) as imagePath
-        FROM PurchaseItem
-        JOIN Product ON PurchaseItem.pid = Product.id
-        JOIN ProductBase ON Product.pbid = ProductBase.id
-        JOIN Manufacturer ON Product.mfid = Manufacturer.id
-        WHERE PurchaseItem.pcid = %s
-        ORDER BY PurchaseItem.id ASC
-        """
-        curs.execute(sql, (pcid,))
-        rows = curs.fetchall()
-        
-        result = [
-            {
-                'id': row[0],
-                'pid': row[1],
-                'pcid': row[2],
-                'pcQuantity': row[3],
-                'pcStatus': row[4],
-                'size': row[5],
-                'basePrice': row[6],
-                'pQuantity': row[7],
-                'pName': row[8],
-                'pDescription': row[9],
-                'pColor': row[10],
-                'pGender': row[11],
-                'pCategory': row[12],
-                'pModelNumber': row[13],
-                'mName': row[14],
-                'imagePath': row[15]
-            }
-            for row in rows
-        ]
-        
-        return {'results': result}
     except Exception as e:
         return {'result': 'Error', 'message': str(e)}
     finally:

@@ -61,6 +61,46 @@ async def get_login_histories(
         conn.close()
 
 
+# ============================================
+# 부분 업데이트 API (고객 ID 기준) - /{id} 보다 먼저 정의해야 함
+# ============================================
+
+@router.patch("/by_customer/{cid}/status")
+async def update_status_by_customer_id(cid: int, status: str = Query(..., description="새로운 상태 값")):
+    """고객 ID로 로그인 이력 상태 업데이트"""
+    conn = connect_db()
+    curs = conn.cursor()
+    
+    try:
+        sql = "UPDATE LoginHistory SET lStatus = %s WHERE cid = %s"
+        curs.execute(sql, (status, cid))
+        conn.commit()
+        affected_rows = curs.rowcount
+        return {"result": "OK", "affected_rows": affected_rows}
+    except Exception as e:
+        return {"result": "Error", "message": str(e)}
+    finally:
+        conn.close()
+
+
+@router.patch("/by_customer/{cid}/login_time")
+async def update_login_time_by_customer_id(cid: int, login_time: str = Query(..., description="새로운 로그인 시간")):
+    """고객 ID로 로그인 시간 업데이트"""
+    conn = connect_db()
+    curs = conn.cursor()
+    
+    try:
+        sql = "UPDATE LoginHistory SET loginTime = %s WHERE cid = %s"
+        curs.execute(sql, (login_time, cid))
+        conn.commit()
+        affected_rows = curs.rowcount
+        return {"result": "OK", "affected_rows": affected_rows}
+    except Exception as e:
+        return {"result": "Error", "message": str(e)}
+    finally:
+        conn.close()
+
+
 @router.get("/{login_history_id}")
 async def get_login_history(login_history_id: int):
     """ID로 로그인 이력 조회"""
