@@ -46,10 +46,12 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- Manufacturer (제조사)
 CREATE TABLE Manufacturer (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    mName VARCHAR(255) NOT NULL
+    mName VARCHAR(255) NOT NULL,
+    UNIQUE INDEX idx_manufacturer_name (mName)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ProductBase (제품 기본 정보)
+-- Note: 같은 모델의 다른 색상은 허용 (pModelNumber + pColor 복합 UNIQUE)
 CREATE TABLE ProductBase (
     id INT AUTO_INCREMENT PRIMARY KEY,
     pName VARCHAR(255) NOT NULL,
@@ -59,7 +61,8 @@ CREATE TABLE ProductBase (
     pStatus VARCHAR(100),
     pFeatureType VARCHAR(100),
     pCategory VARCHAR(100),
-    pModelNumber VARCHAR(100)
+    pModelNumber VARCHAR(100),
+    UNIQUE INDEX idx_productbase_model_color (pModelNumber, pColor)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ProductImage (제품 이미지)
@@ -82,7 +85,8 @@ CREATE TABLE Product (
     FOREIGN KEY (pbid) REFERENCES ProductBase(id) ON DELETE CASCADE,
     FOREIGN KEY (mfid) REFERENCES Manufacturer(id) ON DELETE CASCADE,
     INDEX idx_product_pbid (pbid),
-    INDEX idx_product_mfid (mfid)
+    INDEX idx_product_mfid (mfid),
+    UNIQUE INDEX idx_product_pbid_size (pbid, size)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Customer (고객)
@@ -92,8 +96,8 @@ CREATE TABLE Customer (
     cPhoneNumber VARCHAR(50) NOT NULL,
     cName VARCHAR(255) NOT NULL,
     cPassword VARCHAR(255) NOT NULL,
-    INDEX idx_customer_email (cEmail),
-    INDEX idx_customer_phone (cPhoneNumber)
+    UNIQUE INDEX idx_customer_email (cEmail),
+    UNIQUE INDEX idx_customer_phone (cPhoneNumber)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Employee (직원/관리자)
@@ -104,8 +108,8 @@ CREATE TABLE Employee (
     eName VARCHAR(255) NOT NULL,
     ePassword VARCHAR(255) NOT NULL,
     eRole VARCHAR(100),
-    INDEX idx_employee_email (eEmail),
-    INDEX idx_employee_phone (ePhoneNumber),
+    UNIQUE INDEX idx_employee_email (eEmail),
+    UNIQUE INDEX idx_employee_phone (ePhoneNumber),
     INDEX idx_employee_role (eRole)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -118,7 +122,7 @@ CREATE TABLE Purchase (
     timeStamp VARCHAR(50),
     FOREIGN KEY (cid) REFERENCES Customer(id) ON DELETE CASCADE,
     INDEX idx_purchase_cid (cid),
-    INDEX idx_purchase_order_code (orderCode)
+    UNIQUE INDEX idx_purchase_order_code (orderCode)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- PurchaseItem (주문 항목)

@@ -59,6 +59,32 @@ SOURCE backend/database/schema.sql;
 SOURCE backend/database/dummy_data.sql;
 ```
 
+### 방법 3: Python (pymysql) 사용
+
+```bash
+cd backend
+source venv/bin/activate
+python3 << 'EOF'
+import pymysql
+
+with open('database/init.sql', 'r', encoding='utf-8') as f:
+    sql = f.read()
+
+conn = pymysql.connect(
+    host='cheng80.myqnapcloud.com',  # 또는 'localhost'
+    port=13306,                       # 기본값: 3306
+    user='team0101',
+    password='qwer1234',
+    charset='utf8mb4',
+    autocommit=True,
+    client_flag=pymysql.constants.CLIENT.MULTI_STATEMENTS
+)
+conn.cursor().execute(sql)
+print("✅ DB 초기화 완료!")
+conn.close()
+EOF
+```
+
 ## 스키마 구조
 
 ### 테이블 목록
@@ -78,6 +104,22 @@ SOURCE backend/database/dummy_data.sql;
 - **외래키 제약조건**: 모든 관계가 `ON DELETE CASCADE`로 설정되어 있어 부모 레코드 삭제 시 자식 레코드도 자동 삭제됩니다.
 - **인덱스**: 조인 쿼리 성능 향상을 위한 인덱스가 포함되어 있습니다.
 - **문자 인코딩**: `utf8mb4` 문자셋과 `utf8mb4_unicode_ci` 콜레이션을 사용하여 한글 및 이모지 지원이 가능합니다.
+- **UNIQUE 제약조건**: 데이터 무결성을 위한 중복 방지 제약조건이 적용되어 있습니다.
+
+### UNIQUE 제약조건 목록
+
+| 테이블 | 컬럼 | 설명 |
+|--------|------|------|
+| **Customer** | `cEmail` | 이메일 중복 방지 |
+| **Customer** | `cPhoneNumber` | 전화번호 중복 방지 |
+| **Employee** | `eEmail` | 이메일 중복 방지 |
+| **Employee** | `ePhoneNumber` | 전화번호 중복 방지 |
+| **Purchase** | `orderCode` | 주문 코드 중복 방지 |
+| **Manufacturer** | `mName` | 제조사명 중복 방지 |
+| **Product** | `(pbid, size)` 복합 | 같은 제품의 같은 사이즈 중복 방지 |
+| **ProductBase** | `(pModelNumber, pColor)` 복합 | 같은 모델의 같은 색상 중복 방지 |
+
+> ⚠️ **주의**: UNIQUE 제약조건이 적용된 컬럼에 중복 데이터를 삽입하면 `Duplicate entry` 오류가 발생합니다.
 
 ## 더미 데이터
 
