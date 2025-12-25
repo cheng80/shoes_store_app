@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/theme/app_colors.dart';
-import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/database/handlers/purchase_handler.dart';
 import 'package:shoes_store_app/database/handlers/purchase_item_handler.dart';
 import 'package:shoes_store_app/model/sale/purchase.dart';
@@ -203,9 +202,39 @@ class _ReturnListViewState extends State<ReturnListView> {
     return cleaned;
   }
 
+  /// 주문 날짜 포맷팅 (날짜만 있으면 날짜만, 시간이 있으면 날짜 시분까지)
+  String _formatOrderDate(String timeStamp) {
+    try {
+      // DateTime 파싱 (ISO 8601 형식 또는 일반 형식)
+      DateTime dateTime;
+      if (timeStamp.contains('T')) {
+        // ISO 8601 형식: 2025-12-26T01:45:17.6658615 -> T를 공백으로 변경 후 파싱
+        dateTime = DateTime.parse(timeStamp.replaceFirst('T', ' '));
+      } else {
+        // 일반 형식: 2025-12-26 또는 2025-12-26 01:45:17
+        dateTime = DateTime.parse(timeStamp);
+      }
+      
+      // 시간이 있는지 확인 (시/분이 0이 아니거나 초/밀리초가 있는지)
+      final hasTime = dateTime.hour != 0 || dateTime.minute != 0 || 
+                      dateTime.second != 0 || dateTime.millisecond != 0;
+      
+      if (hasTime) {
+        // 날짜 + 시분: yyyy-MM-dd HH:mm
+        return CustomCommonUtil.formatDate(dateTime, 'yyyy-MM-dd HH:mm');
+      } else {
+        // 날짜만: yyyy-MM-dd
+        return CustomCommonUtil.formatDate(dateTime, 'yyyy-MM-dd');
+      }
+    } catch (e) {
+      // 파싱 실패 시 원본 반환 (fallback)
+      return timeStamp.split(' ').first.replaceAll('T', ' ').split('.').first;
+    }
+  }
+
   /// 주문 카드 위젯 생성
   Widget _buildOrderCard(Purchase order) {
-    final orderDate = order.timeStamp.split(' ').first;
+    final orderDate = _formatOrderDate(order.timeStamp);
     
     String orderStatus = order.id != null 
         ? _orderStatusMap[order.id] ?? '반품 불가'
@@ -244,7 +273,7 @@ class _ReturnListViewState extends State<ReturnListView> {
   Widget _buildEmptyMessage() {
     return Center(
       child: CustomPadding(
-        padding: const EdgeInsets.symmetric(vertical: 32),
+        padding: const EdgeInsets.symmetric(vertical: config.extraLargeSpacing),
         child: CustomText(
           '수령 완료 내역이 없습니다.',
           fontSize: 14,
@@ -274,7 +303,7 @@ class _ReturnListViewState extends State<ReturnListView> {
     return GestureDetector(
       onTap: () => _changeSortOrder(sortBy),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // 작은 버튼 패딩이므로 상수화하지 않음
         decoration: BoxDecoration(
           color: isActive ? p.chipSelectedBg.withOpacity(0.2) : p.chipUnselectedBg,
           borderRadius: BorderRadius.circular(8),
@@ -287,8 +316,9 @@ class _ReturnListViewState extends State<ReturnListView> {
           children: [
             CustomText(
               label,
-              fontSize: 12,
-              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+              style: config.smallTextStyle.copyWith(
+                fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+              ),
             ),
             Icon(icon, size: 16),
           ],
@@ -306,7 +336,7 @@ class _ReturnListViewState extends State<ReturnListView> {
       appBar: CustomAppBar(
         title: '수령완료 / 반품 목록',
         centerTitle: true,
-        titleTextStyle: config.rLabel,
+        titleTextStyle: config.boldLabelStyle,
         backgroundColor: p.background,
         foregroundColor: p.textPrimary,
       ),
@@ -327,7 +357,7 @@ class _ReturnListViewState extends State<ReturnListView> {
 
                 CustomRow(
                   mainAxisAlignment: MainAxisAlignment.start,
-                  spacing: 8,
+                  spacing: config.smallSpacing,
                   children: [
                     _buildSortButton('orderCode', '주문번호'),
                     _buildSortButton('orderDate', '주문일'),
@@ -336,8 +366,7 @@ class _ReturnListViewState extends State<ReturnListView> {
 
                 CustomText(
                   '수령완료 / 반품 목록',
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                  style: config.titleStyle,
                 ),
 
                 if (_isLoading)

@@ -179,10 +179,10 @@ class _AdminOrderDetailViewState extends State<AdminOrderDetailView> {
         }
 
         final orderItemsList = orderItemsMap.values.toList();
-        final orderStatus = OrderStatusUtils.determineOrderStatusForAdmin(
-          purchaseItems, 
+        // 주문 관리 화면의 디테일도 목록과 동일하게 반품 상태 무시
+        final orderStatus = OrderStatusUtils.determineOrderStatusForOrderManagement(
+          purchaseItems,
           purchase,
-          showActualStatus: true, // 상세 화면에서는 실제 상태 그대로 표시
         );
 
         setState(() {

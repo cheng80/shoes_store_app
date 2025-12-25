@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/custom/custom.dart';
-import 'package:shoes_store_app/custom/custom_dialog.dart';
-import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:shoes_store_app/view/cheng/storage/admin_storage.dart';
-import 'package:shoes_store_app/view/cheng/test_navigation_page.dart';
-import 'package:shoes_store_app/view/cheng/screens/auth/admin_login_view.dart';
 
 /// 관리자 메뉴 타입 열거형
 enum AdminMenuType {
@@ -19,7 +16,7 @@ class AdminDrawerMenuItem {
   final String label;
   final IconData icon;
   final AdminMenuType menuType;
-  final VoidCallback onTap;
+  final void Function(BuildContext) onTap;
 
   const AdminDrawerMenuItem({
     required this.label,
@@ -56,16 +53,15 @@ class AdminDrawer extends StatelessWidget {
       header: Container(
         width: double.infinity,
         decoration: BoxDecoration(color: context.palette.primary),
-        padding: const EdgeInsets.all(16),
+        padding: config.screenPadding,
         child: CustomColumn(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.end,
-          spacing: 8,
+          spacing: config.smallSpacing,
           children: [
             CustomText(
               displayRole,
-              fontSize: 16,
-              fontWeight: FontWeight.normal,
+              style: config.mediumTextStyle,
               color: context.palette.textOnPrimary,
             ),
             CustomText(
@@ -84,18 +80,24 @@ class AdminDrawer extends StatelessWidget {
           icon: item.icon,
           selected: item.menuType == currentMenu,
           onTap: () {
-            CustomNavigationUtil.back(context);
             if (item.menuType != currentMenu) {
-              item.onTap();
+              // Scaffold의 context를 가져와서 저장 (드로어를 닫기 전에)
+              final scaffoldContext = Scaffold.of(context).context;
+              // 드로어를 닫지 않고 바로 페이지 교체
+              // pushReplacement로 페이지가 교체되면 드로어는 자동으로 닫힘
+              item.onTap(scaffoldContext);
+            } else {
+              // 현재 메뉴이면 드로어만 닫기
+              Navigator.of(context).pop();
             }
           },
         );
       }).toList(),
       bottomChildren: [const Divider(height: 1)],
       footer: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: config.screenPadding,
         child: CustomColumn(
-          spacing: 12,
+          spacing: config.mediumSpacing,
           children: [
             CustomButton(
               btnText: '개인정보 수정',
@@ -111,7 +113,7 @@ class AdminDrawer extends StatelessWidget {
               buttonType: ButtonType.outlined,
               onCallBack: () {
                 CustomNavigationUtil.back(context);
-                CustomNavigationUtil.to(context, const TestNavigationPage());
+                CustomNavigationUtil.toNamed(context, config.routeTestNavigationPage);
               },
               minimumSize: const Size(double.infinity, 48),
             ),
@@ -119,19 +121,35 @@ class AdminDrawer extends StatelessWidget {
               btnText: '로그아웃',
               buttonType: ButtonType.outlined,
               onCallBack: () {
-                CustomNavigationUtil.back(context);
-                CustomDialog.show(
-                  context,
-                  title: '로그아웃',
-                  message: '정말 로그아웃하시겠습니까?',
-                  type: DialogType.dual,
-                  confirmText: '로그아웃',
-                  cancelText: '취소',
-                  onConfirm: () {
-                    AdminStorage.clearAdmin();
-                    CustomNavigationUtil.offAll(context, const AdminLoginView());
-                  },
-                );
+                // Scaffold context를 미리 저장 (드로어 닫기 전에)
+                final scaffoldContext = Scaffold.of(context).context;
+                // 드로어 닫기
+                Navigator.of(context).pop();
+                // 다음 프레임에서 다이얼로그 표시 (드로어가 완전히 닫힌 후)
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (scaffoldContext.mounted) {
+                    CustomDialog.show(
+                      scaffoldContext,
+                      title: '로그아웃',
+                      message: '정말 로그아웃하시겠습니까?',
+                      type: DialogType.dual,
+                      confirmText: '로그아웃',
+                      cancelText: '취소',
+                      autoDismissOnConfirm: false,
+                      onConfirmWithContext: (dialogContext) {
+                        AdminStorage.clearAdmin();
+                        // 다이얼로그 닫기
+                        Navigator.of(dialogContext).pop();
+                        // 다음 프레임에서 navigation 수행 (다이얼로그가 완전히 닫힌 후)
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (scaffoldContext.mounted) {
+                            CustomNavigationUtil.offAllNamed(scaffoldContext, config.routeAdminLogin);
+                          }
+                        });
+                      },
+                    );
+                  }
+                });
               },
               minimumSize: const Size(double.infinity, 48),
             ),
@@ -147,13 +165,13 @@ class AdminDrawer extends StatelessWidget {
         label: '주문 관리',
         icon: Icons.shopping_cart,
         menuType: AdminMenuType.orderManagement,
-        onTap: () {},
+        onTap: (_) {},
       ),
       AdminDrawerMenuItem(
         label: '반품 관리',
         icon: Icons.assignment_return,
         menuType: AdminMenuType.returnManagement,
-        onTap: () {},
+        onTap: (_) {},
       ),
     ];
   }

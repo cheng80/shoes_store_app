@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/theme/theme_provider.dart';
 import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:shoes_store_app/database/handlers/manufacturer_handler.dart';
@@ -10,13 +11,8 @@ import 'package:shoes_store_app/database/handlers/product_handler.dart';
 import 'package:shoes_store_app/model/product/manufacturer.dart';
 import 'package:shoes_store_app/model/product/product.dart';
 import 'package:shoes_store_app/model/product/product_base.dart';
-import 'package:shoes_store_app/view/customer/address_payment_view.dart';
 import 'package:shoes_store_app/view/cheng/storage/user_storage.dart';
-import 'package:shoes_store_app/view/cheng/test_navigation_page.dart';
-import 'package:shoes_store_app/view/cheng/screens/auth/login_view.dart';
-import 'package:shoes_store_app/view/cheng/screens/customer/order_list_view.dart';
-import 'package:shoes_store_app/view/cheng/screens/customer/return_list_view.dart';
-import 'package:shoes_store_app/view/cheng/screens/customer/user_profile_edit_view.dart';
+import 'package:shoes_store_app/view/customer/detail_view.dart';
 
 class SearchView extends StatefulWidget {
   const SearchView({super.key});
@@ -63,11 +59,6 @@ class _SearchViewState extends State<SearchView> {
     super.initState();
     _loadUserInfo();
     loadProductData();
-    Future.delayed(const Duration(milliseconds: 200), () {
-      if (mounted) {
-        _loadUserInfo();
-      }
-    });
   }
 
   /// 사용자 정보 로드
@@ -204,8 +195,7 @@ class _SearchViewState extends State<SearchView> {
           builder: (context) => IconButton(
             icon: const Icon(Icons.menu),
             onPressed: () {
-              _loadUserInfo();
-              Scaffold.of(context).openDrawer(); // 🔥 Drawer 열기
+              Scaffold.of(context).openDrawer(); // Drawer 열기
             },
           ),
         ),
@@ -221,7 +211,7 @@ class _SearchViewState extends State<SearchView> {
             child: IconButton(
               icon: const Icon(Icons.shopping_cart),
               onPressed: () {
-                CustomNavigationUtil.toNamed(context, '/cart');
+                CustomNavigationUtil.toNamed(context, config.routeCart);
               },
               tooltip: '장바구니',
             ),
@@ -247,7 +237,7 @@ class _SearchViewState extends State<SearchView> {
                 ),
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: config.largeBorderRadius,
                   borderSide: BorderSide.none,
                 ),
               ),
@@ -284,19 +274,19 @@ class _SearchViewState extends State<SearchView> {
                       return GestureDetector(
                         onTap: () {
                           if (pbid == null) return;
-                          CustomNavigationUtil.toNamed(
+                          CustomNavigationUtil.to(
                             context,
-                            '/detailview',
-                            arguments: pbid,
+                            DetailView(),
+                            settings: RouteSettings(arguments: pbid),
                           );
                         },
                         child: Card(
                           elevation: 3,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: config.mediumBorderRadius,
                           ),
                           child: Padding(
-                            padding: const EdgeInsets.all(8),
+                            padding: config.smallPadding,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -306,7 +296,7 @@ class _SearchViewState extends State<SearchView> {
                                     child: _buildImage(imgPath),
                                   ),
                                 ),
-                                const SizedBox(height: 8),
+                                config.smallVerticalSpacing,
                                 Text(
                                   pb.pName,
                                   style: const TextStyle(
@@ -395,9 +385,9 @@ class _SearchViewState extends State<SearchView> {
             onTap: () async {
               Navigator.of(context).pop(); // 드로워 닫기
               // 개인정보 수정 페이지로 이동하고 결과를 받아서 사용자 정보 갱신
-              final result = await CustomNavigationUtil.to(
+              final result = await CustomNavigationUtil.toNamed(
                 context,
-                const UserProfileEditView(),
+                config.routeUserProfileEdit,
               );
               // 개인정보 수정이 완료되면 사용자 정보를 다시 로드하여 drawer 갱신
               if (result == true) {
@@ -421,7 +411,7 @@ class _SearchViewState extends State<SearchView> {
             title: const Text('주문 내역'),
             onTap: () {
               Navigator.of(context).pop(); // 드로워 닫기
-              CustomNavigationUtil.to(context, const OrderListView());
+              CustomNavigationUtil.toNamed(context, config.routeOrderListView);
             },
           ),
           ListTile(
@@ -429,7 +419,7 @@ class _SearchViewState extends State<SearchView> {
             title: const Text('수령 / 반품 내역'),
             onTap: () {
               Navigator.of(context).pop(); // 드로워 닫기
-              CustomNavigationUtil.to(context, const ReturnListView());
+              CustomNavigationUtil.toNamed(context, config.routeReturnListView);
             },
           ),
           ListTile(
@@ -437,7 +427,7 @@ class _SearchViewState extends State<SearchView> {
             title: const Text('배송지, 결제 방법 수정'),
             onTap: () {
               Navigator.of(context).pop(); // 드로워 닫기
-              CustomNavigationUtil.to(context, const AddressPaymentView());
+              CustomNavigationUtil.toNamed(context, config.routeAddressPayment);
             },
           ),
           ListTile(
@@ -445,6 +435,8 @@ class _SearchViewState extends State<SearchView> {
             title: const Text('로그아웃'),
             onTap: () {
               Navigator.of(context).pop(); // 드로워 닫기
+              // 원래 Scaffold context 저장 (다이얼로그 닫은 후 navigation에서 사용)
+              final scaffoldContext = context;
               // 로그아웃 확인 다이얼로그
               CustomDialog.show(
                 context,
@@ -453,11 +445,18 @@ class _SearchViewState extends State<SearchView> {
                 type: DialogType.dual,
                 confirmText: '로그아웃',
                 cancelText: '취소',
-                onConfirm: () {
+                autoDismissOnConfirm: false,
+                onConfirmWithContext: (dialogContext) {
                   // 사용자 정보 삭제
                   UserStorage.clearUser();
-                  // 로그인 화면으로 이동 (모든 페이지 제거)
-                  CustomNavigationUtil.offAll(context, const LoginView());
+                  // 다이얼로그 닫기
+                  Navigator.of(dialogContext).pop();
+                  // 다음 프레임에서 navigation 수행 (다이얼로그가 완전히 닫힌 후)
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (scaffoldContext.mounted) {
+                      CustomNavigationUtil.offAllNamed(scaffoldContext, config.routeLogin);
+                    }
+                  });
                 },
               );
             },
@@ -468,7 +467,7 @@ class _SearchViewState extends State<SearchView> {
             title: const Text('테스트 페이지로 이동'),
             onTap: () {
               Navigator.of(context).pop(); // 드로워 닫기
-              CustomNavigationUtil.to(context, const TestNavigationPage());
+              CustomNavigationUtil.toNamed(context, config.routeTestNavigationPage);
             },
           ),
         ],
@@ -483,6 +482,6 @@ class _SearchViewState extends State<SearchView> {
                         btnText: '테스트 페이지로 이동',
                         buttonType: ButtonType.outlined,
                         onCallBack: _navigateToTestPage,
-                        minimumSize: const Size(double.infinity, 56),
+                        minimumSize: Size(double.infinity, config.defaultButtonHeight),
                       ),
 */

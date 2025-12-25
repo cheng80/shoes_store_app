@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/custom/custom.dart';
 
 /// 주문자 상세 정보 카드 위젯
@@ -24,31 +25,27 @@ class CustomerInfoCard extends StatelessWidget {
     return CustomCard(
       child: CustomColumn(
         crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 12,
+        spacing: config.mediumSpacing,
         children: [
           // 카드 제목
           CustomText(
             '주문자 상세 정보',
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+            style: config.titleStyle,
           ),
           // 주문자 이름 표시
           CustomText(
             '이름 : $name',
-            fontSize: 14,
-            fontWeight: FontWeight.normal,
+            style: config.bodyTextStyle,
           ),
           // 주문자 연락처 표시
           CustomText(
             '연락처: $phone',
-            fontSize: 14,
-            fontWeight: FontWeight.normal,
+            style: config.bodyTextStyle,
           ),
           // 주문자 이메일 표시
           CustomText(
             '이메일: $email',
-            fontSize: 14,
-            fontWeight: FontWeight.normal,
+            style: config.bodyTextStyle,
           ),
         ],
       ),

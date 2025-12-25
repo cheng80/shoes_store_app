@@ -62,7 +62,7 @@ class OrderStatusUtils {
     }
 
     final daysDifference = now.difference(pickupDate).inDays;
-    return daysDifference >= 30;
+    return daysDifference >= config.autoCompleteOrderDays;
   }
 
   /// 반품 상태(3 이상)가 있는지 확인
@@ -148,6 +148,35 @@ class OrderStatusUtils {
     return _getStatusFromItems(items, purchase, isCustomerView: !showActualStatus);
   }
 
+  /// 주문 관리 화면용 주문 상태 결정
+  /// 반품 상태를 무시하고, status 2 이상이면 "제품 수령 완료"로 표시
+  static String determineOrderStatusForOrderManagement(
+    List<PurchaseItem> items,
+    Purchase purchase,
+  ) {
+    if (items.isEmpty) {
+      AppLogger.e(
+        '주문 상태 결정 실패(주문 관리): PurchaseItem 목록이 비어있음 - Purchase ID: ${purchase.id}, OrderCode: ${purchase.orderCode}',
+        tag: 'OrderStatusUtils',
+      );
+      return config.pickupStatus[0]!; // '제품 준비 중'
+    }
+
+    final statusNumbers = items
+        .map((item) => parseStatusToNumber(item.pcStatus))
+        .toList();
+
+    // 최소 status 계산
+    final minStatus = statusNumbers.reduce((a, b) => a < b ? a : b);
+
+    // status 2 이상이면 "제품 수령 완료"로 표시 (반품 상태 무시)
+    if (minStatus >= 2) {
+      return config.pickupStatus[2]!; // '제품 수령 완료'
+    } else {
+      return config.pickupStatus[minStatus]!;
+    }
+  }
+
   /// 30일 경과로 인한 자동 수령 완료 처리 필요 여부
   static bool shouldAutoUpdateToCompleted(
     List<PurchaseItem> items,
@@ -220,7 +249,7 @@ class OrderStatusUtils {
   ) {
     if (parsedPickupDate != null) {
       final daysDifference = now.difference(parsedPickupDate).inDays;
-      if (daysDifference >= 30) {
+      if (daysDifference >= config.autoCompleteOrderDays) {
         return config.pickupStatus[2]!;
       }
 

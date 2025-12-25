@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:shoes_store_app/utils/order_status_colors.dart';
@@ -38,29 +39,27 @@ class BaseOrderCard extends StatelessWidget {
         // 선택된 상태일 때 배경색 변경
         color: isSelected ? p.chipSelectedBg.withOpacity(0.2) : null,
         margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(12),
+        padding: config.mediumPadding,
         child: CustomColumn(
           crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 8,
+          spacing: config.smallSpacing,
           children: [
             // 주문 ID와 상태를 한 줄에 표시
             CustomRow(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // 주문 ID (굵은 글씨)
-                CustomText(orderId, fontSize: 14, fontWeight: FontWeight.bold),
+                CustomText(orderId, style: config.bodyTextStyle.copyWith(fontWeight: FontWeight.bold)),
                 // 주문 상태 (배지 형태로 표시)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: OrderStatusColors.getStatusColor(orderStatus),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: config.defaultBorderRadius,
                   ),
                   child: CustomText(
                   orderStatus,
-                  fontSize: 12,
-                  fontWeight: FontWeight.normal,
-                    color: p.textOnPrimary,
+                  style: config.smallTextStyle.copyWith(color: p.textOnPrimary),
                   ),
                 ),
               ],
@@ -68,8 +67,7 @@ class BaseOrderCard extends StatelessWidget {
             // 고객 이름 표시
             CustomText(
               customerName,
-              fontSize: 14,
-              fontWeight: FontWeight.normal,
+              style: config.bodyTextStyle,
             ),
           ],
         ),

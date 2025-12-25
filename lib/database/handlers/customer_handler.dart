@@ -23,7 +23,7 @@ class CustomerHandler {
   Future<List<Customer>> queryAll() async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableCustomer,
+      config.tableCustomer,
       orderBy: 'id ASC',
     );
     return results.map((e) => Customer.fromMap(e)).toList();
@@ -36,7 +36,7 @@ class CustomerHandler {
   Future<Customer?> queryById(int id) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableCustomer,
+      config.tableCustomer,
       where: 'id = ?',
       whereArgs: [id],
       limit: 1,
@@ -52,7 +52,7 @@ class CustomerHandler {
   Future<Customer?> queryByEmail(String email) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableCustomer,
+      config.tableCustomer,
       where: 'cEmail = ?',
       whereArgs: [email],
       limit: 1,
@@ -68,7 +68,7 @@ class CustomerHandler {
   Future<Customer?> queryByPhoneNumber(String phoneNumber) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableCustomer,
+      config.tableCustomer,
       where: 'cPhoneNumber = ?',
       whereArgs: [phoneNumber],
       limit: 1,
@@ -84,7 +84,7 @@ class CustomerHandler {
   Future<Customer?> queryByIdentifier(String identifier) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableCustomer,
+      config.tableCustomer,
       where: 'cEmail = ? OR cPhoneNumber = ?',
       whereArgs: [identifier, identifier],
       limit: 1,
@@ -104,7 +104,7 @@ class CustomerHandler {
   Future<int> insertData(Customer customer) async {
     final db = await _getDatabase();
     final map = customer.toMap(includeId: false);
-    return await db.insert(config.kTableCustomer, map);
+    return await db.insert(config.tableCustomer, map);
   }
 
   // ============================================
@@ -123,7 +123,7 @@ class CustomerHandler {
     final db = await _getDatabase();
     final map = customer.toMap(includeId: false);
     return await db.update(
-      config.kTableCustomer,
+      config.tableCustomer,
       map,
       where: 'id = ?',
       whereArgs: [customer.id],
@@ -141,7 +141,7 @@ class CustomerHandler {
   Future<int> deleteData(int id) async {
     final db = await _getDatabase();
     return await db.delete(
-      config.kTableCustomer,
+      config.tableCustomer,
       where: 'id = ?',
       whereArgs: [id],
     );

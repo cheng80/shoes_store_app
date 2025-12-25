@@ -75,7 +75,7 @@ class _AddressPaymentViewState extends State<AddressPaymentView> {
     
     return Scaffold(
       appBar: AppBar(
-        title: Text('주소 / 결제방법', style: config.rLabel.copyWith(color: p.textPrimary)),
+        title: Text('주소 / 결제방법', style: config.boldLabelStyle.copyWith(color: p.textPrimary)),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -86,8 +86,8 @@ class _AddressPaymentViewState extends State<AddressPaymentView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('수령 지점(자치구)', style: config.rLabel.copyWith(color: p.textPrimary)),
-                const SizedBox(height: 8),
+                Text('수령 지점(자치구)', style: config.boldLabelStyle.copyWith(color: p.textPrimary)),
+                config.smallVerticalSpacing,
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                   decoration: BoxDecoration(
@@ -99,11 +99,11 @@ class _AddressPaymentViewState extends State<AddressPaymentView> {
                     isExpanded: true,
                     decoration: const InputDecoration(
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(vertical: 12),
+                      contentPadding: EdgeInsets.symmetric(vertical: 12), // TextField 전용 패딩이므로 상수화하지 않음
                     ),
-                    style: config.rLabel.copyWith(color: p.textPrimary),
+                    style: config.boldLabelStyle.copyWith(color: p.textPrimary),
                     items: districts
-                        .map((d) => DropdownMenuItem(value: d, child: Text(d, style: config.rLabel.copyWith(color: p.textPrimary))))
+                        .map((d) => DropdownMenuItem(value: d, child: Text(d, style: config.boldLabelStyle.copyWith(color: p.textPrimary))))
                         .toList(),
                     onChanged: (value) {
                       setState(() {
@@ -119,15 +119,15 @@ class _AddressPaymentViewState extends State<AddressPaymentView> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                Text('Payment method', style: config.rLabel.copyWith(color: p.textPrimary)),
-                const SizedBox(height: 8),
+                Text('Payment method', style: config.boldLabelStyle.copyWith(color: p.textPrimary)),
+                config.smallVerticalSpacing,
                 TextFormField(
                   controller: _paymentController,
-                  style: config.rLabel.copyWith(color: p.textPrimary),
+                  style: config.boldLabelStyle.copyWith(color: p.textPrimary),
                   decoration: InputDecoration(
                     hintText: '예) 신한카드 ****-****-****-1234',
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: config.defaultBorderRadius,
                     ),
                     isDense: true,
                   ),
@@ -149,7 +149,7 @@ class _AddressPaymentViewState extends State<AddressPaymentView> {
           height: 55,
           child: ElevatedButton(
             onPressed: _onSavePressed,
-            child: Text('변경하기', style: config.rLabel.copyWith(color: p.textOnPrimary)),
+            child: Text('변경하기', style: config.boldLabelStyle.copyWith(color: p.textOnPrimary)),
           ),
         ),
       ),
@@ -183,7 +183,6 @@ class _AddressPaymentViewState extends State<AddressPaymentView> {
         lPaymentMethod: payment,
         loginTime: DateTime.now().toIso8601String(),
         lStatus: 'active', // 기본 상태값
-        lVersion: 1.0, // 기본 버전값
       );
 
       await _loginHistoryHandler.insertData(loginHistory);

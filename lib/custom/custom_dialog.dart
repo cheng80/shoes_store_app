@@ -329,7 +329,7 @@ class CustomDialog {
                 action.onTapWithContext?.call(ctx);
                 action.onTap?.call();
                 if (action.autoDismiss) {
-                  CustomNavigationUtil.back(ctx);
+                  Navigator.of(ctx).pop();
                 }
               },
             ),
@@ -388,7 +388,7 @@ class CustomDialog {
                 action.onTapWithContext?.call(ctx);
                 action.onTap?.call();
                 if (action.autoDismiss) {
-                  CustomNavigationUtil.back(ctx);
+                  Navigator.of(ctx).pop();
                 }
               },
             );
@@ -403,11 +403,11 @@ class CustomDialog {
           backgroundColor: _getThemePrimaryColor(ctx) ?? Colors.blue,
           minimumSize: const Size(100, 40),
           onCallBack: () {
-            onConfirmWithContexts?.call(ctx, dialogScaffoldContext);
+            onConfirmWithContexts?.call(ctx, scaffoldContext);
             onConfirmWithContext?.call(ctx);
             onConfirm?.call();
             if (autoDismissOnConfirm) {
-              CustomNavigationUtil.back(ctx);
+              Navigator.of(ctx).pop();
             }
           },
         ),
@@ -421,11 +421,11 @@ class CustomDialog {
           backgroundColor: _getThemeTextSecondaryColor(ctx) ?? Colors.grey,
           minimumSize: const Size(80, 40),
           onCallBack: () {
-            onCancelWithContexts?.call(ctx, dialogScaffoldContext);
+            onCancelWithContexts?.call(ctx, scaffoldContext);
             onCancelWithContext?.call(ctx);
             onCancel?.call();
             if (autoDismissOnCancel) {
-              CustomNavigationUtil.back(ctx);
+              Navigator.of(ctx).pop();
             }
           },
         ),
@@ -434,11 +434,11 @@ class CustomDialog {
           backgroundColor: _getThemePrimaryColor(ctx) ?? Colors.blue,
           minimumSize: const Size(80, 40),
           onCallBack: () {
-            onConfirmWithContexts?.call(ctx, dialogScaffoldContext);
+            onConfirmWithContexts?.call(ctx, scaffoldContext);
             onConfirmWithContext?.call(ctx);
             onConfirm?.call();
             if (autoDismissOnConfirm) {
-              CustomNavigationUtil.back(ctx);
+              Navigator.of(ctx).pop();
             }
           },
         ),

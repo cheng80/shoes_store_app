@@ -23,7 +23,7 @@ class ProductImageHandler {
   Future<List<ProductImage>> queryAll() async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableProductImage,
+      config.tableProductImage,
       orderBy: 'id ASC',
     );
     return results.map((e) => ProductImage.fromMap(e)).toList();
@@ -36,7 +36,7 @@ class ProductImageHandler {
   Future<ProductImage?> queryById(int id) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableProductImage,
+      config.tableProductImage,
       where: 'id = ?',
       whereArgs: [id],
       limit: 1,
@@ -62,7 +62,7 @@ class ProductImageHandler {
   Future<List<ProductImage>> queryByProductBaseId(int pbid) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTableProductImage,
+      config.tableProductImage,
       where: 'pbid = ?',
       whereArgs: [pbid],
       orderBy: 'id ASC',
@@ -81,7 +81,7 @@ class ProductImageHandler {
   Future<int> insertData(ProductImage image) async {
     final db = await _getDatabase();
     final map = image.toMap(includeId: false);
-    return await db.insert(config.kTableProductImage, map);
+    return await db.insert(config.tableProductImage, map);
   }
 
   /// 이미지 일괄 추가
@@ -106,7 +106,7 @@ class ProductImageHandler {
     await db.transaction((txn) async {
       for (final image in images) {
         final map = image.toMap(includeId: false);
-        final id = await txn.insert(config.kTableProductImage, map);
+        final id = await txn.insert(config.tableProductImage, map);
         ids.add(id);
       }
     });
@@ -125,7 +125,7 @@ class ProductImageHandler {
   Future<int> deleteData(int id) async {
     final db = await _getDatabase();
     return await db.delete(
-      config.kTableProductImage,
+      config.tableProductImage,
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -145,7 +145,7 @@ class ProductImageHandler {
   Future<int> deleteByProductBaseId(int pbid) async {
     final db = await _getDatabase();
     return await db.delete(
-      config.kTableProductImage,
+      config.tableProductImage,
       where: 'pbid = ?',
       whereArgs: [pbid],
     );

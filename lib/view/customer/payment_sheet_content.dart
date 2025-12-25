@@ -5,6 +5,7 @@ import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:shoes_store_app/custom/custom_snack_bar.dart';
 import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/custom/custom_dialog.dart';
+import 'package:shoes_store_app/custom/custom_common_util.dart';
 import 'package:shoes_store_app/view/cheng/storage/cart_storage.dart';
 
 /// 결제 시트 내용 위젯
@@ -52,7 +53,7 @@ class _PaymentSheetContentState extends State<PaymentSheetContent> {
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
         decoration: BoxDecoration(
           color: p.cardBackground,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: config.bottomSheetTopBorderRadius,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -62,7 +63,7 @@ class _PaymentSheetContentState extends State<PaymentSheetContent> {
               height: 5,
               decoration: BoxDecoration(
                 color: p.divider,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: config.defaultBorderRadius,
               ),
             ),
             const SizedBox(height: 14),
@@ -71,7 +72,7 @@ class _PaymentSheetContentState extends State<PaymentSheetContent> {
               children: [
                 const Icon(Icons.payment),
                 const SizedBox(width: 8),
-                Text("결제 확인", style: config.rLabel.copyWith(color: p.textPrimary)),
+                Text("결제 확인", style: config.boldLabelStyle.copyWith(color: p.textPrimary)),
                 const Spacer(),
                 IconButton(
                   onPressed: () => CustomNavigationUtil.back(context),
@@ -83,27 +84,27 @@ class _PaymentSheetContentState extends State<PaymentSheetContent> {
 
             Align(
               alignment: Alignment.centerLeft,
-              child: Text("수령 지점(자치구)", style: config.rLabel.copyWith(color: p.textPrimary)),
+              child: Text("수령 지점(자치구)", style: config.boldLabelStyle.copyWith(color: p.textPrimary)),
             ),
-            const SizedBox(height: 8),
+            config.smallVerticalSpacing,
 
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4), // 작은 버튼 패딩이므로 상수화하지 않음
               decoration: BoxDecoration(
                 border: Border.all(color: p.divider),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: config.mediumBorderRadius,
               ),
               child: DropdownButton<String>(
                 value: _district,
                 isExpanded: true,
                 underline: const SizedBox.shrink(),
-                style: config.rLabel.copyWith(color: p.textPrimary),
+                style: config.boldLabelStyle.copyWith(color: p.textPrimary),
                 items: widget.districts
                     .map((d) => DropdownMenuItem(
                           value: d,
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 4),
-                            child: Text(d, style: config.rLabel.copyWith(color: p.textPrimary)),
+                            child: Text(d, style: config.boldLabelStyle.copyWith(color: p.textPrimary)),
                           ),
                         ))
                     .toList(),
@@ -121,41 +122,41 @@ class _PaymentSheetContentState extends State<PaymentSheetContent> {
 
             Align(
               alignment: Alignment.centerLeft,
-              child: Text("결제수단", style: config.rLabel.copyWith(color: p.textPrimary)),
+              child: Text("결제수단", style: config.boldLabelStyle.copyWith(color: p.textPrimary)),
             ),
-            const SizedBox(height: 8),
+            config.smallVerticalSpacing,
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
+              padding: config.mediumPadding,
               decoration: BoxDecoration(
                 border: Border.all(color: p.divider),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: config.mediumBorderRadius,
               ),
-              child: Text("카드(더미)", style: config.rLabel.copyWith(color: p.textPrimary)),
+              child: Text("카드(더미)", style: config.boldLabelStyle.copyWith(color: p.textPrimary)),
             ),
 
             const SizedBox(height: 14),
 
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(12),
+              padding: config.mediumPadding,
               decoration: BoxDecoration(
                 border: Border.all(color: p.divider),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: config.mediumBorderRadius,
               ),
               child: Row(
                 children: [
-                  Expanded(child: Text("총액", style: config.rLabel.copyWith(color: p.textPrimary))),
-                  Text("${config.priceFormatter(widget.totalPrice)}원", style: config.rLabel.copyWith(color: p.textPrimary)),
+                  Expanded(child: Text("총액", style: config.boldLabelStyle.copyWith(color: p.textPrimary))),
+                  Text("${CustomCommonUtil.formatNumber(widget.totalPrice)}원", style: config.boldLabelStyle.copyWith(color: p.textPrimary)),
                 ],
               ),
             ),
 
-            const SizedBox(height: 16),
+            config.defaultVerticalSpacing,
 
             SlideAction(
               text: _confirmed ? "결제 처리중..." : "오른쪽으로 밀어서 결제 확정",
-              textStyle: config.rLabel.copyWith(color: p.textPrimary),
+              textStyle: config.boldLabelStyle.copyWith(color: p.textPrimary),
               outerColor: p.divider,
               innerColor: p.cardBackground,
               sliderButtonIcon: Icon(
@@ -178,11 +179,11 @@ class _PaymentSheetContentState extends State<PaymentSheetContent> {
                   CustomNavigationUtil.back(context);
                   CustomSnackBar.showSuccess(
                     context,
-                    message: "수령지: $_district / 총액: ${config.priceFormatter(widget.totalPrice)}원",
+                    message: "수령지: $_district / 총액: ${CustomCommonUtil.formatNumber(widget.totalPrice)}원",
                   );
 
                   if (!mounted) return;
-                  CustomNavigationUtil.offAllNamed(context, '/searchview');
+                  CustomNavigationUtil.offAllNamed(context, config.routeSearchView);
                 } catch (e) {
                   if (!mounted) return;
                   setState(() {
@@ -190,6 +191,8 @@ class _PaymentSheetContentState extends State<PaymentSheetContent> {
                   });
 
                   CustomNavigationUtil.back(context);
+                  // 원래 Scaffold context 저장 (navigation에서 사용)
+                  final scaffoldContext = context;
                   CustomDialog.show(
                     context,
                     title: '구매 실패',
@@ -197,18 +200,18 @@ class _PaymentSheetContentState extends State<PaymentSheetContent> {
                     type: DialogType.dual,
                     confirmText: '장바구니로 이동',
                     cancelText: '확인',
-                    onConfirm: () {
-                      CustomNavigationUtil.back(context);
+                    onConfirmWithContext: (dialogContext) {
                       for (final item in widget.cart) {
                         CartStorage.addToCart(item);
                       }
-                      CustomNavigationUtil.toNamed(context, '/cart');
+                      // 원래 Scaffold context로 navigation
+                      CustomNavigationUtil.toNamed(scaffoldContext, config.routeCart);
                     },
                   );
                 }
               } : null,
               alignment: Alignment.center,
-              height: 56,
+              height: config.defaultButtonHeight,
             ),
           ],
         ),

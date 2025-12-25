@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 
+import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/database/handlers/employee_handler.dart';
-import 'package:shoes_store_app/custom/custom_snack_bar.dart';
-import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/model/employee.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
 import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/view/cheng/storage/admin_storage.dart';
-import 'package:shoes_store_app/view/cheng/utils/admin_tablet_utils.dart';
+import 'package:shoes_store_app/utils/admin_tablet_utils.dart';
 import 'package:shoes_store_app/view/cheng/screens/admin/admin_mobile_block_view.dart';
 import 'package:shoes_store_app/view/cheng/screens/admin/admin_order_view.dart';
 
@@ -72,25 +71,24 @@ class _AdminLoginViewState extends State<AdminLoginView> {
           child: Center(
             child: SingleChildScrollView(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 600),
+                constraints: BoxConstraints(maxWidth: config.dialogMaxWidth),
                 child: CustomPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
+                  padding: config.profileEditPadding,
                   child: Form(
                     key: _formKey,
                     child: CustomColumn(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      spacing: 24,
+                      spacing: config.largeSpacing,
                       children: [
                         CustomText(
                           '관리자 로그인',
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
+                          style: config.largeTitleStyle,
                           textAlign: TextAlign.center,
                         ),
 
                         CustomText(
                           '태블릿에서만 접근 가능합니다',
-                          fontSize: 14,
+                          style: config.bodyTextStyle,
                           fontWeight: FontWeight.normal,
                           textAlign: TextAlign.center,
                           color: Colors.grey[600],
@@ -120,7 +118,7 @@ class _AdminLoginViewState extends State<AdminLoginView> {
                           btnText: '로그인',
                           buttonType: ButtonType.elevated,
                           onCallBack: _handleLogin,
-                          minimumSize: const Size(double.infinity, 56),
+                          minimumSize: Size(double.infinity, config.defaultButtonHeight),
                         ),
                       ],
                     ),

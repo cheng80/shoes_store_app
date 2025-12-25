@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/theme/app_colors.dart';
-import 'package:shoes_store_app/custom/custom_snack_bar.dart';
-import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
 import 'package:shoes_store_app/database/handlers/customer_handler.dart';
 import 'package:shoes_store_app/database/handlers/login_history_handler.dart';
 import 'package:shoes_store_app/model/customer.dart';
@@ -127,14 +125,14 @@ class _SignUpViewState extends State<SignUpView> {
             appBar: CustomAppBar(
               title: '회원가입',
               centerTitle: true,
-              titleTextStyle: config.rLabel,
+              titleTextStyle: config.boldLabelStyle,
               backgroundColor: p.background,
               foregroundColor: p.textPrimary,
             ),
         body: SafeArea(
           child: SingleChildScrollView(
             child: CustomPadding(
-              padding: const EdgeInsets.all(16),
+              padding: config.screenPadding,
               child: CustomColumn(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 spacing: 10,
@@ -346,31 +344,13 @@ class _SignUpViewState extends State<SignUpView> {
                   const SizedBox(height: 8),
 
                   // 회원가입 버튼
-                  // 회원가입 진행 중일 때는 로딩 인디케이터 표시
-                  _isSigningUp
-                      ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            child: Column(
-                              children: [
-                                const CircularProgressIndicator(),
-                                const SizedBox(height: 12),
-                                CustomText(
-                                  '회원가입 처리 중...',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.normal,
-                                  color: p.textSecondary,
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      : CustomButton(
-                          btnText: '회원가입',
-                          buttonType: ButtonType.elevated,
-                          onCallBack: _handleSignUp,
-                          minimumSize: const Size(double.infinity, 50),
-                        ),
+                  // 회원가입 진행 중일 때는 버튼 비활성화 (onCallBack을 null로 설정하면 Flutter 기본 버튼이 자동으로 disabled 상태가 됨)
+                  CustomButton(
+                    btnText: '회원가입',
+                    buttonType: ButtonType.elevated,
+                    onCallBack: _isSigningUp ? null : _handleSignUp,
+                    minimumSize: const Size(double.infinity, 50),
+                  ),
                 ],
               ),
             ),
@@ -535,18 +515,10 @@ class _SignUpViewState extends State<SignUpView> {
       if (insertedId > 0) {
         /// 로그인 히스토리 저장
         try {
-          final currentTime = CustomCommonUtil.formatDate(
-            DateTime.now(),
-            'yyyy-MM-dd HH:mm',
-          );
-          
-          final double dVersion = config.kVersion.toDouble();
-          
           final loginHistory = LoginHistory(
             cid: insertedId,
-            loginTime: currentTime,
+            loginTime: DateTime.now().toIso8601String(),
             lStatus: config.loginStatus[0] as String, // '활동 회원'
-            lVersion: dVersion,
             lAddress: '',
             lPaymentMethod: '',
           );
@@ -557,20 +529,22 @@ class _SignUpViewState extends State<SignUpView> {
         }
       }
 
-      setState(() {
-        _isSigningUp = false;
-      });
-
       if (insertedId > 0) {
+        // 회원가입 성공 - SnackBar를 표시하고 바로 화면 이동
+        // SnackBar는 화면 전환 후에도 계속 표시되므로 딜레이가 필요 없음
         CustomSnackBar.showSuccess(
           context,
           message: '회원가입이 완료되었습니다. 로그인해주세요.',
           duration: const Duration(seconds: 2),
         );
 
-        await Future.delayed(const Duration(milliseconds: 500));
+        // 화면이 즉시 이동하므로 _isSigningUp 상태를 되돌릴 필요 없음
         CustomNavigationUtil.offAll(context, const LoginView());
       } else {
+        // 회원가입 실패 - 버튼 다시 활성화
+        setState(() {
+          _isSigningUp = false;
+        });
         CustomSnackBar.showError(context, message: '회원가입에 실패했습니다. 다시 시도해주세요.');
       }
     } catch (e) {
@@ -619,7 +593,7 @@ class _SignUpViewState extends State<SignUpView> {
   // 약관 다이얼로그 내용 위젯 생성
   Widget _buildTermsDialogContent(String content) {
     return Container(
-      constraints: const BoxConstraints(maxHeight: 400, minHeight: 200),
+      constraints: BoxConstraints(maxHeight: config.dialogMaxHeight, minHeight: config.dialogMinHeight),
       width: double.maxFinite,
       child: SingleChildScrollView(
         child: CustomText(

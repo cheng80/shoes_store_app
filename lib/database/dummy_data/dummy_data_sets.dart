@@ -86,7 +86,7 @@ class TestDataSet extends DummyDataSet {
   @override
   Map<int, List<String>> get productImages => {
     0: [
-      '${config.kImageAssetPath}default.png',
+      '${config.imageAssetPath}default.png',
     ],
   };
 
@@ -132,7 +132,6 @@ class TestDataSet extends DummyDataSet {
       'cid': 0,
       'loginTime': '2025-12-12 17:05',
       'lStatus': '0',
-      'lVersion': 1.0,
       'lAddress': config.district[0], // 강남구
       'lPaymentMethod': 'KaKaoPay',
     },

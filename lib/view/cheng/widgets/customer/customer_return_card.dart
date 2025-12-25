@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/theme/app_colors.dart';
 
@@ -23,23 +24,21 @@ class CustomerReturnCard extends StatelessWidget {
     
     return CustomCard(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      padding: config.screenPadding,
       child: CustomColumn(
         crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 8,
+        spacing: config.smallSpacing,
         children: [
           // 주문 ID 표시
           CustomText(
             orderId,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
+            style: config.mediumTextStyle.copyWith(fontWeight: FontWeight.bold),
           ),
           // 주문 날짜 표시 (있는 경우)
           if (orderDate != null)
             CustomText(
               '수령일: $orderDate',
-              fontSize: 12,
-              fontWeight: FontWeight.normal,
+              style: config.smallTextStyle,
               color: p.textSecondary,
             ),
         ],

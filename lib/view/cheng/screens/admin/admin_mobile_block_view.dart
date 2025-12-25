@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shoes_store_app/custom/util/navigation/custom_navigation_util.dart';
+import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/theme/app_colors.dart';
 
 import 'package:shoes_store_app/custom/custom.dart';
@@ -16,11 +16,11 @@ class AdminMobileBlockView extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           child: CustomPadding(
-            padding: const EdgeInsets.all(16),
+            padding: config.screenPadding,
             child: CustomColumn(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              spacing: 16,
+              spacing: config.defaultSpacing,
               children: [
                 Center(
                   child: Icon(
@@ -32,7 +32,7 @@ class AdminMobileBlockView extends StatelessWidget {
                 CustomCard(
                   child: CustomColumn(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                    spacing: 8, // spacing으로 통일하여 SizedBox 제거
+                    spacing: config.smallSpacing, // spacing으로 통일하여 SizedBox 제거
                     children: [
                       CustomText(
                         '모바일 접근 제한',
@@ -42,13 +42,12 @@ class AdminMobileBlockView extends StatelessWidget {
                       ),
                       CustomText(
                         '관리자 기능은 태블릿에서만 사용 가능합니다.',
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal,
+                        style: config.mediumTextStyle,
                         textAlign: TextAlign.center,
                       ),
                       CustomText(
                         '관리자 계정으로 로그인하시려면 태블릿 기기에서 접속해주세요.',
-                        fontSize: 14,
+                        style: config.bodyTextStyle,
                         fontWeight: FontWeight.normal,
                         textAlign: TextAlign.center,
                       ),
@@ -62,8 +61,7 @@ class AdminMobileBlockView extends StatelessWidget {
                     children: [
                       CustomText(
                         '안내 사항',
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        style: config.mediumTextStyle.copyWith(fontWeight: FontWeight.bold),
                       ),
                       CustomText(
                         '• 관리자 기능은 보안상의 이유로 태블릿에서만 제공됩니다.',

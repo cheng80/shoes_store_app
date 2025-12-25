@@ -21,7 +21,7 @@ class PurchaseItemHandler {
   Future<List<PurchaseItem>> queryAll() async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTablePurchaseItem,
+      config.tablePurchaseItem,
       orderBy: 'id ASC',
     );
     return results.map((e) => PurchaseItem.fromMap(e)).toList();
@@ -31,7 +31,7 @@ class PurchaseItemHandler {
   Future<PurchaseItem?> queryById(int id) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTablePurchaseItem,
+      config.tablePurchaseItem,
       where: 'id = ?',
       whereArgs: [id],
       limit: 1,
@@ -44,7 +44,7 @@ class PurchaseItemHandler {
   Future<List<PurchaseItem>> queryByPurchaseId(int pcid) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTablePurchaseItem,
+      config.tablePurchaseItem,
       where: 'pcid = ?',
       whereArgs: [pcid],
       orderBy: 'id ASC',
@@ -56,7 +56,7 @@ class PurchaseItemHandler {
   Future<List<PurchaseItem>> queryByProductId(int pid) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTablePurchaseItem,
+      config.tablePurchaseItem,
       where: 'pid = ?',
       whereArgs: [pid],
       orderBy: 'id ASC',
@@ -68,7 +68,7 @@ class PurchaseItemHandler {
   Future<List<PurchaseItem>> queryByStatus(String status) async {
     final db = await _getDatabase();
     final List<Map<String, Object?>> results = await db.query(
-      config.kTablePurchaseItem,
+      config.tablePurchaseItem,
       where: 'pcStatus = ?',
       whereArgs: [status],
       orderBy: 'id ASC',
@@ -200,7 +200,7 @@ class PurchaseItemHandler {
   Future<int> insertData(PurchaseItem item) async {
     final db = await _getDatabase();
     final map = item.toMap(includeId: false);
-    return await db.insert(config.kTablePurchaseItem, map);
+    return await db.insert(config.tablePurchaseItem, map);
   }
 
   // ============================================
@@ -216,7 +216,7 @@ class PurchaseItemHandler {
     final db = await _getDatabase();
     final map = item.toMap(includeId: false);
     return await db.update(
-      config.kTablePurchaseItem,
+      config.tablePurchaseItem,
       map,
       where: 'id = ?',
       whereArgs: [item.id],
@@ -227,7 +227,7 @@ class PurchaseItemHandler {
   Future<int> updateStatus(int id, String status) async {
     final db = await _getDatabase();
     return await db.update(
-      config.kTablePurchaseItem,
+      config.tablePurchaseItem,
       {'pcStatus': status},
       where: 'id = ?',
       whereArgs: [id],
@@ -242,7 +242,7 @@ class PurchaseItemHandler {
   Future<int> deleteData(int id) async {
     final db = await _getDatabase();
     return await db.delete(
-      config.kTablePurchaseItem,
+      config.tablePurchaseItem,
       where: 'id = ?',
       whereArgs: [id],
     );
