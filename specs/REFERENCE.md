@@ -158,3 +158,45 @@ class _MyWidgetState extends State<MyWidget> {
 - `git reset`은 사용자가 명시적으로 요청할 때만 사용합니다.
 - reset 사용 전 반드시 다시 한번 확인을 요청합니다.
 - reset 복구가 필요한 상황이 되면 `git reflog`로 기록을 참조하여 복구를 시도합니다.
+
+---
+
+## 🖥️ 백엔드 API 참고 (2025-12-25 추가)
+
+### FastAPI 백엔드 위치
+- **백엔드 코드**: `backend/` 폴더
+- **API 문서**: `backend/API.md`
+- **테스트 결과**: `backend/TEST/API_TEST_RESULTS.md`
+- **테스트 스크립트**: `backend/TEST/test_api.py`
+
+### 서버 실행 방법
+```bash
+cd backend
+source venv/bin/activate
+uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+### HTTP 메서드 요약
+
+| 메서드 | SQL | 용도 |
+|--------|-----|------|
+| GET | SELECT | 조회 |
+| POST | INSERT | 생성 |
+| PUT | UPDATE | 전체 수정 (모든 필드 필수) |
+| PATCH | UPDATE | 부분 수정 (변경 필드만) |
+| DELETE | DELETE | 삭제 |
+
+### Flutter → API 마이그레이션 시 참고
+
+**기존 SQLite 핸들러 → API 대체:**
+- `CustomerHandler.queryAll()` → `GET /api/customers`
+- `CustomerHandler.queryById(id)` → `GET /api/customers/{id}`
+- `CustomerHandler.insertData(data)` → `POST /api/customers`
+- `CustomerHandler.updateData(data)` → `PUT /api/customers/{id}`
+
+**최적화 API (N번 호출 → 1번 호출):**
+- 검색 화면: `GET /api/product_bases/list/full_detail`
+- 주문 목록: `GET /api/purchases/list/with_items`
+- 관리자 주문: `GET /api/purchases/list/with_customer`
+
+**상세 매핑 정보**: `backend/TEST/API_TEST_RESULTS.md` 참고

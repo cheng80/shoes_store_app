@@ -1,6 +1,6 @@
 # 할 일 목록 (TODO)
 
-## 📅 최종 업데이트: 2025-12-17 (완료 항목 반영)
+## 📅 최종 업데이트: 2025-12-25 (백엔드 API 완료)
 
 ---
 
@@ -156,6 +156,13 @@
   - 참고: Retail 테이블은 현재 미사용 (재고는 Product.pQuantity로 본사가 중앙 관리)
 
 ### 10. 테스트
+- [x] **백엔드 API 테스트** (완료: 2025-12-25)
+  - 75개 API 테스트 100% 통과
+  - CRUD, JOIN, 필터링, PATCH 테스트 완료
+  - 주문 상태 흐름 테스트 (0→1→2→3→4→5)
+  - 테스트 스크립트: `backend/TEST/test_api.py`
+  - 결과 문서: `backend/TEST/API_TEST_RESULTS.md`
+
 - [ ] **단위 테스트**
   - 모델 클래스 테스트
   - 유틸리티 함수 테스트
@@ -183,9 +190,11 @@
   - ORDER_STATUS_LOGIC_IMPROVEMENT.md 실제 구현 상태와 일치 여부 검토
   - 구현 완료 항목 정리 및 문서 업데이트
 
-- [ ] **API 문서**
-  - DB 스키마 문서화 (진행 중: DATABASE_SCHEMA.md, DATABASE_GUIDE.md 존재)
-  - 주요 함수 문서화
+- [x] **API 문서** (완료: 2025-12-25)
+  - DB 스키마 문서화 ✅ (DATABASE_SCHEMA.md, DATABASE_GUIDE.md)
+  - FastAPI 백엔드 API 문서화 ✅ (`backend/API.md`)
+  - HTTP 메서드 가이드 ✅ (GET/POST/PUT/PATCH/DELETE)
+  - Flutter 핸들러 → API 매핑 문서화 ✅ (`backend/TEST/API_TEST_RESULTS.md`)
 
 - [ ] **사용자 가이드**
   - 앱 사용법 가이드
@@ -210,8 +219,11 @@
 ## 💡 향후 고려 사항
 
 1. **서버 연동**
-   - 현재는 로컬 DB만 사용
-   - 향후 서버 API 연동 고려
+   - ✅ **FastAPI 백엔드 개발 완료** (2025-12-25)
+   - ✅ MySQL 외부 서버 연동 완료
+   - ✅ 75개 API 테스트 100% 통과
+   - ⬜ Flutter 앱에서 SQLite → FastAPI 마이그레이션 (예정)
+   - 참고: `backend/TEST/API_TEST_RESULTS.md`
 
 2. **푸시 알림**
    - 주문 상태 변경 알림

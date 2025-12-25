@@ -1,6 +1,6 @@
 # 진행 상황 (Progress)
 
-## 📅 최종 업데이트: 2025-12-17 (Retail 테이블 제거 완료)
+## 📅 최종 업데이트: 2025-12-25 (FastAPI 백엔드 API 완료)
 
 ---
 
@@ -177,6 +177,75 @@
 
 ## ✅ 최근 완료된 작업
 
+### 2025-12-25 (FastAPI 백엔드 API 완료)
+
+#### 1. FastAPI 백엔드 API 개발
+- **위치**: `backend/` 폴더
+- **내용**:
+  - MySQL 외부 서버 연동 (`cheng80.myqnapcloud.com:13306`)
+  - 9개 테이블 전체 CRUD API 구현
+  - 복합 쿼리 (JOIN) API 구현
+  - 필터링 API 구현 (쿼리 파라미터)
+  - PATCH API 구현 (부분 업데이트)
+
+#### 2. Flutter 핸들러 호환 API 추가
+- **새로 추가된 API**:
+  - `GET /api/employees?email=...&phone=...&identifier=...&role=...` (필터링)
+  - `PATCH /api/login_histories/by_customer/{cid}/status` (상태 부분 업데이트)
+  - `PATCH /api/login_histories/by_customer/{cid}/login_time` (시간 부분 업데이트)
+  - `GET /api/product_bases/list/full_detail` (최적화: N번→1번 호출)
+  - `GET /api/purchases/list/with_items` (최적화: N번→1번 호출)
+  - `GET /api/purchases/list/with_customer` (cid 없이 전체 조회)
+
+#### 3. 최적화 API (성능 개선)
+- **배경**: Flutter 앱에서 여러 핸들러를 순차 호출하던 패턴을 1번 API 호출로 대체
+- **개선 효과**:
+  - 검색 화면: 25회 → 1회 (96% 감소)
+  - 주문 목록: 6회 → 1회 (83% 감소)
+  - 관리자 주문: 11회 → 1회 (91% 감소)
+
+#### 4. API 테스트 완료
+- **테스트 스크립트**: `backend/TEST/test_api.py`
+- **테스트 결과**: `backend/TEST/API_TEST_RESULTS.md`
+- **결과**: 75개 테스트 100% 통과
+- **테스트 항목**:
+  - 헬스 체크 (서버 상태 + DB 연결)
+  - 기본 GET API (18개 엔드포인트)
+  - JOIN API (15개 엔드포인트)
+  - 필터링 및 PATCH API
+  - 회원가입/로그인 시나리오
+  - 주문 상태 흐름 (0→1→2→3→4→5)
+  - CRUD 전체 사이클
+
+#### 5. 주문 상태 흐름 정리
+- **상태 코드** (config.dart 기준):
+  - 0: 제품 준비 중
+  - 1: 제품 준비 완료
+  - 2: 제품 수령 완료
+  - 3: 반품 신청
+  - 4: 반품 처리 중
+  - 5: 반품 완료
+- **비즈니스 규칙**:
+  - 반품 가능 조건: 상태 2(제품 수령 완료) + 30일 미경과
+  - 30일 경과 시: 자동으로 상태 2로 변경
+- **참고**: `lib/utils/order_status_utils.dart`
+
+#### 6. 문서 업데이트
+- **수정된 문서**:
+  - `backend/API.md` - 새 API 및 PATCH, HTTP 메서드 가이드 추가
+  - `backend/TEST/API_TEST_RESULTS.md` - 전체 테스트 결과 문서
+  - `specs/TODO.md` - 백엔드 완료 항목 반영
+  - `specs/REFERENCE.md` - 백엔드 참고 섹션 추가
+  - `specs/PROGRESS.md` - 이 내용
+
+#### 7. 버그 수정
+- **라우트 순서 문제**: `/list/*` 엔드포인트가 `/{id}`에 매칭되는 버그
+- **수정된 파일**: 
+  - `products.py`, `purchases.py`, `purchase_items.py`, `product_bases.py`, `login_histories.py`
+- **해결 방법**: `/list/*` 라우트를 `/{id}` 보다 먼저 정의
+
+---
+
 ### 2025-12-17
 
 #### 1. 주문 상세 뷰 버튼 상태 표시 개선
@@ -278,7 +347,13 @@
 
 ## 🎯 다음 단계
 
-작업 계획 및 할 일 목록은 `TODO.md`를 참고하세요.
+### 예정된 작업
+1. **Flutter SQLite → FastAPI 마이그레이션**
+   - 기존 SQLite 핸들러를 FastAPI API 호출로 대체
+   - 매핑 정보: `backend/TEST/API_TEST_RESULTS.md` 참고
+
+2. **기타 할 일**
+   - 작업 계획 및 할 일 목록은 `TODO.md`를 참고하세요.
 
 ---
 

@@ -164,8 +164,61 @@ ID로 주문 조회
 #### GET /api/purchases/{purchase_id}/with_customer
 주문 + 고객 정보 조인 조회
 
-#### GET /api/purchases/list/with_customer?cid=1
-고객별 주문 목록 + 고객 정보 조인 조회
+#### GET /api/purchases/list/with_customer
+🚀 **최적화 API** - 주문 목록 + 고객 정보 조인 조회
+
+**쿼리 파라미터:**
+- `cid` (optional): Customer ID로 필터. 없으면 전체 조회 (관리자용)
+
+**예시:**
+```bash
+# 특정 고객의 주문
+GET /api/purchases/list/with_customer?cid=1
+
+# 전체 주문 (관리자용)
+GET /api/purchases/list/with_customer
+```
+
+#### GET /api/purchases/list/with_items
+🚀 **최적화 API** - 주문 목록 + 주문 항목 포함 조회
+(N번 호출 → 1번 호출로 성능 개선)
+
+**쿼리 파라미터:**
+- `cid` (optional): Customer ID로 필터. 없으면 전체 조회
+
+**예시:**
+```bash
+# 특정 고객의 주문 + 항목
+GET /api/purchases/list/with_items?cid=1
+
+# 전체 주문 + 항목
+GET /api/purchases/list/with_items
+```
+
+**응답 예시:**
+```json
+{
+  "results": [
+    {
+      "id": 1,
+      "cid": 1,
+      "pickupDate": "2025-12-30 14:00",
+      "orderCode": "ORDER-001",
+      "timeStamp": "2025-12-25 12:30",
+      "items": [
+        {
+          "id": 1,
+          "pid": 1,
+          "pcid": 1,
+          "pcQuantity": 2,
+          "pcStatus": "제품 준비 완료"
+        }
+      ],
+      "itemCount": 1
+    }
+  ]
+}
+```
 
 ---
 
@@ -262,6 +315,43 @@ ProductBase + 이미지 목록 조인 조회
 #### GET /api/product_bases/list/with_first_image
 ProductBase 목록 + 첫 번째 이미지 조인 조회
 
+#### GET /api/product_bases/list/full_detail
+🚀 **최적화 API** - ProductBase 전체 상세 목록
+
+ProductBase + 첫 번째 이미지 + 대표 Product + Manufacturer 통합 조회
+(N번 호출 → 1번 호출로 성능 개선)
+
+**응답 예시:**
+```json
+{
+  "results": [
+    {
+      "id": 1,
+      "pName": "U740WN2",
+      "pDescription": "뉴발란스 클래식",
+      "pColor": "Black",
+      "pGender": "Unisex",
+      "pStatus": "",
+      "pCategory": "Running",
+      "pModelNumber": "U740WN2",
+      "firstImage": "images/shoes/u740wn2.jpg",
+      "representativeProduct": {
+        "id": 1,
+        "size": 260,
+        "basePrice": 149000,
+        "discountRate": 0,
+        "stock": 10
+      },
+      "manufacturer": {
+        "id": 2,
+        "mName": "NewBalance",
+        "mDescription": "뉴발란스 코리아"
+      }
+    }
+  ]
+}
+```
+
 ---
 
 ## 6. ProductImage (제품 이미지)
@@ -323,13 +413,40 @@ ID로 제조사 조회
 ### 기본 CRUD
 
 #### GET /api/employees
-모든 직원 조회
+모든 직원 조회 (필터링 가능)
+
+**쿼리 파라미터:**
+- `email` (optional): 이메일로 필터
+- `phone` (optional): 전화번호로 필터
+- `identifier` (optional): 이메일 또는 전화번호로 필터 (OR 조건)
+- `role` (optional): 역할로 필터
+- `order_by` (optional): 정렬 기준 (기본값: "id")
+- `order` (optional): 정렬 방향 "asc" 또는 "desc" (기본값: "asc")
+
+**예시:**
+```bash
+GET /api/employees
+GET /api/employees?email=admin@store.com
+GET /api/employees?identifier=admin@store.com
+GET /api/employees?role=1
+```
 
 #### GET /api/employees/{employee_id}
 ID로 직원 조회
 
 #### POST /api/employees
 직원 생성
+
+**요청 본문:**
+```json
+{
+  "eEmail": "staff@store.com",
+  "ePhoneNumber": "02-1234-5678",
+  "eName": "홍길동",
+  "ePassword": "hashed_password",
+  "eRole": "1"
+}
+```
 
 #### PUT /api/employees/{employee_id}
 직원 수정
@@ -357,11 +474,47 @@ ID로 로그인 이력 조회
 #### POST /api/login_histories
 로그인 이력 생성
 
+**요청 본문:**
+```json
+{
+  "cid": 1,
+  "loginTime": "2025-12-25 12:00",
+  "lStatus": "active",
+  "lVersion": 1.0,
+  "lAddress": "서울시 강남구",
+  "lPaymentMethod": "CreditCard"
+}
+```
+
 #### PUT /api/login_histories/{login_history_id}
-로그인 이력 수정
+로그인 이력 전체 수정
 
 #### DELETE /api/login_histories/{login_history_id}
 로그인 이력 삭제
+
+### 부분 업데이트 (PATCH)
+
+#### PATCH /api/login_histories/by_customer/{cid}/status
+고객 ID로 로그인 상태만 업데이트
+
+**쿼리 파라미터:**
+- `status` (required): 새로운 상태 값
+
+**예시:**
+```bash
+PATCH /api/login_histories/by_customer/1/status?status=logged_out
+```
+
+#### PATCH /api/login_histories/by_customer/{cid}/login_time
+고객 ID로 로그인 시간만 업데이트
+
+**쿼리 파라미터:**
+- `login_time` (required): 새로운 로그인 시간
+
+**예시:**
+```bash
+PATCH /api/login_histories/by_customer/1/login_time?login_time=2025-12-25 15:00
+```
 
 ---
 
@@ -374,14 +527,14 @@ import 'dart:convert';
 class ApiClient {
   static const String baseUrl = 'http://127.0.0.1:8000';
   
-  // GET 요청
+  // GET 요청 - 데이터 조회
   static Future<Map<String, dynamic>> get(String endpoint, {Map<String, String>? queryParams}) async {
     final uri = Uri.parse('$baseUrl$endpoint').replace(queryParameters: queryParams);
     final response = await http.get(uri);
     return jsonDecode(response.body);
   }
   
-  // POST 요청
+  // POST 요청 - 데이터 생성
   static Future<Map<String, dynamic>> post(String endpoint, Map<String, dynamic> data) async {
     final response = await http.post(
       Uri.parse('$baseUrl$endpoint'),
@@ -391,7 +544,7 @@ class ApiClient {
     return jsonDecode(response.body);
   }
   
-  // PUT 요청
+  // PUT 요청 - 데이터 전체 수정
   static Future<Map<String, dynamic>> put(String endpoint, Map<String, dynamic> data) async {
     final response = await http.put(
       Uri.parse('$baseUrl$endpoint'),
@@ -401,21 +554,52 @@ class ApiClient {
     return jsonDecode(response.body);
   }
   
-  // DELETE 요청
+  // PATCH 요청 - 데이터 부분 수정
+  static Future<Map<String, dynamic>> patch(String endpoint) async {
+    final response = await http.patch(Uri.parse('$baseUrl$endpoint'));
+    return jsonDecode(response.body);
+  }
+  
+  // DELETE 요청 - 데이터 삭제
   static Future<Map<String, dynamic>> delete(String endpoint) async {
     final response = await http.delete(Uri.parse('$baseUrl$endpoint'));
     return jsonDecode(response.body);
   }
 }
 
+// ============================================
 // 사용 예시
+// ============================================
+
+// 기본 조회
 final products = await ApiClient.get('/api/products', queryParams: {'pbid': '1', 'size': '250'});
 final product = await ApiClient.get('/api/products/1/with_base');
+
+// 최적화 API 사용 (N번 호출 → 1번 호출)
+final fullDetail = await ApiClient.get('/api/product_bases/list/full_detail');
+final ordersWithItems = await ApiClient.get('/api/purchases/list/with_items', queryParams: {'cid': '1'});
+
+// 데이터 생성
 final result = await ApiClient.post('/api/customers', {
   'cEmail': 'user@example.com',
   'cPhoneNumber': '010-1234-5678',
   'cName': '홍길동',
   'cPassword': 'hashed_password'
 });
+
+// 부분 수정 (PATCH)
+final patchResult = await ApiClient.patch('/api/login_histories/by_customer/1/status?status=logged_out');
 ```
+
+---
+
+## HTTP 메서드 요약
+
+| 메서드 | SQL | 용도 | 데이터 범위 |
+|--------|-----|------|------------|
+| GET | SELECT | 조회 | - |
+| POST | INSERT | 생성 | 전체 |
+| PUT | UPDATE | 전체 수정 | 모든 필드 필수 |
+| PATCH | UPDATE | 부분 수정 | 변경할 필드만 |
+| DELETE | DELETE | 삭제 | - |
 
