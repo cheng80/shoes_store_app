@@ -205,47 +205,9 @@ uvicorn app.main:app --host 127.0.0.1 --port 8000
 
 ---
 
-## 📁 프로젝트 폴더 구조 (2025-12-26 기준)
+## 📁 프로젝트 폴더 구조
 
-### lib/model/ (데이터 모델)
-```
-lib/model/
-├── customer.dart          # 고객 모델
-├── employee.dart          # 직원/관리자 모델
-├── login_history.dart     # 로그인 이력 모델
-├── model_ex.dart          # 모델 예제
-├── product/               # 제품 관련 모델
-│   ├── manufacturer.dart
-│   ├── product_base.dart
-│   ├── product_image.dart
-│   └── product.dart
-└── purchase/              # 주문 관련 모델 (구 sale/)
-    ├── purchase.dart
-    └── purchase_item.dart
-```
-
-### lib/database/ (데이터베이스)
-```
-lib/database/
-├── core/
-│   └── database_manager.dart    # DB 매니저
-├── dummy_data/                  # 더미 데이터
-│   ├── dummy_data_constants.dart
-│   ├── dummy_data_sets.dart
-│   └── dummy_data_setting.dart
-├── handlers/                    # 테이블별 핸들러 (SQLite)
-│   ├── customer_handler.dart
-│   ├── employee_handler.dart
-│   ├── login_history_handler.dart
-│   ├── manufacturer_handler.dart
-│   ├── product_base_handler.dart
-│   ├── product_handler.dart
-│   ├── product_image_handler.dart
-│   ├── purchase_handler.dart
-│   └── purchase_item_handler.dart
-└── services/                    # 복합 쿼리 서비스
-    └── purchase_service.dart    # 주문 관련 조인 쿼리
-```
+> 📌 **상세 폴더 구조는 `PROJECT_STRUCTURE.md` 참고**
 
 ### 핸들러 vs 서비스 구분
 | 유형 | 역할 | 예시 |
@@ -257,15 +219,8 @@ lib/database/
 
 ## 🗑️ 삭제된 파일 목록 (2025-12-26)
 
-### 미사용 모델
-- `lib/model/sale/sale.dart` - 세일 모델
-- `lib/model/sale/applied_sale.dart` - 적용된 세일 모델
-- `lib/model/settings.dart` - 설정 모델
-
-### 예제 페이지 (lib/pages/)
-- 17개 예제 파일 삭제 (address_page, dialog_page, network_page 등)
-
-### specs 문서
-- `DB_QUERY_COMPARISON.md` - DATABASE_GUIDE에 통합
-- `DESIGN_SPEC.md` - 미사용
-- `ORDER_STATUS_LOGIC_IMPROVEMENT.md` - PROGRESS에 통합
+| 분류 | 삭제된 파일 |
+|------|-------------|
+| 미사용 모델 | `sale.dart`, `applied_sale.dart`, `settings.dart` |
+| 예제 페이지 | `lib/pages/` 폴더 내 17개 파일 |
+| specs 문서 | `DB_QUERY_COMPARISON.md`, `DESIGN_SPEC.md`, `ORDER_STATUS_LOGIC_IMPROVEMENT.md` |

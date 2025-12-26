@@ -212,6 +212,8 @@
   - `specs/DB_QUERY_COMPARISON.md` - 쿼리 비교 가이드 (DATABASE_GUIDE에 통합)
   - `specs/DESIGN_SPEC.md` - 디자인 스펙 (미사용)
   - `specs/ORDER_STATUS_LOGIC_IMPROVEMENT.md` - 주문 상태 로직 (PROGRESS에 통합)
+- **생성된 문서**:
+  - `specs/PROJECT_STRUCTURE.md` - 신규 팀원을 위한 폴더 구조 가이드
 
 ---
 
