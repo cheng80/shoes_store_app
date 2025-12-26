@@ -6,8 +6,8 @@ import 'package:shoes_store_app/database/handlers/customer_handler.dart';
 import 'package:shoes_store_app/database/handlers/purchase_handler.dart';
 import 'package:shoes_store_app/database/handlers/purchase_item_handler.dart';
 import 'package:shoes_store_app/model/customer.dart';
-import 'package:shoes_store_app/model/sale/purchase.dart';
-import 'package:shoes_store_app/model/sale/purchase_item.dart';
+import 'package:shoes_store_app/model/purchase/purchase.dart';
+import 'package:shoes_store_app/model/purchase/purchase_item.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
 import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/view/cheng/storage/user_storage.dart';
@@ -49,10 +49,10 @@ class _OrderListViewState extends State<OrderListView> {
 
   /// 고객 핸들러
   final CustomerHandler _customerHandler = CustomerHandler();
-  
+
   /// 주문 핸들러
   final PurchaseHandler _purchaseHandler = PurchaseHandler();
-  
+
   /// 주문 항목 핸들러
   final PurchaseItemHandler _purchaseItemHandler = PurchaseItemHandler();
 
@@ -88,22 +88,24 @@ class _OrderListViewState extends State<OrderListView> {
 
       AppLogger.d('=== 주문 내역 조회 시작 ===');
       AppLogger.d('사용자 ID: $userId');
-      
+
       /// 현재 사용자 정보 조회
       try {
         _currentUser = await _customerHandler.queryById(userId);
         if (_currentUser != null) {
-          AppLogger.d('사용자 정보 로드 성공: 이름=${_currentUser!.cName}, 이메일=${_currentUser!.cEmail}');
+          AppLogger.d(
+            '사용자 정보 로드 성공: 이름=${_currentUser!.cName}, 이메일=${_currentUser!.cEmail}',
+          );
         } else {
           AppLogger.w('사용자 정보를 찾을 수 없습니다. ID: $userId');
         }
       } catch (e) {
         AppLogger.e('사용자 정보 조회 실패', error: e);
       }
-      
+
       /// 고객별 주문 목록 조회
       final purchases = await _purchaseHandler.queryByCustomerId(userId);
-      
+
       AppLogger.d('조회된 Purchase 개수: ${purchases.length}');
       for (var i = 0; i < purchases.length; i++) {
         final purchase = purchases[i];
@@ -114,31 +116,39 @@ class _OrderListViewState extends State<OrderListView> {
         AppLogger.d('  pickupDate: ${purchase.pickupDate}');
         AppLogger.d('  timeStamp: ${purchase.timeStamp}');
       }
-      
+
       /// 시간순으로 정렬 (최신순)
       purchases.sort((a, b) => b.timeStamp.compareTo(a.timeStamp));
 
       /// 각 주문의 상태를 미리 계산 및 30일 경과 주문 자동 업데이트
       final statusMap = <int, String>{};
       final now = DateTime.now();
-      
+
       for (final purchase in purchases) {
         if (purchase.id != null) {
           try {
             AppLogger.d('--- PurchaseItem 조회 (pcid: ${purchase.id}) ---');
-            final items = await _purchaseItemHandler.queryByPurchaseId(purchase.id!);
+            final items = await _purchaseItemHandler.queryByPurchaseId(
+              purchase.id!,
+            );
             AppLogger.d('조회된 PurchaseItem 개수: ${items.length}');
-            
+
             /// 30일 경과 확인 및 자동 업데이트
-            if (OrderStatusUtils.shouldAutoUpdateToCompleted(items, purchase, now: now)) {
+            if (OrderStatusUtils.shouldAutoUpdateToCompleted(
+              items,
+              purchase,
+              now: now,
+            )) {
               AppLogger.d('주문 ID ${purchase.id}: 30일 경과 - 자동 수령 완료 처리');
-              
+
               /// 모든 PurchaseItem의 pcStatus를 '제품 수령 완료'로 업데이트
               final completeStatus = config.pickupStatus[2]!; // '제품 수령 완료'
               for (final item in items) {
                 if (item.id != null) {
                   try {
-                    final statusNum = OrderStatusUtils.parseStatusToNumber(item.pcStatus);
+                    final statusNum = OrderStatusUtils.parseStatusToNumber(
+                      item.pcStatus,
+                    );
                     // status 2 미만인 아이템만 업데이트
                     if (statusNum < 2) {
                       final updatedItem = PurchaseItem(
@@ -149,24 +159,39 @@ class _OrderListViewState extends State<OrderListView> {
                         pcStatus: completeStatus,
                       );
                       await _purchaseItemHandler.updateData(updatedItem);
-                      AppLogger.d('PurchaseItem ID ${item.id} 업데이트 완료: pcStatus = $completeStatus');
+                      AppLogger.d(
+                        'PurchaseItem ID ${item.id} 업데이트 완료: pcStatus = $completeStatus',
+                      );
                     }
                   } catch (e) {
-                    AppLogger.e('PurchaseItem 업데이트 실패 (ID: ${item.id})', error: e);
+                    AppLogger.e(
+                      'PurchaseItem 업데이트 실패 (ID: ${item.id})',
+                      error: e,
+                    );
                   }
                 }
               }
-              
+
               // 업데이트 후 다시 조회하여 최신 상태로 계산
-              final updatedItems = await _purchaseItemHandler.queryByPurchaseId(purchase.id!);
-              final status = OrderStatusUtils.determineOrderStatusForCustomer(updatedItems, purchase, now: now);
+              final updatedItems = await _purchaseItemHandler.queryByPurchaseId(
+                purchase.id!,
+              );
+              final status = OrderStatusUtils.determineOrderStatusForCustomer(
+                updatedItems,
+                purchase,
+                now: now,
+              );
               statusMap[purchase.id!] = status;
             } else {
               /// 상태 결정 (공용 유틸리티 사용)
-              final status = OrderStatusUtils.determineOrderStatusForCustomer(items, purchase, now: now);
+              final status = OrderStatusUtils.determineOrderStatusForCustomer(
+                items,
+                purchase,
+                now: now,
+              );
               statusMap[purchase.id!] = status;
             }
-            
+
             AppLogger.d('결정된 주문 상태: ${statusMap[purchase.id!]}');
           } catch (e) {
             AppLogger.e('주문 상태 조회 실패 (ID: ${purchase.id})', error: e);
@@ -175,7 +200,7 @@ class _OrderListViewState extends State<OrderListView> {
           }
         }
       }
-      
+
       AppLogger.d('=== 주문 내역 조회 완료 ===');
 
       setState(() {
@@ -192,37 +217,36 @@ class _OrderListViewState extends State<OrderListView> {
     }
   }
 
-
   /// 검색어에 따라 필터링되고 정렬된 주문 목록 반환
   List<Purchase> get _filteredOrders {
     var filtered = _orders;
-    
+
     final searchText = _searchController.text.toLowerCase();
     if (searchText.isNotEmpty) {
       filtered = filtered.where((order) {
         if (order.orderCode.toLowerCase().contains(searchText)) {
           return true;
         }
-        
+
         final orderDate = _normalizeDate(order.timeStamp);
         final searchDate = _normalizeDate(searchText);
-        
+
         if (orderDate.contains(searchDate) || searchDate.contains(orderDate)) {
           return true;
         }
-        
+
         if (order.timeStamp.toLowerCase().contains(searchText) ||
             order.pickupDate.toLowerCase().contains(searchText)) {
           return true;
         }
-        
+
         return false;
       }).toList();
     }
-    
+
     filtered.sort((a, b) {
       int comparison = 0;
-      
+
       switch (_sortBy) {
         case 'orderCode':
           comparison = a.orderCode.compareTo(b.orderCode);
@@ -233,10 +257,10 @@ class _OrderListViewState extends State<OrderListView> {
         default:
           comparison = a.orderCode.compareTo(b.orderCode);
       }
-      
+
       return _sortAscending ? comparison : -comparison;
     });
-    
+
     return filtered;
   }
 
@@ -275,11 +299,14 @@ class _OrderListViewState extends State<OrderListView> {
         // 일반 형식: 2025-12-26 또는 2025-12-26 01:45:17
         dateTime = DateTime.parse(timeStamp);
       }
-      
+
       // 시간이 있는지 확인 (시/분이 0이 아니거나 초/밀리초가 있는지)
-      final hasTime = dateTime.hour != 0 || dateTime.minute != 0 || 
-                      dateTime.second != 0 || dateTime.millisecond != 0;
-      
+      final hasTime =
+          dateTime.hour != 0 ||
+          dateTime.minute != 0 ||
+          dateTime.second != 0 ||
+          dateTime.millisecond != 0;
+
       if (hasTime) {
         // 날짜 + 시분: yyyy-MM-dd HH:mm
         return CustomCommonUtil.formatDate(dateTime, 'yyyy-MM-dd HH:mm');
@@ -296,12 +323,12 @@ class _OrderListViewState extends State<OrderListView> {
   /// 주문 카드 위젯 생성
   Widget _buildOrderCard(Purchase order) {
     // config.pickupStatus[0]은 절대 null이 될 수 없으므로 fallback 불필요
-    String orderStatus = order.id != null 
+    String orderStatus = order.id != null
         ? _orderStatusMap[order.id] ?? config.pickupStatus[0]!
         : config.pickupStatus[0]!;
-    
+
     final orderDate = _formatOrderDate(order.timeStamp);
-    
+
     return GestureDetector(
       onTap: () async {
         if (order.id != null) {
@@ -361,19 +388,19 @@ class _OrderListViewState extends State<OrderListView> {
     final icon = isActive
         ? (_sortAscending ? Icons.arrow_upward : Icons.arrow_downward)
         : Icons.sort;
-    
+
     final p = context.palette;
-    
+
     return GestureDetector(
       onTap: () => _changeSortOrder(sortBy),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? p.chipSelectedBg.withOpacity(0.2) : p.chipUnselectedBg,
+          color: isActive
+              ? p.chipSelectedBg.withOpacity(0.2)
+              : p.chipUnselectedBg,
           borderRadius: BorderRadius.circular(8),
-          border: isActive
-              ? Border.all(color: p.primary, width: 2)
-              : null,
+          border: isActive ? Border.all(color: p.primary, width: 2) : null,
         ),
         child: CustomRow(
           spacing: 4,
@@ -393,7 +420,7 @@ class _OrderListViewState extends State<OrderListView> {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    
+
     return Scaffold(
       backgroundColor: p.background,
       appBar: CustomAppBar(
@@ -446,4 +473,3 @@ class _OrderListViewState extends State<OrderListView> {
     );
   }
 }
-

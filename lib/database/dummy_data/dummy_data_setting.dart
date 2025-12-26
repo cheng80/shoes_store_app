@@ -15,18 +15,18 @@ import 'package:shoes_store_app/model/product/manufacturer.dart';
 import 'package:shoes_store_app/model/product/product_base.dart';
 import 'package:shoes_store_app/model/product/product_image.dart';
 import 'package:shoes_store_app/model/product/product.dart';
-import 'package:shoes_store_app/model/sale/purchase.dart';
-import 'package:shoes_store_app/model/sale/purchase_item.dart';
+import 'package:shoes_store_app/model/purchase/purchase.dart';
+import 'package:shoes_store_app/model/purchase/purchase_item.dart';
 
 /// 더미 데이터 세팅 클래스
-/// 
+///
 /// 개발 및 테스트를 위한 더미 데이터를 데이터베이스에 삽입합니다.
 /// 새로운 핸들러 방식을 사용하며, 목적별 데이터 세트를 지원합니다.
 class DummyDataSetting {
   /// 데이터 세트를 받아서 모든 더미 데이터 삽입
-  /// 
+  ///
   /// [dataSet] 삽입할 데이터 세트 (기본값: DevelopmentDataSet)
-  /// 
+  ///
   /// 순서:
   /// 1. Manufacturer (제조사)
   /// 2. ProductBase (제품 기본 정보)
@@ -37,7 +37,7 @@ class DummyDataSetting {
   /// 7. Purchase (주문)
   /// 8. PurchaseItem (주문 항목)
   /// 9. LoginHistory (로그인 이력)
-  /// 
+  ///
   /// 사용 예시:
   /// ```dart
   /// final setting = DummyDataSetting();
@@ -62,7 +62,11 @@ class DummyDataSetting {
     print('✅ 제품 이미지 삽입 완료');
 
     // 4. 제품 삽입
-    await insertProducts(productBaseIds, manufacturerIds, dataSet.productConfig);
+    await insertProducts(
+      productBaseIds,
+      manufacturerIds,
+      dataSet.productConfig,
+    );
     print('✅ 제품 삽입 완료');
 
     // 5. 고객 삽입
@@ -89,7 +93,7 @@ class DummyDataSetting {
   }
 
   /// 모든 더미 데이터 삽입 (기본 데이터 세트 사용)
-  /// 
+  ///
   /// DevelopmentDataSet을 사용하여 데이터를 삽입합니다.
   /// 기존 호환성을 위해 유지됩니다.
   Future<void> insertAllDummyData() async {
@@ -101,18 +105,17 @@ class DummyDataSetting {
   // ============================================
 
   /// 제조사 데이터 삽입
-  /// 
+  ///
   /// [data] 제조사 데이터 리스트
   /// 반환: 삽입된 제조사 ID 리스트
-  /// 
+  ///
   /// 사용 예시:
   /// ```dart
   /// final setting = DummyDataSetting();
   /// final customData = [{'mName': 'Nike'}, {'mName': 'Adidas'}];
   /// final ids = await setting.insertManufacturers(customData);
   /// ```
-  Future<List<int>> insertManufacturers(
-      List<Map<String, dynamic>> data) async {
+  Future<List<int>> insertManufacturers(List<Map<String, dynamic>> data) async {
     final handler = ManufacturerHandler();
     final List<int> ids = [];
 
@@ -126,11 +129,10 @@ class DummyDataSetting {
   }
 
   /// 제품 기본 정보 데이터 삽입
-  /// 
+  ///
   /// [data] 제품 기본 정보 데이터 리스트
   /// 반환: 삽입된 ProductBase ID 리스트
-  Future<List<int>> insertProductBases(
-      List<Map<String, dynamic>> data) async {
+  Future<List<int>> insertProductBases(List<Map<String, dynamic>> data) async {
     final handler = ProductBaseHandler();
     final List<int> ids = [];
 
@@ -152,11 +154,13 @@ class DummyDataSetting {
   }
 
   /// 제품 이미지 데이터 삽입
-  /// 
+  ///
   /// [productBaseIds] ProductBase ID 리스트
   /// [imageMap] ProductBase 인덱스별 이미지 경로 매핑
   Future<void> insertProductImages(
-      List<int> productBaseIds, Map<int, List<String>> imageMap) async {
+    List<int> productBaseIds,
+    Map<int, List<String>> imageMap,
+  ) async {
     final handler = ProductImageHandler();
 
     for (int i = 0; i < productBaseIds.length; i++) {
@@ -166,10 +170,7 @@ class DummyDataSetting {
       if (imagePaths != null && imagePaths.isNotEmpty) {
         final List<ProductImage> images = [];
         for (final imagePath in imagePaths) {
-          images.add(ProductImage(
-            pbid: pbid,
-            imagePath: imagePath,
-          ));
+          images.add(ProductImage(pbid: pbid, imagePath: imagePath));
         }
         await handler.insertBatch(images);
       }
@@ -177,14 +178,15 @@ class DummyDataSetting {
   }
 
   /// 제품 데이터 삽입
-  /// 
+  ///
   /// [productBaseIds] ProductBase ID 리스트
   /// [manufacturerIds] Manufacturer ID 리스트
   /// [productConfig] ProductBase 인덱스별 제품 설정 정보
   Future<void> insertProducts(
-      List<int> productBaseIds,
-      List<int> manufacturerIds,
-      Map<int, Map<String, dynamic>> productConfig) async {
+    List<int> productBaseIds,
+    List<int> manufacturerIds,
+    Map<int, Map<String, dynamic>> productConfig,
+  ) async {
     final handler = ProductHandler();
 
     for (int i = 0; i < productBaseIds.length; i++) {
@@ -213,7 +215,7 @@ class DummyDataSetting {
   }
 
   /// 고객 데이터 삽입
-  /// 
+  ///
   /// [data] 고객 데이터 리스트
   /// 반환: 삽입된 고객 ID 리스트
   Future<List<int>> insertCustomers(List<Map<String, dynamic>> data) async {
@@ -235,7 +237,7 @@ class DummyDataSetting {
   }
 
   /// 직원 데이터 삽입
-  /// 
+  ///
   /// [data] 직원 데이터 리스트
   /// 반환: 삽입된 직원 ID 리스트
   Future<List<int>> insertEmployees(List<Map<String, dynamic>> data) async {
@@ -258,12 +260,14 @@ class DummyDataSetting {
   }
 
   /// 주문 데이터 삽입
-  /// 
+  ///
   /// [data] 주문 데이터 리스트 (cid는 Customer 인덱스)
   /// [customerIds] Customer ID 리스트
   /// 반환: 삽입된 주문 ID 리스트
   Future<List<int>> insertPurchases(
-      List<Map<String, dynamic>> data, List<int> customerIds) async {
+    List<Map<String, dynamic>> data,
+    List<int> customerIds,
+  ) async {
     final handler = PurchaseHandler();
     final List<int> ids = [];
 
@@ -285,14 +289,16 @@ class DummyDataSetting {
   }
 
   /// 주문 항목 데이터 삽입
-  /// 
+  ///
   /// [data] 주문 항목 데이터 리스트 (pid, pcid는 인덱스)
   /// [purchaseIds] Purchase ID 리스트
-  /// 
+  ///
   /// 주의: pid는 Product 인덱스이므로 실제 Product ID로 변환해야 합니다.
   /// 현재는 간단히 인덱스 + 1을 사용하지만, 실제로는 Product 삽입 순서를 추적해야 합니다.
   Future<void> insertPurchaseItems(
-      List<Map<String, dynamic>> data, List<int> purchaseIds) async {
+    List<Map<String, dynamic>> data,
+    List<int> purchaseIds,
+  ) async {
     final handler = PurchaseItemHandler();
 
     // Product ID 매핑을 위해 ProductHandler로 조회
@@ -326,11 +332,13 @@ class DummyDataSetting {
   }
 
   /// 로그인 이력 데이터 삽입
-  /// 
+  ///
   /// [data] 로그인 이력 데이터 리스트 (cid는 Customer 인덱스)
   /// [customerIds] Customer ID 리스트
   Future<void> insertLoginHistories(
-      List<Map<String, dynamic>> data, List<int> customerIds) async {
+    List<Map<String, dynamic>> data,
+    List<int> customerIds,
+  ) async {
     final handler = LoginHistoryHandler();
 
     for (final item in data) {

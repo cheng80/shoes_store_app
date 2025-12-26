@@ -1,5 +1,5 @@
 import 'package:shoes_store_app/database/core/database_manager.dart';
-import 'package:shoes_store_app/model/sale/purchase.dart';
+import 'package:shoes_store_app/model/purchase/purchase.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// Purchase 테이블 핸들러
@@ -69,12 +69,13 @@ class PurchaseHandler {
   // ============================================
 
   /// 주문 + 고객 정보 조인 조회
-  /// 
+  ///
   /// [id] Purchase ID
   /// 반환: Purchase와 Customer 정보를 포함한 Map
   Future<Map<String, dynamic>?> queryWithCustomer(int id) async {
     final db = await _getDatabase();
-    final List<Map<String, Object?>> results = await db.rawQuery('''
+    final List<Map<String, Object?>> results = await db.rawQuery(
+      '''
       SELECT 
         Purchase.*,
         Customer.cName,
@@ -83,19 +84,22 @@ class PurchaseHandler {
       FROM Purchase
       JOIN Customer ON Purchase.cid = Customer.id
       WHERE Purchase.id = ?
-    ''', [id]);
+    ''',
+      [id],
+    );
 
     if (results.isEmpty) return null;
     return Map<String, dynamic>.from(results.first);
   }
 
   /// 고객별 주문 목록 + 고객 정보 조인 조회
-  /// 
+  ///
   /// [cid] Customer ID
   /// 반환: Purchase와 Customer 정보를 포함한 Map 리스트
   Future<List<Map<String, dynamic>>> queryListWithCustomer(int cid) async {
     final db = await _getDatabase();
-    final List<Map<String, Object?>> results = await db.rawQuery('''
+    final List<Map<String, Object?>> results = await db.rawQuery(
+      '''
       SELECT 
         Purchase.*,
         Customer.cName,
@@ -105,7 +109,9 @@ class PurchaseHandler {
       JOIN Customer ON Purchase.cid = Customer.id
       WHERE Purchase.cid = ?
       ORDER BY Purchase.timeStamp DESC
-    ''', [cid]);
+    ''',
+      [cid],
+    );
 
     return results.map((e) => Map<String, dynamic>.from(e)).toList();
   }
@@ -148,11 +154,6 @@ class PurchaseHandler {
   /// 주문 삭제
   Future<int> deleteData(int id) async {
     final db = await _getDatabase();
-    return await db.delete(
-      'Purchase',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    return await db.delete('Purchase', where: 'id = ?', whereArgs: [id]);
   }
 }
-

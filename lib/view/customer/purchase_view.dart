@@ -3,8 +3,8 @@ import 'package:shoes_store_app/database/handlers/purchase_handler.dart';
 import 'package:shoes_store_app/database/handlers/purchase_item_handler.dart';
 import 'package:shoes_store_app/database/handlers/product_handler.dart';
 import 'package:shoes_store_app/database/handlers/login_history_handler.dart';
-import 'package:shoes_store_app/model/sale/purchase.dart';
-import 'package:shoes_store_app/model/sale/purchase_item.dart';
+import 'package:shoes_store_app/model/purchase/purchase.dart';
+import 'package:shoes_store_app/model/purchase/purchase_item.dart';
 import 'package:shoes_store_app/utils/order_utils.dart';
 import 'package:shoes_store_app/view/cheng/storage/user_storage.dart';
 import 'package:shoes_store_app/view/cheng/storage/cart_storage.dart';
@@ -15,7 +15,7 @@ import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 /// 결제 화면
-/// 
+///
 /// 장바구니에 담긴 상품들의 목록을 보여주고, 결제를 진행할 수 있는 화면입니다.
 /// Cart 화면에서 전달받은 장바구니 정보를 표시하고, 결제 확정 시 PurchaseItem을 DB에 저장합니다.
 class PurchaseView extends StatefulWidget {
@@ -55,7 +55,7 @@ class _PurchaseViewState extends State<PurchaseView> {
   }
 
   /// 동적 값을 int로 변환
-  /// 
+  ///
   /// [v] 변환할 값
   /// [def] 변환 실패 시 기본값
   /// 반환: int 값
@@ -68,7 +68,7 @@ class _PurchaseViewState extends State<PurchaseView> {
   }
 
   /// 총 금액 계산
-  /// 
+  ///
   /// 장바구니의 모든 상품의 가격 합계를 계산합니다.
   int get totalPrice {
     return cart.fold<int>(0, (sum, e) {
@@ -79,14 +79,14 @@ class _PurchaseViewState extends State<PurchaseView> {
   }
 
   /// 장바구니 비우기
-  /// 
+  ///
   /// 구매 완료 후 GlobalStorage에서 장바구니를 삭제합니다.
   void _clearCart() {
     CartStorage.clearCart();
   }
 
   /// 구매 전 재고 확인
-  /// 
+  ///
   /// 장바구니의 모든 상품의 재고를 확인하여 구매 가능한지 검증합니다.
   /// 반환값: (구매 가능 여부, 재고 부족 상품 목록)
   Future<(bool, List<String>)> _validateStock() async {
@@ -116,7 +116,7 @@ class _PurchaseViewState extends State<PurchaseView> {
   }
 
   /// 결제 확정 시 Purchase와 PurchaseItem을 DB에 저장
-  /// 
+  ///
   /// 1. 구매 전 재고 확인 (다른 사용자의 구매로 재고가 부족할 수 있음)
   /// 2. 현재 로그인한 사용자 ID를 가져옵니다.
   /// 3. Purchase 객체를 생성하여 DB에 저장합니다.
@@ -125,13 +125,14 @@ class _PurchaseViewState extends State<PurchaseView> {
   ///    - orderCode: 사용자 ID + 날짜/시간 조합
   /// 4. 생성된 Purchase ID를 사용하여 PurchaseItem들을 저장합니다.
   /// 5. 재고 차감 (구매 완료 시에만)
-  /// 
+  ///
   /// 재고가 부족하면 Exception을 발생시킵니다.
   Future<void> _savePurchaseItemsToDb() async {
     // 구매 전 재고 확인 (다른 사용자의 구매로 재고가 변경되었을 수 있음)
     final (isValid, insufficientItems) = await _validateStock();
     if (!isValid) {
-      final errorMessage = '재고가 부족한 상품이 있습니다:\n${insufficientItems.join('\n')}\n\n'
+      final errorMessage =
+          '재고가 부족한 상품이 있습니다:\n${insufficientItems.join('\n')}\n\n'
           '다른 사용자가 구매하여 재고가 변경되었을 수 있습니다.';
       throw Exception(errorMessage);
     }
@@ -150,7 +151,10 @@ class _PurchaseViewState extends State<PurchaseView> {
     final purchase = Purchase(
       cid: userId,
       timeStamp: now.toIso8601String(),
-      pickupDate: tomorrow.toIso8601String().split('T').first, // 날짜만 추출 (YYYY-MM-DD)
+      pickupDate: tomorrow
+          .toIso8601String()
+          .split('T')
+          .first, // 날짜만 추출 (YYYY-MM-DD)
       orderCode: OrderUtils.generateOrderCode(userId),
     );
 
@@ -161,7 +165,7 @@ class _PurchaseViewState extends State<PurchaseView> {
     for (final e in cart) {
       final productId = _asInt(e['productId']);
       final purchaseQuantity = _asInt(e['quantity'], 1);
-      
+
       // PurchaseItem 저장
       final item = PurchaseItem(
         pid: productId,
@@ -198,7 +202,7 @@ class _PurchaseViewState extends State<PurchaseView> {
   void _openPaymentSheet() async {
     // config.dart에 정의된 서울 내 자치구 리스트 사용
     final districts = config.district;
-    
+
     // LoginHistory에서 저장된 district 불러오기
     String? savedDistrict;
     final userId = UserStorage.getUserId();
@@ -236,17 +240,30 @@ class _PurchaseViewState extends State<PurchaseView> {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    
+
     if (cart.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: Text('결제', style: config.boldLabelStyle.copyWith(color: p.textPrimary))),
-        body: Center(child: Text('구매할 상품이 없습니다', style: config.boldLabelStyle.copyWith(color: p.textPrimary))),
+        appBar: AppBar(
+          title: Text(
+            '결제',
+            style: config.boldLabelStyle.copyWith(color: p.textPrimary),
+          ),
+        ),
+        body: Center(
+          child: Text(
+            '구매할 상품이 없습니다',
+            style: config.boldLabelStyle.copyWith(color: p.textPrimary),
+          ),
+        ),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('결제', style: config.boldLabelStyle.copyWith(color: p.textPrimary)),
+        title: Text(
+          '결제',
+          style: config.boldLabelStyle.copyWith(color: p.textPrimary),
+        ),
         centerTitle: true,
       ),
       body: Column(
@@ -256,7 +273,8 @@ class _PurchaseViewState extends State<PurchaseView> {
               itemCount: cart.length,
               itemBuilder: (context, index) {
                 final e = cart[index];
-                final img = (e['imagePath'] as String?) ?? 'assets/images/no_image.png';
+                final img =
+                    (e['imagePath'] as String?) ?? 'assets/images/no_image.png';
                 final name = (e['name'] as String?) ?? 'NO NAME';
                 final color = (e['color'] as String?) ?? '';
                 final size = _asInt(e['size'], 0);
@@ -266,7 +284,10 @@ class _PurchaseViewState extends State<PurchaseView> {
 
                 return Card(
                   elevation: 6,
-                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(10),
                     child: Row(
@@ -276,20 +297,44 @@ class _PurchaseViewState extends State<PurchaseView> {
                           width: 90,
                           height: 90,
                           fit: BoxFit.contain,
-                          errorBuilder: (_, __, ___) =>
-                              Image.asset('assets/images/no_image.png', width: 90, height: 90, fit: BoxFit.contain),
+                          errorBuilder: (_, __, ___) => Image.asset(
+                            'assets/images/no_image.png',
+                            width: 90,
+                            height: 90,
+                            fit: BoxFit.contain,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(name, style: config.boldLabelStyle.copyWith(color: p.textPrimary)),
+                              Text(
+                                name,
+                                style: config.boldLabelStyle.copyWith(
+                                  color: p.textPrimary,
+                                ),
+                              ),
                               const SizedBox(height: 4),
-                              Text('색상: $color / 사이즈: $size', style: config.boldLabelStyle.copyWith(color: p.textPrimary)),
+                              Text(
+                                '색상: $color / 사이즈: $size',
+                                style: config.boldLabelStyle.copyWith(
+                                  color: p.textPrimary,
+                                ),
+                              ),
                               const SizedBox(height: 6),
-                              Text('수량: $qty', style: config.boldLabelStyle.copyWith(color: p.textPrimary)),
-                              Text('합계: ${CustomCommonUtil.formatNumber(lineTotal)}원', style: config.boldLabelStyle.copyWith(color: p.textPrimary)),
+                              Text(
+                                '수량: $qty',
+                                style: config.boldLabelStyle.copyWith(
+                                  color: p.textPrimary,
+                                ),
+                              ),
+                              Text(
+                                '합계: ${CustomCommonUtil.formatNumber(lineTotal)}원',
+                                style: config.boldLabelStyle.copyWith(
+                                  color: p.textPrimary,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -306,7 +351,10 @@ class _PurchaseViewState extends State<PurchaseView> {
             child: Row(
               children: [
                 Expanded(
-                  child: Text('총액: ${CustomCommonUtil.formatNumber(totalPrice)}원', style: config.boldLabelStyle.copyWith(color: p.textPrimary)),
+                  child: Text(
+                    '총액: ${CustomCommonUtil.formatNumber(totalPrice)}원',
+                    style: config.boldLabelStyle.copyWith(color: p.textPrimary),
+                  ),
                 ),
                 ElevatedButton(
                   onPressed: _openPaymentSheet,
@@ -314,7 +362,12 @@ class _PurchaseViewState extends State<PurchaseView> {
                     backgroundColor: p.primary,
                     foregroundColor: p.textOnPrimary,
                   ),
-                  child: Text('결제하기', style: config.boldLabelStyle.copyWith(color: p.textOnPrimary)),
+                  child: Text(
+                    '결제하기',
+                    style: config.boldLabelStyle.copyWith(
+                      color: p.textOnPrimary,
+                    ),
+                  ),
                 ),
               ],
             ),

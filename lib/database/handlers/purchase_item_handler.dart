@@ -1,6 +1,6 @@
 import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/database/core/database_manager.dart';
-import 'package:shoes_store_app/model/sale/purchase_item.dart';
+import 'package:shoes_store_app/model/purchase/purchase_item.dart';
 import 'package:sqflite/sqflite.dart';
 
 /// PurchaseItem 테이블 핸들러
@@ -81,12 +81,13 @@ class PurchaseItemHandler {
   // ============================================
 
   /// 주문 항목 + 제품 정보 조인 조회
-  /// 
+  ///
   /// [id] PurchaseItem ID
   /// 반환: PurchaseItem과 Product 정보를 포함한 Map
   Future<Map<String, dynamic>?> queryWithProduct(int id) async {
     final db = await _getDatabase();
-    final List<Map<String, Object?>> results = await db.rawQuery('''
+    final List<Map<String, Object?>> results = await db.rawQuery(
+      '''
       SELECT 
         PurchaseItem.*,
         Product.size,
@@ -97,19 +98,24 @@ class PurchaseItemHandler {
       FROM PurchaseItem
       JOIN Product ON PurchaseItem.pid = Product.id
       WHERE PurchaseItem.id = ?
-    ''', [id]);
+    ''',
+      [id],
+    );
 
     if (results.isEmpty) return null;
     return Map<String, dynamic>.from(results.first);
   }
 
   /// 주문별 항목 + 제품 정보 조인 조회
-  /// 
+  ///
   /// [pcid] Purchase ID
   /// 반환: PurchaseItem과 Product 정보를 포함한 Map 리스트
-  Future<List<Map<String, dynamic>>> queryByPurchaseIdWithProduct(int pcid) async {
+  Future<List<Map<String, dynamic>>> queryByPurchaseIdWithProduct(
+    int pcid,
+  ) async {
     final db = await _getDatabase();
-    final List<Map<String, Object?>> results = await db.rawQuery('''
+    final List<Map<String, Object?>> results = await db.rawQuery(
+      '''
       SELECT 
         PurchaseItem.*,
         Product.size,
@@ -121,18 +127,21 @@ class PurchaseItemHandler {
       JOIN Product ON PurchaseItem.pid = Product.id
       WHERE PurchaseItem.pcid = ?
       ORDER BY PurchaseItem.id ASC
-    ''', [pcid]);
+    ''',
+      [pcid],
+    );
 
     return results.map((e) => Map<String, dynamic>.from(e)).toList();
   }
 
   /// 주문 항목 + 제품 + ProductBase + Manufacturer + 이미지 조인 조회 (전체 상세 정보)
-  /// 
+  ///
   /// [id] PurchaseItem ID
   /// 반환: 모든 관련 정보를 포함한 Map
   Future<Map<String, dynamic>?> queryFullDetail(int id) async {
     final db = await _getDatabase();
-    final List<Map<String, Object?>> results = await db.rawQuery('''
+    final List<Map<String, Object?>> results = await db.rawQuery(
+      '''
       SELECT 
         PurchaseItem.*,
         Product.size,
@@ -153,19 +162,24 @@ class PurchaseItemHandler {
       LEFT JOIN ProductImage ON ProductBase.id = ProductImage.pbid
       WHERE PurchaseItem.id = ?
       LIMIT 1
-    ''', [id]);
+    ''',
+      [id],
+    );
 
     if (results.isEmpty) return null;
     return Map<String, dynamic>.from(results.first);
   }
 
   /// 주문별 항목 전체 상세 정보 조회
-  /// 
+  ///
   /// [pcid] Purchase ID
   /// 반환: 모든 관련 정보를 포함한 Map 리스트
-  Future<List<Map<String, dynamic>>> queryByPurchaseIdFullDetail(int pcid) async {
+  Future<List<Map<String, dynamic>>> queryByPurchaseIdFullDetail(
+    int pcid,
+  ) async {
     final db = await _getDatabase();
-    final List<Map<String, Object?>> results = await db.rawQuery('''
+    final List<Map<String, Object?>> results = await db.rawQuery(
+      '''
       SELECT 
         PurchaseItem.*,
         Product.size,
@@ -187,7 +201,9 @@ class PurchaseItemHandler {
       JOIN Manufacturer ON Product.mfid = Manufacturer.id
       WHERE PurchaseItem.pcid = ?
       ORDER BY PurchaseItem.id ASC
-    ''', [pcid]);
+    ''',
+      [pcid],
+    );
 
     return results.map((e) => Map<String, dynamic>.from(e)).toList();
   }
@@ -248,4 +264,3 @@ class PurchaseItemHandler {
     );
   }
 }
-

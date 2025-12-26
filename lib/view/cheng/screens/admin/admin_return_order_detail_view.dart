@@ -7,7 +7,7 @@ import 'package:shoes_store_app/database/handlers/product_handler.dart';
 import 'package:shoes_store_app/database/handlers/purchase_handler.dart';
 import 'package:shoes_store_app/database/handlers/purchase_item_handler.dart';
 import 'package:shoes_store_app/model/customer.dart';
-import 'package:shoes_store_app/model/sale/purchase.dart';
+import 'package:shoes_store_app/model/purchase/purchase.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
 import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/utils/order_status_colors.dart';
@@ -41,16 +41,15 @@ class AdminReturnOrderDetailView extends StatefulWidget {
   /// 주문 ID (Purchase id)
   final int purchaseId;
 
-  const AdminReturnOrderDetailView({
-    super.key,
-    required this.purchaseId,
-  });
+  const AdminReturnOrderDetailView({super.key, required this.purchaseId});
 
   @override
-  State<AdminReturnOrderDetailView> createState() => _AdminReturnOrderDetailViewState();
+  State<AdminReturnOrderDetailView> createState() =>
+      _AdminReturnOrderDetailViewState();
 }
 
-class _AdminReturnOrderDetailViewState extends State<AdminReturnOrderDetailView> {
+class _AdminReturnOrderDetailViewState
+    extends State<AdminReturnOrderDetailView> {
   /// 로딩 상태
   bool _isLoading = true;
 
@@ -68,13 +67,13 @@ class _AdminReturnOrderDetailViewState extends State<AdminReturnOrderDetailView>
 
   /// 주문 핸들러
   final PurchaseHandler _purchaseHandler = PurchaseHandler();
-  
+
   /// 주문 항목 핸들러
   final PurchaseItemHandler _purchaseItemHandler = PurchaseItemHandler();
-  
+
   /// 고객 핸들러
   final CustomerHandler _customerHandler = CustomerHandler();
-  
+
   /// 제품 핸들러
   final ProductHandler _productHandler = ProductHandler();
 
@@ -112,7 +111,9 @@ class _AdminReturnOrderDetailViewState extends State<AdminReturnOrderDetailView>
         return;
       }
 
-      AppLogger.d('주문 조회 성공: id=${purchase.id}, cid=${purchase.cid}, orderCode=${purchase.orderCode}');
+      AppLogger.d(
+        '주문 조회 성공: id=${purchase.id}, cid=${purchase.cid}, orderCode=${purchase.orderCode}',
+      );
 
       /// 고객 정보 조회
       if (purchase.cid != null) {
@@ -125,7 +126,9 @@ class _AdminReturnOrderDetailViewState extends State<AdminReturnOrderDetailView>
 
       /// 주문 상품 목록 조회 및 조합
       if (purchase.id != null) {
-        final purchaseItems = await _purchaseItemHandler.queryByPurchaseId(purchase.id!);
+        final purchaseItems = await _purchaseItemHandler.queryByPurchaseId(
+          purchase.id!,
+        );
         AppLogger.d('조회된 PurchaseItem 개수: ${purchaseItems.length}');
 
         /// 같은 제품(pid, size, color)은 수량을 합쳐서 하나의 카드로 표시
@@ -143,14 +146,18 @@ class _AdminReturnOrderDetailViewState extends State<AdminReturnOrderDetailView>
 
           try {
             /// Product + ProductBase 조인 조회 (최적화)
-            final productWithBase = await _productHandler.queryWithBase(item.pid);
+            final productWithBase = await _productHandler.queryWithBase(
+              item.pid,
+            );
             if (productWithBase == null) {
               AppLogger.w('Product를 찾을 수 없음: pid=${item.pid}');
               continue;
             }
 
             /// 반품 상태 결정 (pcStatus 기반)
-            final statusNum = OrderStatusUtils.parseStatusToNumber(item.pcStatus);
+            final statusNum = OrderStatusUtils.parseStatusToNumber(
+              item.pcStatus,
+            );
             String returnStatusText;
             if (statusNum >= 3) {
               // parseStatusToNumber가 0~5만 반환하므로 null 체크 불필요
@@ -167,9 +174,15 @@ class _AdminReturnOrderDetailViewState extends State<AdminReturnOrderDetailView>
             if (orderItemsMap.containsKey(itemKey)) {
               /// 수량 합산 및 상태 업데이트
               final existingItem = orderItemsMap[itemKey]!;
-              final existingStatusNum = OrderStatusUtils.parseStatusToNumber(existingItem.returnStatus);
-              final currentStatusNum = OrderStatusUtils.parseStatusToNumber(item.pcStatus);
-              final higherStatusNum = existingStatusNum > currentStatusNum ? existingStatusNum : currentStatusNum;
+              final existingStatusNum = OrderStatusUtils.parseStatusToNumber(
+                existingItem.returnStatus,
+              );
+              final currentStatusNum = OrderStatusUtils.parseStatusToNumber(
+                item.pcStatus,
+              );
+              final higherStatusNum = existingStatusNum > currentStatusNum
+                  ? existingStatusNum
+                  : currentStatusNum;
               // parseStatusToNumber가 0~5만 반환하므로 null 체크 불필요
               final higherStatusText = higherStatusNum >= 3
                   ? config.pickupStatus[higherStatusNum]!
@@ -202,7 +215,10 @@ class _AdminReturnOrderDetailViewState extends State<AdminReturnOrderDetailView>
         }
 
         final orderItemsList = orderItemsMap.values.toList();
-        final returnStatus = OrderStatusUtils.determineReturnStatus(purchaseItems, purchase);
+        final returnStatus = OrderStatusUtils.determineReturnStatus(
+          purchaseItems,
+          purchase,
+        );
 
         setState(() {
           _purchase = purchase;
@@ -219,15 +235,12 @@ class _AdminReturnOrderDetailViewState extends State<AdminReturnOrderDetailView>
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    
+
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_purchase == null || _customer == null) {
@@ -264,10 +277,7 @@ class _AdminReturnOrderDetailViewState extends State<AdminReturnOrderDetailView>
               ),
               // 반품 상태 배지
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 4,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: OrderStatusColors.getStatusColor(_returnStatus),
                   borderRadius: BorderRadius.circular(12),
@@ -291,11 +301,7 @@ class _AdminReturnOrderDetailViewState extends State<AdminReturnOrderDetailView>
         ),
 
         // 반품 상품들 제목
-        CustomText(
-          '반품 상품들',
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
+        CustomText('반품 상품들', fontSize: 18, fontWeight: FontWeight.bold),
 
         // 반품 상품 리스트 (각 상품을 카드로 표시, 읽기 전용)
         if (_orderItems.isEmpty)
@@ -346,25 +352,31 @@ class _AdminReturnOrderDetailViewState extends State<AdminReturnOrderDetailView>
                   Builder(
                     builder: (context) {
                       // 반품 상태 확인
-                      final statusNum = OrderStatusUtils.parseStatusToNumber(item.returnStatus);
+                      final statusNum = OrderStatusUtils.parseStatusToNumber(
+                        item.returnStatus,
+                      );
                       final isReturnCompleted = statusNum == 5; // 반품 완료
-                      
+
                       // 상태 텍스트 결정: 반품 완료가 아니면 "반품 신청"
-                      final statusText = isReturnCompleted 
+                      final statusText = isReturnCompleted
                           ? config.pickupStatus[5]! // '반품 완료'
                           : config.pickupStatus[3]!; // '반품 신청'
-                      
+
                       // pickupDate로부터 30일 경과 확인
                       bool is30DaysPassed = false;
                       if (_purchase != null) {
-                        is30DaysPassed = OrderStatusUtils.isPickupDatePassed30Days(_purchase!, DateTime.now());
+                        is30DaysPassed =
+                            OrderStatusUtils.isPickupDatePassed30Days(
+                              _purchase!,
+                              DateTime.now(),
+                            );
                       }
-                      
+
                       // 30일 경과 시 회색으로 표시, 그 외에는 상태에 따른 색상
                       final statusColor = (is30DaysPassed && !isReturnCompleted)
                           ? p.divider
                           : OrderStatusColors.getStatusColor(statusText);
-                      
+
                       return Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
@@ -394,11 +406,7 @@ class _AdminReturnOrderDetailViewState extends State<AdminReturnOrderDetailView>
           child: CustomRow(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              CustomText(
-                '총 주문 금액',
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              CustomText('총 주문 금액', fontSize: 16, fontWeight: FontWeight.bold),
               CustomText(
                 '${OrderUtils.formatPrice(totalPrice)}원',
                 fontSize: 18,

@@ -4,7 +4,7 @@ import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:shoes_store_app/database/handlers/purchase_handler.dart';
 import 'package:shoes_store_app/database/handlers/purchase_item_handler.dart';
-import 'package:shoes_store_app/model/sale/purchase.dart';
+import 'package:shoes_store_app/model/purchase/purchase.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
 import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/view/cheng/storage/admin_storage.dart';
@@ -23,12 +23,10 @@ class AdminReturnOrderView extends StatefulWidget {
   const AdminReturnOrderView({super.key});
 
   @override
-  State<AdminReturnOrderView> createState() =>
-      _AdminReturnOrderViewState();
+  State<AdminReturnOrderView> createState() => _AdminReturnOrderViewState();
 }
 
-class _AdminReturnOrderViewState
-    extends State<AdminReturnOrderView> {
+class _AdminReturnOrderViewState extends State<AdminReturnOrderView> {
   /// 검색 필터 입력을 위한 텍스트 컨트롤러
   final TextEditingController _searchController = TextEditingController();
 
@@ -50,7 +48,7 @@ class _AdminReturnOrderViewState
 
   /// 주문 핸들러
   final PurchaseHandler _purchaseHandler = PurchaseHandler();
-  
+
   /// 주문 항목 핸들러
   final PurchaseItemHandler _purchaseItemHandler = PurchaseItemHandler();
 
@@ -94,11 +92,11 @@ class _AdminReturnOrderViewState
 
     try {
       AppLogger.d('=== 관리자 반품 주문 목록 조회 시작 ===');
-      
+
       /// 모든 주문 조회
       final purchases = await _purchaseHandler.queryAll();
       AppLogger.d('조회된 Purchase 개수: ${purchases.length}');
-      
+
       /// 시간순으로 정렬 (최신순)
       purchases.sort((a, b) => b.timeStamp.compareTo(a.timeStamp));
 
@@ -107,22 +105,23 @@ class _AdminReturnOrderViewState
       final statusMap = <int, String>{};
       final customerNameMap = <int, String>{};
       final now = DateTime.now();
-      
+
       /// 고객별로 그룹화하여 조회 (최적화)
       final customerIds = purchases
           .where((p) => p.cid != null)
           .map((p) => p.cid!)
           .toSet()
           .toList();
-      
+
       /// 각 고객별 주문 목록 + 고객 정보 조회 (최적화)
       for (final cid in customerIds) {
         try {
-          final purchasesWithCustomer = await _purchaseHandler.queryListWithCustomer(cid);
+          final purchasesWithCustomer = await _purchaseHandler
+              .queryListWithCustomer(cid);
           for (final purchaseMap in purchasesWithCustomer) {
             final purchaseId = purchaseMap['id'] as int?;
             if (purchaseId == null) continue;
-            
+
             final customerName = purchaseMap['cName'] as String?;
             if (customerName != null) {
               customerNameMap[purchaseId] = customerName;
@@ -132,40 +131,50 @@ class _AdminReturnOrderViewState
           AppLogger.e('고객별 주문 조회 실패 (cid: $cid)', error: e);
         }
       }
-      
+
       /// 각 주문의 상태 확인 및 필터링
       for (final purchase in purchases) {
         if (purchase.id != null) {
           try {
             /// PurchaseItem 조회
-            final items = await _purchaseItemHandler.queryByPurchaseId(purchase.id!);
-            
+            final items = await _purchaseItemHandler.queryByPurchaseId(
+              purchase.id!,
+            );
+
             /// 모든 PurchaseItem의 상태 확인
             bool hasStatus2OrAbove = false;
             for (final item in items) {
-              final statusNum = OrderStatusUtils.parseStatusToNumber(item.pcStatus);
+              final statusNum = OrderStatusUtils.parseStatusToNumber(
+                item.pcStatus,
+              );
               if (statusNum >= 2) {
                 hasStatus2OrAbove = true;
                 break;
               }
             }
-            
+
             /// 상태가 2 이상인 주문만 추가
             if (hasStatus2OrAbove) {
               completedOrders.add(purchase);
-              
+
               /// 반품 가능 여부 결정
-              final returnStatus = OrderStatusUtils.determineReturnStatus(items, purchase, now: now);
+              final returnStatus = OrderStatusUtils.determineReturnStatus(
+                items,
+                purchase,
+                now: now,
+              );
               statusMap[purchase.id!] = returnStatus;
-              
-              AppLogger.d('반품 주문 추가: id=${purchase.id}, orderCode=${purchase.orderCode}, 반품 상태: $returnStatus');
+
+              AppLogger.d(
+                '반품 주문 추가: id=${purchase.id}, orderCode=${purchase.orderCode}, 반품 상태: $returnStatus',
+              );
             }
           } catch (e) {
             AppLogger.e('주문 상태 조회 실패 (ID: ${purchase.id})', error: e);
           }
         }
       }
-      
+
       AppLogger.d('=== 관리자 반품 주문 목록 조회 완료 (${completedOrders.length}개) ===');
 
       setState(() {
@@ -183,11 +192,10 @@ class _AdminReturnOrderViewState
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    
+
     return Scaffold(
       appBar: CustomAppBar(
         title: '반품 관리',
@@ -252,17 +260,16 @@ class _AdminReturnOrderViewState
                       ),
 
                       // 주문 목록 제목
-                      CustomText(
-                        '반품 주문 목록',
-                        style: config.titleStyle,
-                      ),
+                      CustomText('반품 주문 목록', style: config.titleStyle),
 
                       // 반품 주문 목록 리스트 표시
                       // 반품 주문이 없으면 안내 메시지 표시, 있으면 반품 주문 카드 리스트 표시
                       if (_isLoading)
                         const Center(
                           child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: config.extraLargeSpacing),
+                            padding: EdgeInsets.symmetric(
+                              vertical: config.extraLargeSpacing,
+                            ),
                             child: CircularProgressIndicator(),
                           ),
                         )
@@ -277,13 +284,13 @@ class _AdminReturnOrderViewState
                       else
                         // 각 반품 주문을 ReturnOrderCard로 표시
                         ..._filteredOrders.map((order) {
-                          final orderStatus = order.id != null 
+                          final orderStatus = order.id != null
                               ? _orderStatusMap[order.id] ?? '반품 불가'
                               : '반품 불가';
                           final customerName = order.id != null
                               ? _customerNameMap[order.id] ?? '고객 정보 없음'
                               : '고객 정보 없음';
-                          
+
                           return ReturnOrderCard(
                             orderId: order.orderCode,
                             customerName: customerName,
@@ -317,11 +324,15 @@ class _AdminReturnOrderViewState
                       ? Center(
                           child: CustomText(
                             '데이터 없음',
-                            style: config.titleStyle.copyWith(fontWeight: FontWeight.normal),
+                            style: config.titleStyle.copyWith(
+                              fontWeight: FontWeight.normal,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                         )
-                      : AdminReturnOrderDetailView(purchaseId: _selectedOrderId!),
+                      : AdminReturnOrderDetailView(
+                          purchaseId: _selectedOrderId!,
+                        ),
                 ),
               ),
             ),

@@ -4,7 +4,7 @@ import 'package:shoes_store_app/config.dart' as config;
 import 'package:shoes_store_app/theme/app_colors.dart';
 import 'package:shoes_store_app/database/handlers/purchase_handler.dart';
 import 'package:shoes_store_app/database/handlers/purchase_item_handler.dart';
-import 'package:shoes_store_app/model/sale/purchase.dart';
+import 'package:shoes_store_app/model/purchase/purchase.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
 import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/view/cheng/storage/user_storage.dart';
@@ -43,7 +43,7 @@ class _ReturnListViewState extends State<ReturnListView> {
 
   /// 주문 핸들러
   final PurchaseHandler _purchaseHandler = PurchaseHandler();
-  
+
   /// 주문 항목 핸들러
   final PurchaseItemHandler _purchaseItemHandler = PurchaseItemHandler();
 
@@ -91,28 +91,38 @@ class _ReturnListViewState extends State<ReturnListView> {
       final completedOrders = <Purchase>[];
       final statusMap = <int, String>{};
       final now = DateTime.now();
-      
+
       for (final purchase in purchases) {
         if (purchase.id != null) {
           try {
-            final items = await _purchaseItemHandler.queryByPurchaseId(purchase.id!);
-            
+            final items = await _purchaseItemHandler.queryByPurchaseId(
+              purchase.id!,
+            );
+
             bool hasStatus2OrAbove = false;
             for (final item in items) {
-              final statusNum = OrderStatusUtils.parseStatusToNumber(item.pcStatus);
+              final statusNum = OrderStatusUtils.parseStatusToNumber(
+                item.pcStatus,
+              );
               if (statusNum >= 2) {
                 hasStatus2OrAbove = true;
                 break;
               }
             }
-            
+
             if (hasStatus2OrAbove) {
               completedOrders.add(purchase);
-              
-              final returnStatus = OrderStatusUtils.determineReturnStatus(items, purchase, now: now);
+
+              final returnStatus = OrderStatusUtils.determineReturnStatus(
+                items,
+                purchase,
+                now: now,
+              );
               statusMap[purchase.id!] = returnStatus;
-              
-              AppLogger.d('수령 완료 주문 추가: id=${purchase.id}, orderCode=${purchase.orderCode}, 반품 상태: $returnStatus');
+
+              AppLogger.d(
+                '수령 완료 주문 추가: id=${purchase.id}, orderCode=${purchase.orderCode}, 반품 상태: $returnStatus',
+              );
             }
           } catch (e) {
             AppLogger.e('주문 상태 조회 실패 (ID: ${purchase.id})', error: e);
@@ -135,7 +145,6 @@ class _ReturnListViewState extends State<ReturnListView> {
       });
     }
   }
-
 
   /// 검색어에 따라 필터링되고 정렬된 주문 목록 반환
   List<Purchase> get _filteredOrders {
@@ -214,11 +223,14 @@ class _ReturnListViewState extends State<ReturnListView> {
         // 일반 형식: 2025-12-26 또는 2025-12-26 01:45:17
         dateTime = DateTime.parse(timeStamp);
       }
-      
+
       // 시간이 있는지 확인 (시/분이 0이 아니거나 초/밀리초가 있는지)
-      final hasTime = dateTime.hour != 0 || dateTime.minute != 0 || 
-                      dateTime.second != 0 || dateTime.millisecond != 0;
-      
+      final hasTime =
+          dateTime.hour != 0 ||
+          dateTime.minute != 0 ||
+          dateTime.second != 0 ||
+          dateTime.millisecond != 0;
+
       if (hasTime) {
         // 날짜 + 시분: yyyy-MM-dd HH:mm
         return CustomCommonUtil.formatDate(dateTime, 'yyyy-MM-dd HH:mm');
@@ -235,8 +247,8 @@ class _ReturnListViewState extends State<ReturnListView> {
   /// 주문 카드 위젯 생성
   Widget _buildOrderCard(Purchase order) {
     final orderDate = _formatOrderDate(order.timeStamp);
-    
-    String orderStatus = order.id != null 
+
+    String orderStatus = order.id != null
         ? _orderStatusMap[order.id] ?? '반품 불가'
         : '반품 불가';
 
@@ -299,17 +311,20 @@ class _ReturnListViewState extends State<ReturnListView> {
         : Icons.sort;
 
     final p = context.palette;
-    
+
     return GestureDetector(
       onTap: () => _changeSortOrder(sortBy),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // 작은 버튼 패딩이므로 상수화하지 않음
+        padding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 8,
+        ), // 작은 버튼 패딩이므로 상수화하지 않음
         decoration: BoxDecoration(
-          color: isActive ? p.chipSelectedBg.withOpacity(0.2) : p.chipUnselectedBg,
+          color: isActive
+              ? p.chipSelectedBg.withOpacity(0.2)
+              : p.chipUnselectedBg,
           borderRadius: BorderRadius.circular(8),
-          border: isActive
-              ? Border.all(color: p.primary, width: 2)
-              : null,
+          border: isActive ? Border.all(color: p.primary, width: 2) : null,
         ),
         child: CustomRow(
           spacing: 4,
@@ -330,7 +345,7 @@ class _ReturnListViewState extends State<ReturnListView> {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    
+
     return Scaffold(
       backgroundColor: p.background,
       appBar: CustomAppBar(
@@ -364,10 +379,7 @@ class _ReturnListViewState extends State<ReturnListView> {
                   ],
                 ),
 
-                CustomText(
-                  '수령완료 / 반품 목록',
-                  style: config.titleStyle,
-                ),
+                CustomText('수령완료 / 반품 목록', style: config.titleStyle),
 
                 if (_isLoading)
                   _buildLoadingIndicator()
@@ -383,5 +395,3 @@ class _ReturnListViewState extends State<ReturnListView> {
     );
   }
 }
-
-

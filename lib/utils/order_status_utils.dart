@@ -1,6 +1,6 @@
 import 'package:shoes_store_app/config.dart' as config;
-import 'package:shoes_store_app/model/sale/purchase.dart';
-import 'package:shoes_store_app/model/sale/purchase_item.dart';
+import 'package:shoes_store_app/model/purchase/purchase.dart';
+import 'package:shoes_store_app/model/purchase/purchase_item.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
 
 /// 주문 상태 관련 유틸리티
@@ -14,7 +14,7 @@ class OrderStatusUtils {
         return entry.key;
       }
     }
-    
+
     AppLogger.w('알 수 없는 상태 문자열: "$pcStatus"', tag: 'OrderStatusUtils');
     return 0;
   }
@@ -51,13 +51,19 @@ class OrderStatusUtils {
   /// 픽업 날짜로부터 30일 이상 경과했는지 확인
   static bool isPickupDatePassed30Days(Purchase purchase, DateTime now) {
     if (purchase.pickupDate.isEmpty) {
-      AppLogger.w('pickupDate가 비어있음 - Purchase ID: ${purchase.id}', tag: 'OrderStatusUtils');
+      AppLogger.w(
+        'pickupDate가 비어있음 - Purchase ID: ${purchase.id}',
+        tag: 'OrderStatusUtils',
+      );
       return false;
     }
 
     final pickupDate = DateTime.tryParse(purchase.pickupDate);
     if (pickupDate == null) {
-      AppLogger.w('pickupDate 파싱 실패: "${purchase.pickupDate}" - Purchase ID: ${purchase.id}', tag: 'OrderStatusUtils');
+      AppLogger.w(
+        'pickupDate 파싱 실패: "${purchase.pickupDate}" - Purchase ID: ${purchase.id}',
+        tag: 'OrderStatusUtils',
+      );
       return false;
     }
 
@@ -145,7 +151,11 @@ class OrderStatusUtils {
       return dateBasedStatus;
     }
 
-    return _getStatusFromItems(items, purchase, isCustomerView: !showActualStatus);
+    return _getStatusFromItems(
+      items,
+      purchase,
+      isCustomerView: !showActualStatus,
+    );
   }
 
   /// 주문 관리 화면용 주문 상태 결정
@@ -184,15 +194,15 @@ class OrderStatusUtils {
     DateTime? now,
   }) {
     final currentTime = now ?? DateTime.now();
-    
+
     if (hasReturnStatus(items)) {
       return false;
     }
-    
+
     if (!isPickupDatePassed30Days(purchase, currentTime)) {
       return false;
     }
-    
+
     // status 2 미만인 아이템이 하나라도 있으면 업데이트 필요
     return items.any((item) {
       final statusNum = parseStatusToNumber(item.pcStatus);
@@ -273,7 +283,6 @@ class OrderStatusUtils {
     return null;
   }
 
-
   /// PurchaseItem의 pcStatus 기반 상태 결정
   /// 모든 아이템이 같으면 그 상태, 다르면 가장 낮은 상태 사용
   /// isCustomerView가 true면 status 2 이상은 모두 "제품 수령 완료"로 표시
@@ -287,7 +296,9 @@ class OrderStatusUtils {
         .toList();
 
     final firstStatus = statusNumbers.first;
-    final allSameStatus = statusNumbers.every((status) => status == firstStatus);
+    final allSameStatus = statusNumbers.every(
+      (status) => status == firstStatus,
+    );
 
     final displayStatus = allSameStatus
         ? firstStatus
@@ -312,23 +323,26 @@ class OrderStatusUtils {
     DateTime? now,
   }) {
     if (items.isEmpty) {
-      AppLogger.e('반품 상태 결정 실패: PurchaseItem 목록이 비어있음 - Purchase ID: ${purchase.id}, OrderCode: ${purchase.orderCode}', tag: 'OrderStatusUtils');
+      AppLogger.e(
+        '반품 상태 결정 실패: PurchaseItem 목록이 비어있음 - Purchase ID: ${purchase.id}, OrderCode: ${purchase.orderCode}',
+        tag: 'OrderStatusUtils',
+      );
       return '반품 불가';
     }
 
     final currentTime = now ?? DateTime.now();
     bool hasReturnableItem = false;
     bool allReturnCompleted = true;
-    
+
     for (final item in items) {
       final statusNum = parseStatusToNumber(item.pcStatus);
-      
+
       if (statusNum == 5) {
         continue;
       } else {
         allReturnCompleted = false;
       }
-      
+
       if (statusNum == 2) {
         final is30DaysPassed = isPickupDatePassed30Days(purchase, currentTime);
         if (!is30DaysPassed) {
@@ -340,7 +354,7 @@ class OrderStatusUtils {
     if (allReturnCompleted) {
       return '반품 불가';
     }
-    
+
     if (hasReturnableItem) {
       return '반품 가능';
     }
@@ -348,4 +362,3 @@ class OrderStatusUtils {
     return '반품 불가';
   }
 }
-

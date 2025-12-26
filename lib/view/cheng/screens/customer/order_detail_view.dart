@@ -7,8 +7,8 @@ import 'package:shoes_store_app/database/handlers/product_handler.dart';
 import 'package:shoes_store_app/database/handlers/purchase_handler.dart';
 import 'package:shoes_store_app/database/handlers/purchase_item_handler.dart';
 import 'package:shoes_store_app/model/customer.dart';
-import 'package:shoes_store_app/model/sale/purchase.dart';
-import 'package:shoes_store_app/model/sale/purchase_item.dart';
+import 'package:shoes_store_app/model/purchase/purchase.dart';
+import 'package:shoes_store_app/model/purchase/purchase_item.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
 import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/view/cheng/storage/user_storage.dart';
@@ -41,10 +41,7 @@ class OrderDetailView extends StatefulWidget {
   /// 주문 ID (Purchase id)
   final int purchaseId;
 
-  const OrderDetailView({
-    super.key,
-    required this.purchaseId,
-  });
+  const OrderDetailView({super.key, required this.purchaseId});
 
   @override
   State<OrderDetailView> createState() => _OrderDetailViewState();
@@ -71,13 +68,13 @@ class _OrderDetailViewState extends State<OrderDetailView> {
 
   /// 주문 핸들러
   final PurchaseHandler _purchaseHandler = PurchaseHandler();
-  
+
   /// 주문 항목 핸들러
   final PurchaseItemHandler _purchaseItemHandler = PurchaseItemHandler();
-  
+
   /// 고객 핸들러
   final CustomerHandler _customerHandler = CustomerHandler();
-  
+
   /// 제품 핸들러
   final ProductHandler _productHandler = ProductHandler();
 
@@ -115,13 +112,17 @@ class _OrderDetailViewState extends State<OrderDetailView> {
 
       /// 현재 사용자(Customer id)의 주문인지 확인
       if (purchase.cid != userId) {
-        AppLogger.w('권한이 없습니다. 주문 소유자(cid): ${purchase.cid}, 현재 사용자(cid): $userId');
+        AppLogger.w(
+          '권한이 없습니다. 주문 소유자(cid): ${purchase.cid}, 현재 사용자(cid): $userId',
+        );
         CustomSnackBar.showError(context, message: '권한이 없습니다.');
         CustomNavigationUtil.back(context);
         return;
       }
-      
-      AppLogger.d('주문 조회 성공: id=${purchase.id}, cid=${purchase.cid}, orderCode=${purchase.orderCode}');
+
+      AppLogger.d(
+        '주문 조회 성공: id=${purchase.id}, cid=${purchase.cid}, orderCode=${purchase.orderCode}',
+      );
 
       /// 고객 정보 조회
       if (purchase.cid != null) {
@@ -134,10 +135,12 @@ class _OrderDetailViewState extends State<OrderDetailView> {
 
       /// 주문 상품 목록 조회
       if (purchase.id != null) {
-        final purchaseItems = await _purchaseItemHandler.queryByPurchaseId(purchase.id!);
+        final purchaseItems = await _purchaseItemHandler.queryByPurchaseId(
+          purchase.id!,
+        );
         AppLogger.d('=== PurchaseItem 조회 결과 ===');
         AppLogger.d('조회된 PurchaseItem 개수: ${purchaseItems.length}');
-        
+
         // PurchaseItem ID 중복 확인
         final itemIdSet = <int>{};
         final duplicateIds = <int>[];
@@ -151,34 +154,39 @@ class _OrderDetailViewState extends State<OrderDetailView> {
             }
           }
         }
-        
+
         if (duplicateIds.isNotEmpty) {
           AppLogger.w('중복된 PurchaseItem ID 목록: $duplicateIds');
         }
 
         // 상품 정보 조회 및 조합
         // 같은 제품(pid, size, color)은 수량을 합쳐서 하나의 카드로 표시
-        final orderItemsMap = <String, OrderItemInfo>{}; // key: "pid_size_color"
+        final orderItemsMap =
+            <String, OrderItemInfo>{}; // key: "pid_size_color"
         final processedItemIds = <int>{}; // 중복 확인용 (PurchaseItem ID 기준)
-        
+
         for (var i = 0; i < purchaseItems.length; i++) {
           final item = purchaseItems[i];
-          
+
           // 중복 확인 (같은 PurchaseItem ID가 이미 처리되었는지)
           if (item.id != null && processedItemIds.contains(item.id)) {
             AppLogger.w('중복된 PurchaseItem 발견: ID=${item.id}, 건너뜀');
             continue;
           }
-          
+
           if (item.id != null) {
             processedItemIds.add(item.id!);
           }
-          
-          AppLogger.d('PurchaseItem[$i] 처리: id=${item.id}, pid=${item.pid}, pcid=${item.pcid}, quantity=${item.pcQuantity}, status=${item.pcStatus}');
-          
+
+          AppLogger.d(
+            'PurchaseItem[$i] 처리: id=${item.id}, pid=${item.pid}, pcid=${item.pcid}, quantity=${item.pcQuantity}, status=${item.pcStatus}',
+          );
+
           try {
             /// Product + ProductBase 조인 조회 (최적화)
-            final productWithBase = await _productHandler.queryWithBase(item.pid);
+            final productWithBase = await _productHandler.queryWithBase(
+              item.pid,
+            );
             if (productWithBase == null) {
               AppLogger.w('Product를 찾을 수 없음: pid=${item.pid}');
               continue;
@@ -188,7 +196,7 @@ class _OrderDetailViewState extends State<OrderDetailView> {
             final size = productWithBase['size'] as int? ?? 0;
             final color = productWithBase['pColor'] as String? ?? '';
             final itemKey = '${item.pid}_${size}_$color';
-            
+
             if (orderItemsMap.containsKey(itemKey)) {
               final existingItem = orderItemsMap[itemKey]!;
               final updatedItem = OrderItemInfo(
@@ -199,7 +207,9 @@ class _OrderDetailViewState extends State<OrderDetailView> {
                 price: existingItem.price,
               );
               orderItemsMap[itemKey] = updatedItem;
-              AppLogger.d('기존 OrderItem 수량 합산: ${existingItem.productName}, 기존 수량=${existingItem.quantity}, 추가 수량=${item.pcQuantity}, 총 수량=${updatedItem.quantity}');
+              AppLogger.d(
+                '기존 OrderItem 수량 합산: ${existingItem.productName}, 기존 수량=${existingItem.quantity}, 추가 수량=${item.pcQuantity}, 총 수량=${updatedItem.quantity}',
+              );
             } else {
               final productName = productWithBase['pName'] as String? ?? '';
               final basePrice = productWithBase['basePrice'] as int? ?? 0;
@@ -211,15 +221,17 @@ class _OrderDetailViewState extends State<OrderDetailView> {
                 price: basePrice,
               );
               orderItemsMap[itemKey] = orderItem;
-              AppLogger.d('OrderItem 추가: ${orderItem.productName}, 사이즈=${orderItem.size}, 색상=${orderItem.color}, 수량=${orderItem.quantity}, 가격=${orderItem.price}');
+              AppLogger.d(
+                'OrderItem 추가: ${orderItem.productName}, 사이즈=${orderItem.size}, 색상=${orderItem.color}, 수량=${orderItem.quantity}, 가격=${orderItem.price}',
+              );
             }
           } catch (e) {
             AppLogger.e('상품 정보 조회 실패 (pid: ${item.pid})', error: e);
           }
         }
-        
+
         final orderItemsList = orderItemsMap.values.toList();
-        
+
         AppLogger.d('=== 최종 결과 ===');
         AppLogger.d('PurchaseItem 개수: ${purchaseItems.length}');
         AppLogger.d('OrderItem 개수: ${orderItemsList.length}');
@@ -230,10 +242,13 @@ class _OrderDetailViewState extends State<OrderDetailView> {
           final statusNum = OrderStatusUtils.parseStatusToNumber(item.pcStatus);
           return statusNum >= 2;
         });
-        
+
         /// 주문 상태 결정 (공용 유틸리티 사용)
-        final orderStatus = OrderStatusUtils.determineOrderStatusForCustomer(purchaseItems, purchase);
-        
+        final orderStatus = OrderStatusUtils.determineOrderStatusForCustomer(
+          purchaseItems,
+          purchase,
+        );
+
         AppLogger.d('주문 상태: $orderStatus, 픽업 완료 여부: $allCompleted');
 
         setState(() {
@@ -253,7 +268,6 @@ class _OrderDetailViewState extends State<OrderDetailView> {
     }
   }
 
-
   /// 픽업 완료 처리
   Future<void> _handlePickupComplete() async {
     if (_purchase?.id == null) {
@@ -261,9 +275,11 @@ class _OrderDetailViewState extends State<OrderDetailView> {
     }
 
     try {
-      final purchaseItems = await _purchaseItemHandler.queryByPurchaseId(_purchase!.id!);
+      final purchaseItems = await _purchaseItemHandler.queryByPurchaseId(
+        _purchase!.id!,
+      );
       final completeStatus = config.pickupStatus[2]!; // '제품 수령 완료'
-      
+
       for (final item in purchaseItems) {
         if (item.id != null) {
           final updatedItem = PurchaseItem(
@@ -274,7 +290,9 @@ class _OrderDetailViewState extends State<OrderDetailView> {
             pcStatus: completeStatus,
           );
           await _purchaseItemHandler.updateData(updatedItem);
-          AppLogger.d('PurchaseItem ID ${item.id} 업데이트 완료: pcStatus = $completeStatus');
+          AppLogger.d(
+            'PurchaseItem ID ${item.id} 업데이트 완료: pcStatus = $completeStatus',
+          );
         }
       }
 
@@ -284,10 +302,7 @@ class _OrderDetailViewState extends State<OrderDetailView> {
         _orderStatus = completeStatus;
       });
 
-      CustomSnackBar.showSuccess(
-        context,
-        message: '픽업이 완료되었습니다.',
-      );
+      CustomSnackBar.showSuccess(context, message: '픽업이 완료되었습니다.');
 
       // 이전 페이지로 돌아가기 (result를 true로 전달하여 리스트 페이지에서 갱신하도록 함)
       CustomNavigationUtil.back(context, result: true);
@@ -300,7 +315,7 @@ class _OrderDetailViewState extends State<OrderDetailView> {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    
+
     if (_isLoading) {
       return Scaffold(
         backgroundColor: p.background,
@@ -311,9 +326,7 @@ class _OrderDetailViewState extends State<OrderDetailView> {
           backgroundColor: p.background,
           foregroundColor: p.textPrimary,
         ),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -327,9 +340,7 @@ class _OrderDetailViewState extends State<OrderDetailView> {
           backgroundColor: p.background,
           foregroundColor: p.textPrimary,
         ),
-        body: const Center(
-          child: Text('주문 정보를 불러올 수 없습니다.'),
-        ),
+        body: const Center(child: Text('주문 정보를 불러올 수 없습니다.')),
       );
     }
 
@@ -364,7 +375,9 @@ class _OrderDetailViewState extends State<OrderDetailView> {
                     children: [
                       CustomText(
                         '주문번호: ${_purchase?.orderCode ?? widget.purchaseId.toString()}',
-                        style: config.mediumTextStyle.copyWith(fontWeight: FontWeight.bold),
+                        style: config.mediumTextStyle.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       // 주문 상태 배지
                       Container(
@@ -394,10 +407,7 @@ class _OrderDetailViewState extends State<OrderDetailView> {
                 ),
 
                 // 주문 상품들 제목
-                CustomText(
-                  '주문 상품',
-                  style: config.titleStyle,
-                ),
+                CustomText('주문 상품', style: config.titleStyle),
 
                 // 주문 상품 리스트 (각 상품을 카드로 표시)
                 if (_orderItems.isEmpty)
@@ -418,7 +428,9 @@ class _OrderDetailViewState extends State<OrderDetailView> {
                           // 상품명
                           CustomText(
                             item.productName,
-                            style: config.mediumTextStyle.copyWith(fontWeight: FontWeight.bold),
+                            style: config.mediumTextStyle.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           // 상품 정보 (사이즈, 색상, 수량)
                           CustomRow(
@@ -431,7 +443,9 @@ class _OrderDetailViewState extends State<OrderDetailView> {
                               ),
                               CustomText(
                                 '${OrderUtils.formatPrice(item.price * item.quantity)}원',
-                                style: config.bodyTextStyle.copyWith(fontWeight: FontWeight.bold),
+                                style: config.bodyTextStyle.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                                 color: p.primary,
                               ),
                             ],
@@ -449,7 +463,9 @@ class _OrderDetailViewState extends State<OrderDetailView> {
                     children: [
                       CustomText(
                         '총 주문 금액',
-                        style: config.mediumTextStyle.copyWith(fontWeight: FontWeight.bold),
+                        style: config.mediumTextStyle.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       CustomText(
                         '${OrderUtils.formatPrice(totalPrice)}원',
@@ -462,7 +478,8 @@ class _OrderDetailViewState extends State<OrderDetailView> {
 
                 // 상태별 버튼 표시
                 // 제품 준비 완료 상태이고 아직 픽업 완료되지 않은 경우에만 활성화
-                if (!_isPickupCompleted && _orderStatus == config.pickupStatus[1]!) // '제품 준비 완료'
+                if (!_isPickupCompleted &&
+                    _orderStatus == config.pickupStatus[1]!) // '제품 준비 완료'
                   // 활성화된 픽업 완료 버튼
                   CustomButton(
                     btnText: '픽업 완료',
@@ -483,7 +500,9 @@ class _OrderDetailViewState extends State<OrderDetailView> {
                       child: Center(
                         child: CustomText(
                           _orderStatus, // 현재 주문 상태를 버튼 텍스트로 표시
-                          style: config.mediumTextStyle.copyWith(fontWeight: FontWeight.bold),
+                          style: config.mediumTextStyle.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                           color: p.textSecondary,
                         ),
                       ),
@@ -496,6 +515,4 @@ class _OrderDetailViewState extends State<OrderDetailView> {
       ),
     );
   }
-
 }
-

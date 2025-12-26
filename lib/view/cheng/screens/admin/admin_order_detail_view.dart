@@ -6,7 +6,7 @@ import 'package:shoes_store_app/database/handlers/product_handler.dart';
 import 'package:shoes_store_app/database/handlers/purchase_handler.dart';
 import 'package:shoes_store_app/database/handlers/purchase_item_handler.dart';
 import 'package:shoes_store_app/model/customer.dart';
-import 'package:shoes_store_app/model/sale/purchase.dart';
+import 'package:shoes_store_app/model/purchase/purchase.dart';
 import 'package:shoes_store_app/utils/app_logger.dart';
 import 'package:shoes_store_app/custom/custom.dart';
 import 'package:shoes_store_app/utils/order_status_colors.dart';
@@ -38,10 +38,7 @@ class AdminOrderDetailView extends StatefulWidget {
   /// 주문 ID (Purchase id)
   final int purchaseId;
 
-  const AdminOrderDetailView({
-    super.key,
-    required this.purchaseId,
-  });
+  const AdminOrderDetailView({super.key, required this.purchaseId});
 
   @override
   State<AdminOrderDetailView> createState() => _AdminOrderDetailViewState();
@@ -65,13 +62,13 @@ class _AdminOrderDetailViewState extends State<AdminOrderDetailView> {
 
   /// 주문 핸들러
   final PurchaseHandler _purchaseHandler = PurchaseHandler();
-  
+
   /// 주문 항목 핸들러
   final PurchaseItemHandler _purchaseItemHandler = PurchaseItemHandler();
-  
+
   /// 고객 핸들러
   final CustomerHandler _customerHandler = CustomerHandler();
-  
+
   /// 제품 핸들러
   final ProductHandler _productHandler = ProductHandler();
 
@@ -109,7 +106,9 @@ class _AdminOrderDetailViewState extends State<AdminOrderDetailView> {
         return;
       }
 
-      AppLogger.d('주문 조회 성공: id=${purchase.id}, cid=${purchase.cid}, orderCode=${purchase.orderCode}');
+      AppLogger.d(
+        '주문 조회 성공: id=${purchase.id}, cid=${purchase.cid}, orderCode=${purchase.orderCode}',
+      );
 
       /// 고객 정보 조회
       if (purchase.cid != null) {
@@ -122,7 +121,9 @@ class _AdminOrderDetailViewState extends State<AdminOrderDetailView> {
 
       /// 주문 상품 목록 조회 및 조합
       if (purchase.id != null) {
-        final purchaseItems = await _purchaseItemHandler.queryByPurchaseId(purchase.id!);
+        final purchaseItems = await _purchaseItemHandler.queryByPurchaseId(
+          purchase.id!,
+        );
         AppLogger.d('조회된 PurchaseItem 개수: ${purchaseItems.length}');
 
         /// 같은 제품(pid, size, color)은 수량을 합쳐서 하나의 카드로 표시
@@ -140,7 +141,9 @@ class _AdminOrderDetailViewState extends State<AdminOrderDetailView> {
 
           try {
             /// Product + ProductBase 조인 조회 (최적화)
-            final productWithBase = await _productHandler.queryWithBase(item.pid);
+            final productWithBase = await _productHandler.queryWithBase(
+              item.pid,
+            );
             if (productWithBase == null) {
               AppLogger.w('Product를 찾을 수 없음: pid=${item.pid}');
               continue;
@@ -180,10 +183,11 @@ class _AdminOrderDetailViewState extends State<AdminOrderDetailView> {
 
         final orderItemsList = orderItemsMap.values.toList();
         // 주문 관리 화면의 디테일도 목록과 동일하게 반품 상태 무시
-        final orderStatus = OrderStatusUtils.determineOrderStatusForOrderManagement(
-          purchaseItems,
-          purchase,
-        );
+        final orderStatus =
+            OrderStatusUtils.determineOrderStatusForOrderManagement(
+              purchaseItems,
+              purchase,
+            );
 
         setState(() {
           _purchase = purchase;
@@ -205,7 +209,7 @@ class _AdminOrderDetailViewState extends State<AdminOrderDetailView> {
   @override
   Widget build(BuildContext context) {
     final p = context.palette;
-    
+
     if (_isLoading) {
       return const Center(
         child: Padding(
@@ -216,9 +220,7 @@ class _AdminOrderDetailViewState extends State<AdminOrderDetailView> {
     }
 
     if (_purchase == null || _customer == null) {
-      return const Center(
-        child: Text('주문 정보를 불러올 수 없습니다.'),
-      );
+      return const Center(child: Text('주문 정보를 불러올 수 없습니다.'));
     }
 
     // 주문 상품들의 총 가격 계산
@@ -239,8 +241,10 @@ class _AdminOrderDetailViewState extends State<AdminOrderDetailView> {
       // 그 외 상태: 현재 상태 텍스트 표시 (제품 수령 완료, 제품 준비 중, 반품 신청 등)
       buttonText = _orderStatus;
     }
-    
-    AppLogger.d('버튼 텍스트 결정: orderStatus="$_orderStatus", statusNum=$statusNum, buttonText="$buttonText"');
+
+    AppLogger.d(
+      '버튼 텍스트 결정: orderStatus="$_orderStatus", statusNum=$statusNum, buttonText="$buttonText"',
+    );
 
     return CustomColumn(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -259,10 +263,7 @@ class _AdminOrderDetailViewState extends State<AdminOrderDetailView> {
               ),
               // 주문 상태 배지
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 4,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: OrderStatusColors.getStatusColor(_orderStatus),
                   borderRadius: BorderRadius.circular(12),
@@ -393,4 +394,3 @@ class _AdminOrderDetailViewState extends State<AdminOrderDetailView> {
     );
   }
 }
-

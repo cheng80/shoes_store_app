@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'core/core.dart';
+import 'package:shoes_store_app/core/core.dart';
 
 /// GlobalStorage 사용 예제 페이지
 ///

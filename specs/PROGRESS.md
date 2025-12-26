@@ -1,6 +1,6 @@
 # 진행 상황 (Progress)
 
-## 📅 최종 업데이트: 2025-12-25 (FastAPI 백엔드 API 완료)
+## 📅 최종 업데이트: 2025-12-26 (코드 정리 및 폴더 구조 개선)
 
 ---
 
@@ -108,6 +108,7 @@
 - ✅ **데이터 모델**
   - `Customer` 모델: 필드명 변경 (`cPname` → `cName`)
   - `Employee` 모델: 관리자 정보 관리
+  - `Purchase`, `PurchaseItem` 모델: `lib/model/purchase/` 폴더로 이동
 
 - ✅ **로컬 저장소**
   - `get_storage` 초기화 (`main.dart`)
@@ -120,7 +121,12 @@
 - ✅ **폴더 구조 개선**
   - `administer_emplyee/` → `employee_sub_dir/` (관리자/직원 관련)
   - `customer/` → `customer_sub_dir/` (고객 관련)
+  - `lib/model/sale/` → `lib/model/purchase/` (주문 관련 모델)
   - Employee와 Customer 관련 클래스 분리
+
+- ✅ **미사용 코드 정리**
+  - `lib/pages/` 예제 파일들 삭제 (17개 파일)
+  - 미사용 모델 삭제: `sale.dart`, `applied_sale.dart`, `settings.dart`
 
 ### 6. 테스트 및 디버깅
 
@@ -176,6 +182,38 @@
 ---
 
 ## ✅ 최근 완료된 작업
+
+### 2025-12-26 (코드 정리 및 폴더 구조 개선)
+
+#### 1. 폴더 구조 개선
+- **모델 폴더 이름 변경**: `lib/model/sale/` → `lib/model/purchase/`
+  - 폴더명이 실제 용도(주문)에 맞게 변경
+  - 13개 파일의 import 경로 자동 업데이트
+
+#### 2. 미사용 코드 삭제
+- **삭제된 모델 파일**:
+  - `lib/model/sale/sale.dart` - 세일 모델 (미사용)
+  - `lib/model/sale/applied_sale.dart` - 적용된 세일 모델 (미사용)
+  - `lib/model/settings.dart` - 설정 모델 (미사용, DB 스키마에도 없음)
+
+- **삭제된 예제 페이지** (`lib/pages/` 폴더):
+  - `address_page.dart`, `bottom_sheet_page.dart`, `dialog_page.dart`
+  - `json_api_example_page.dart`, `xml_api_example_page.dart`
+  - `layout_widgets_page.dart`, `list_view_page.dart`, `navigation_widgets_page.dart`
+  - `network_page.dart`, `picker_grid_page.dart`, `snackbar_action_sheet_page.dart`
+  - `storage_page.dart`, `tab_bar_page.dart`, `test_home.dart`
+  - `text_field_page.dart`, `util_page.dart`
+
+#### 3. 파일 위치 변경
+- `lib/core_global_storage_example.dart` → `lib/core/core_global_storage_example.dart`
+
+#### 4. specs 문서 정리
+- **삭제된 문서**:
+  - `specs/DB_QUERY_COMPARISON.md` - 쿼리 비교 가이드 (DATABASE_GUIDE에 통합)
+  - `specs/DESIGN_SPEC.md` - 디자인 스펙 (미사용)
+  - `specs/ORDER_STATUS_LOGIC_IMPROVEMENT.md` - 주문 상태 로직 (PROGRESS에 통합)
+
+---
 
 ### 2025-12-25 (FastAPI 백엔드 API 완료)
 
