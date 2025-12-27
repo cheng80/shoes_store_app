@@ -62,7 +62,7 @@ async def get_login_histories(
 
 
 # ============================================
-# 부분 업데이트 API (고객 ID 기준) - /{id} 보다 먼저 정의해야 함
+# 부분 업데이트 API (고객 ID 기준) - /{login_history_id} 보다 먼저 정의해야 함
 # ============================================
 
 @router.patch("/by_customer/{cid}/status")
@@ -211,3 +211,19 @@ async def delete_login_history(login_history_id: int):
         return {"result": "Error", "message": str(e)}
     finally:
         conn.close()
+
+
+# ============================================
+# 개별 실행용 (테스트)
+# 실행: python -m app.api.login_histories (backend 폴더에서)
+# ============================================
+SERVER_HOST = "127.0.0.1"
+SERVER_PORT = 8000
+
+if __name__ == "__main__":
+    from fastapi import FastAPI
+    import uvicorn
+    
+    test_app = FastAPI(title="LoginHistory API Test")
+    test_app.include_router(router, prefix="/api/login_histories")
+    uvicorn.run(test_app, host=SERVER_HOST, port=SERVER_PORT)

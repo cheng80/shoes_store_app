@@ -77,7 +77,7 @@ async def get_products(
 
 
 # ============================================
-# 복합 쿼리 (JOIN) - /list/* 엔드포인트 (/{id} 보다 먼저 정의해야 함)
+# 복합 쿼리 (JOIN) - /list/* 엔드포인트 (/{product_id} 보다 먼저 정의해야 함)
 # ============================================
 
 @router.get("/list/with_base")
@@ -347,3 +347,19 @@ async def get_product_with_base_and_manufacturer(product_id: int):
         return {'result': 'Error', 'message': str(e)}
     finally:
         conn.close()
+
+
+# ============================================
+# 개별 실행용 (테스트)
+# 실행: python -m app.api.products (backend 폴더에서)
+# ============================================
+SERVER_HOST = "127.0.0.1"
+SERVER_PORT = 8000
+
+if __name__ == "__main__":
+    from fastapi import FastAPI
+    import uvicorn
+    
+    test_app = FastAPI(title="Product API Test")
+    test_app.include_router(router, prefix="/api/products")
+    uvicorn.run(test_app, host=SERVER_HOST, port=SERVER_PORT)

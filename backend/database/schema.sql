@@ -78,6 +78,7 @@ CREATE TABLE Customer (
     cPhoneNumber VARCHAR(50) NOT NULL,
     cName VARCHAR(255) NOT NULL,
     cPassword VARCHAR(255) NOT NULL,
+    cProfileImage MEDIUMBLOB NULL,
     UNIQUE INDEX idx_customer_email (cEmail),
     UNIQUE INDEX idx_customer_phone (cPhoneNumber)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -92,6 +93,7 @@ CREATE TABLE Employee (
     eName VARCHAR(255) NOT NULL,
     ePassword VARCHAR(255) NOT NULL,
     eRole VARCHAR(100),
+    eProfileImage MEDIUMBLOB NULL,
     UNIQUE INDEX idx_employee_email (eEmail),
     UNIQUE INDEX idx_employee_phone (ePhoneNumber),
     INDEX idx_employee_role (eRole)

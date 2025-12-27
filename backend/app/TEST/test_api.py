@@ -57,6 +57,8 @@ Flutter 앱에서 여러 핸들러를 순차 호출하던 패턴을
 
 import httpx
 import json
+import io
+import random
 from typing import Optional
 
 # ============================================
@@ -133,6 +135,18 @@ def api_patch(endpoint: str) -> dict:
     """PATCH 요청 헬퍼 함수 (쿼리 파라미터용)"""
     response = httpx.patch(f'{BASE_URL}{endpoint}')
     return response.json()
+
+
+def api_post_form_with_file(endpoint: str, data: dict) -> dict:
+    """Form 데이터와 파일 업로드 헬퍼 함수"""
+    try:
+        # 더미 이미지 파일 생성 (1x1 PNG)
+        dummy_image = io.BytesIO(b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\xe2\xd9\xa4\xb5\x00\x00\x00\x00IEND\xaeB`\x82')
+        files = {'file': ('test.png', dummy_image, 'image/png')}
+        response = httpx.post(f'{BASE_URL}{endpoint}', data=data, files=files, timeout=10)
+        return response.json()
+    except Exception as e:
+        return {'error': str(e)}
 
 
 # ============================================
@@ -290,49 +304,59 @@ def test_filter_and_patch_apis():
     # ---- Employee 필터 테스트 ----
     print('\n   --- Employee 필터 테스트 ---')
     
-    # 1. Employee 생성 (테스트용)
+    # 1. Employee 생성 (테스트용 - 이미지 포함 필수)
+    rand_num = random.randint(1000, 9999)
     try:
         emp_data = {
-            'eEmail': 'filtertest@store.com',
-            'ePhoneNumber': '02-9999-8888',
+            'eEmail': f'filtertest{rand_num}@store.com',
+            'ePhoneNumber': f'02-{rand_num}-8888',
             'eName': '필터테스트직원',
             'ePassword': 'pass123',
             'eRole': '1'
         }
-        result = api_post('/employees', emp_data)
+        result = api_post_form_with_file('/employees', emp_data)
         emp_id = result.get('id')
         success = result.get('result') == 'OK'
-        print_test('Employee 생성 (테스트용)', success, f"ID: {emp_id}")
+        print_test('Employee 생성 (테스트용 - 이미지 포함)', success, f"ID: {emp_id}")
     except Exception as e:
-        print_test('Employee 생성 (테스트용)', False, str(e))
+        print_test('Employee 생성 (테스트용 - 이미지 포함)', False, str(e))
         emp_id = None
     
-    # 2. 이메일로 Employee 필터 조회
-    try:
-        result = api_get('/employees?email=filtertest@store.com')
-        employees = result.get('results', [])
-        success = len(employees) > 0 and employees[0].get('eEmail') == 'filtertest@store.com'
-        print_test('Employee 이메일 필터', success, f"조회: {len(employees)}건")
-    except Exception as e:
-        print_test('Employee 이메일 필터', False, str(e))
+    # 2. 이메일로 Employee 필터 조회 (생성한 데이터로 조회)
+    if emp_id:
+        try:
+            result = api_get(f'/employees?email={emp_data["eEmail"]}')
+            employees = result.get('results', [])
+            success = len(employees) > 0 and employees[0].get('eEmail') == emp_data['eEmail']
+            print_test('Employee 이메일 필터', success, f"조회: {len(employees)}건")
+        except Exception as e:
+            print_test('Employee 이메일 필터', False, str(e))
+    else:
+        print_test('Employee 이메일 필터', False, 'Employee ID 없음')
     
-    # 3. 전화번호로 Employee 필터 조회
-    try:
-        result = api_get('/employees?phone=02-9999-8888')
-        employees = result.get('results', [])
-        success = len(employees) > 0
-        print_test('Employee 전화번호 필터', success, f"조회: {len(employees)}건")
-    except Exception as e:
-        print_test('Employee 전화번호 필터', False, str(e))
+    # 3. 전화번호로 Employee 필터 조회 (생성한 데이터로 조회)
+    if emp_id:
+        try:
+            result = api_get(f'/employees?phone={emp_data["ePhoneNumber"]}')
+            employees = result.get('results', [])
+            success = len(employees) > 0
+            print_test('Employee 전화번호 필터', success, f"조회: {len(employees)}건")
+        except Exception as e:
+            print_test('Employee 전화번호 필터', False, str(e))
+    else:
+        print_test('Employee 전화번호 필터', False, 'Employee ID 없음')
     
-    # 4. identifier로 Employee 필터 조회 (OR 조건)
-    try:
-        result = api_get('/employees?identifier=filtertest@store.com')
-        employees = result.get('results', [])
-        success = len(employees) > 0
-        print_test('Employee identifier 필터 (OR)', success, f"조회: {len(employees)}건")
-    except Exception as e:
-        print_test('Employee identifier 필터 (OR)', False, str(e))
+    # 4. identifier로 Employee 필터 조회 (OR 조건, 생성한 데이터로 조회)
+    if emp_id:
+        try:
+            result = api_get(f'/employees?identifier={emp_data["eEmail"]}')
+            employees = result.get('results', [])
+            success = len(employees) > 0
+            print_test('Employee identifier 필터 (OR)', success, f"조회: {len(employees)}건")
+        except Exception as e:
+            print_test('Employee identifier 필터 (OR)', False, str(e))
+    else:
+        print_test('Employee identifier 필터 (OR)', False, 'Employee ID 없음')
     
     # 5. 역할로 Employee 필터 조회
     try:
@@ -342,6 +366,32 @@ def test_filter_and_patch_apis():
         print_test('Employee 역할 필터', success, f"조회: {len(employees)}건")
     except Exception as e:
         print_test('Employee 역할 필터', False, str(e))
+    
+    # 6. Employee 프로필 이미지 조회 테스트
+    if emp_id:
+        try:
+            response = httpx.get(f'{BASE_URL}/employees/{emp_id}/profile_image', timeout=10)
+            success = response.status_code == 200 and response.headers.get('content-type', '').startswith('image/')
+            print_test('Employee 프로필 이미지 조회', success, f"Content-Type: {response.headers.get('content-type')}")
+        except Exception as e:
+            print_test('Employee 프로필 이미지 조회', False, str(e))
+    
+    # 7. Employee 이미지 포함 업데이트 테스트
+    if emp_id:
+        try:
+            rand_num = random.randint(1000, 9999)
+            update_data = {
+                'eEmail': f'updated{rand_num}@store.com',
+                'ePhoneNumber': f'02-{rand_num}-9999',
+                'eName': '이미지포함수정',
+                'ePassword': 'newpass',
+                'eRole': '2'
+            }
+            result = api_post_form_with_file(f'/employees/{emp_id}/with_image', update_data)
+            success = result.get('result') == 'OK'
+            print_test('Employee 정보 수정 (이미지 포함)', success)
+        except Exception as e:
+            print_test('Employee 정보 수정 (이미지 포함)', False, str(e))
     
     # ---- Customer 필터 테스트 ----
     print('\n   --- Customer 필터 테스트 ---')
@@ -357,20 +407,21 @@ def test_filter_and_patch_apis():
     # ---- LoginHistory 부분 업데이트 테스트 ----
     print('\n   --- LoginHistory 부분 업데이트 테스트 ---')
     
-    # 1. Customer 생성 (테스트용)
+    # 1. Customer 생성 (테스트용 - 이미지 포함 필수)
+    rand_num = random.randint(1000, 9999)
     try:
         cust_data = {
-            'cEmail': 'patchtest@test.com',
-            'cPhoneNumber': '010-7777-8888',
+            'cEmail': f'patchtest{rand_num}@test.com',
+            'cPhoneNumber': f'010-{rand_num}-8888',
             'cName': '패치테스트',
             'cPassword': 'pass123'
         }
-        result = api_post('/customers', cust_data)
+        result = api_post_form_with_file('/customers', cust_data)
         cust_id = result.get('id')
         success = result.get('result') == 'OK'
-        print_test('Customer 생성 (테스트용)', success, f"ID: {cust_id}")
+        print_test('Customer 생성 (테스트용 - 이미지 포함)', success, f"ID: {cust_id}")
     except Exception as e:
-        print_test('Customer 생성 (테스트용)', False, str(e))
+        print_test('Customer 생성 (테스트용 - 이미지 포함)', False, str(e))
         cust_id = None
     
     # 2. LoginHistory 생성
@@ -455,21 +506,22 @@ def test_signup_and_login():
     """회원가입 및 로그인 테스트"""
     print_header('회원가입 및 로그인 테스트')
     
-    # 1. 회원 가입 (Customer POST)
-    new_customer = {
-        'cEmail': 'testuser@test.com',
-        'cPhoneNumber': '010-1111-2222',
+    # 1. 회원 가입 (Customer POST - 이미지 포함 필수)
+    rand_num = random.randint(1000, 9999)
+    new_customer_data = {
+        'cEmail': f'testuser{rand_num}@test.com',
+        'cPhoneNumber': f'010-{rand_num}-2222',
         'cName': '테스트사용자',
         'cPassword': 'password123'
     }
     
     try:
-        result = api_post('/customers', new_customer)
+        result = api_post_form_with_file('/customers', new_customer_data)
         customer_id = result.get('id')
         success = result.get('result') == 'OK' and customer_id is not None
-        print_test('회원 가입 (POST)', success, f"ID: {customer_id}")
+        print_test('회원 가입 (POST - 이미지 포함)', success, f"ID: {customer_id}")
     except Exception as e:
-        print_test('회원 가입 (POST)', False, str(e))
+        print_test('회원 가입 (POST - 이미지 포함)', False, str(e))
         return None
     
     # 2. 로그인 이력 생성 (LoginHistory POST)
@@ -491,9 +543,10 @@ def test_signup_and_login():
         print_test('로그인 이력 생성 (POST)', False, str(e))
     
     # 3. 고객 정보 수정 (Customer PUT)
+    rand_num2 = random.randint(10000, 99999)
     update_customer = {
-        'cEmail': 'updated@test.com',
-        'cPhoneNumber': '010-3333-4444',
+        'cEmail': f'updated{rand_num2}@test.com',
+        'cPhoneNumber': f'010-{rand_num2}-4444',
         'cName': '수정된사용자',
         'cPassword': 'newpassword'
     }
@@ -501,7 +554,8 @@ def test_signup_and_login():
     try:
         result = api_put(f'/customers/{customer_id}', update_customer)
         success = result.get('result') == 'OK'
-        print_test('고객 정보 수정 (PUT)', success)
+        error_msg = result.get('message', '') if not success else ''
+        print_test('고객 정보 수정 (PUT)', success, error_msg if error_msg else '')
     except Exception as e:
         print_test('고객 정보 수정 (PUT)', False, str(e))
     
@@ -513,6 +567,29 @@ def test_signup_and_login():
         print_test('수정된 정보 확인', success, f"이름: {customer.get('cName')}")
     except Exception as e:
         print_test('수정된 정보 확인', False, str(e))
+    
+    # 5. 프로필 이미지 조회 테스트
+    try:
+        response = httpx.get(f'{BASE_URL}/customers/{customer_id}/profile_image', timeout=10)
+        success = response.status_code == 200 and response.headers.get('content-type', '').startswith('image/')
+        print_test('프로필 이미지 조회', success, f"Content-Type: {response.headers.get('content-type')}")
+    except Exception as e:
+        print_test('프로필 이미지 조회', False, str(e))
+    
+    # 6. 이미지 포함 업데이트 테스트
+    try:
+        rand_num = random.randint(1000, 9999)
+        update_data = {
+            'cEmail': f'updated{rand_num}@test.com',
+            'cPhoneNumber': f'010-{rand_num}-4444',
+            'cName': '이미지포함수정',
+            'cPassword': 'newpassword'
+        }
+        result = api_post_form_with_file(f'/customers/{customer_id}/with_image', update_data)
+        success = result.get('result') == 'OK'
+        print_test('고객 정보 수정 (이미지 포함)', success)
+    except Exception as e:
+        print_test('고객 정보 수정 (이미지 포함)', False, str(e))
     
     return customer_id
 
@@ -530,10 +607,11 @@ def test_order_and_refund(customer_id: int):
         return
     
     # 1. 주문 생성 (Purchase POST)
+    rand_order_code = f'TEST-ORDER-{random.randint(10000, 99999)}'
     new_purchase = {
         'cid': customer_id,
         'pickupDate': '2025-12-30 14:00',
-        'orderCode': 'TEST-ORDER-001',
+        'orderCode': rand_order_code,
         'timeStamp': '2025-12-25 12:30'
     }
     
@@ -541,7 +619,10 @@ def test_order_and_refund(customer_id: int):
         result = api_post('/purchases', new_purchase)
         purchase_id = result.get('id')
         success = result.get('result') == 'OK' and purchase_id is not None
-        print_test('주문 생성 (POST)', success, f"주문 ID: {purchase_id}")
+        error_msg = result.get('message', '') if not success else ''
+        print_test('주문 생성 (POST)', success, f"주문 ID: {purchase_id}" + (f" | 오류: {error_msg}" if error_msg else ""))
+        if not success:
+            return
     except Exception as e:
         print_test('주문 생성 (POST)', False, str(e))
         return
@@ -710,19 +791,21 @@ def test_full_crud():
     
     # 2. ProductBase 생성
     try:
+        rand_model = f'TEST-{random.randint(10000, 99999)}'
         pb_data = {
-            'pName': '테스트제품',
+            'pName': f'테스트제품-{random.randint(1000, 9999)}',
             'pDescription': '테스트용 제품입니다',
             'pColor': 'Red',
             'pGender': 'Unisex',
             'pStatus': '',
             'pCategory': 'Test',
-            'pModelNumber': 'TEST-001'
+            'pModelNumber': rand_model
         }
         result = api_post('/product_bases', pb_data)
         created_ids['product_base'] = result.get('id')
         success = result.get('result') == 'OK'
-        print_test('ProductBase 생성', success, f"ID: {created_ids.get('product_base')}")
+        error_msg = result.get('message', '') if not success else ''
+        print_test('ProductBase 생성', success, f"ID: {created_ids.get('product_base')}" + (f" | 오류: {error_msg}" if error_msg else ""))
     except Exception as e:
         print_test('ProductBase 생성', False, str(e))
     
@@ -757,21 +840,22 @@ def test_full_crud():
         except Exception as e:
             print_test('ProductImage 생성', False, str(e))
     
-    # 5. 직원 생성
+    # 5. 직원 생성 (이미지 포함 필수)
+    rand_num = random.randint(1000, 9999)
     try:
         emp_data = {
-            'eEmail': 'teststaff@store.com',
-            'ePhoneNumber': '02-0000-0000',
+            'eEmail': f'teststaff{rand_num}@store.com',
+            'ePhoneNumber': f'02-{rand_num}-0000',
             'eName': '테스트직원',
             'ePassword': 'staffpass',
             'eRole': '1'
         }
-        result = api_post('/employees', emp_data)
+        result = api_post_form_with_file('/employees', emp_data)
         created_ids['employee'] = result.get('id')
         success = result.get('result') == 'OK'
-        print_test('Employee 생성', success, f"ID: {created_ids.get('employee')}")
+        print_test('Employee 생성 (이미지 포함)', success, f"ID: {created_ids.get('employee')}")
     except Exception as e:
-        print_test('Employee 생성', False, str(e))
+        print_test('Employee 생성 (이미지 포함)', False, str(e))
     
     # 6. 직원 수정
     if created_ids.get('employee'):
