@@ -62,10 +62,18 @@
 - DB 초기화, CRUD 작업, 조인 쿼리, 더미 데이터 사용법을 포함합니다.
 - **개발 시 가장 먼저 참고해야 할 문서입니다.**
 
-#### `DATABASE_SCHEMA.md`
+#### `DATABASE_SCHEMA.md` (SQLite)
 
-- 데이터베이스 스키마 상세 정보를 기록합니다.
+- SQLite 데이터베이스 스키마 상세 정보를 기록합니다.
 - 테이블 구조, 관계, 인덱스 등 상세한 스키마 정보를 포함합니다.
+- **관련 파일**: `database_schema.dbml` (ERD 시각화용)
+
+#### `MYSQL_DATABASE_SCHEMA.md` (MySQL) ⭐ **백엔드 개발 시 참고**
+
+- MySQL 데이터베이스 스키마 상세 정보를 기록합니다.
+- SQLite 대비 추가된 컬럼: `Customer.cProfileImage`, `Employee.eProfileImage` (MEDIUMBLOB)
+- 프로필 이미지 BLOB 처리 API 가이드 포함
+- **관련 파일**: `mysql_database_schema.dbml` (ERD 시각화용)
 
 #### `HANDLER_USAGE_GUIDE.md`
 
@@ -129,10 +137,17 @@
 - DB 초기화, CRUD 작업, 조인 쿼리, 더미 데이터 사용법을 포함합니다.
 - 개발 시 가장 먼저 참고해야 할 문서입니다.
 
-### `DATABASE_SCHEMA.md`
+### `DATABASE_SCHEMA.md` (SQLite)
 
-- 데이터베이스 스키마 상세 정보를 기록합니다.
+- SQLite 데이터베이스 스키마 상세 정보를 기록합니다.
 - 테이블 구조, 관계, 인덱스 등 상세한 스키마 정보를 포함합니다.
+
+### `MYSQL_DATABASE_SCHEMA.md` (MySQL)
+
+- MySQL 데이터베이스 스키마 상세 정보를 기록합니다.
+- Customer/Employee 프로필 이미지 (MEDIUMBLOB) 컬럼 포함
+- 백엔드 API 개발 시 참고
+
 
 ### `HANDLER_USAGE_GUIDE.md`
 
