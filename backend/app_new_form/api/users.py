@@ -22,6 +22,9 @@ class User(BaseModel):
     u_password: str
     u_name: str
     u_phone: str
+    u_address: Optional[str] = None
+    created_at: Optional[str] = None
+    u_quit_date: Optional[str] = None
 
 
 # ============================================
@@ -32,7 +35,7 @@ async def select_users():
     conn = connect_db()
     curs = conn.cursor()
     curs.execute("""
-        SELECT u_seq, u_id, u_password, u_name, u_phone 
+        SELECT u_seq, u_id, u_password, u_name, u_phone, u_address, created_at, u_quit_date 
         FROM user 
         ORDER BY u_seq
     """)
@@ -43,7 +46,10 @@ async def select_users():
         'u_id': row[1],
         'u_password': row[2],
         'u_name': row[3],
-        'u_phone': row[4]
+        'u_phone': row[4],
+        'u_address': row[5],
+        'created_at': row[6].isoformat() if row[6] else None,
+        'u_quit_date': row[7].isoformat() if row[7] else None
     } for row in rows]
     return {"results": result}
 
@@ -56,7 +62,7 @@ async def select_user(user_seq: int):
     conn = connect_db()
     curs = conn.cursor()
     curs.execute("""
-        SELECT u_seq, u_id, u_password, u_name, u_phone 
+        SELECT u_seq, u_id, u_password, u_name, u_phone, u_address, created_at, u_quit_date 
         FROM user 
         WHERE u_seq = %s
     """, (user_seq,))
@@ -69,7 +75,10 @@ async def select_user(user_seq: int):
         'u_id': row[1],
         'u_password': row[2],
         'u_name': row[3],
-        'u_phone': row[4]
+        'u_phone': row[4],
+        'u_address': row[5],
+        'created_at': row[6].isoformat() if row[6] else None,
+        'u_quit_date': row[7].isoformat() if row[7] else None
     }
     return {"result": result}
 
@@ -83,6 +92,7 @@ async def insert_user(
     u_password: str = Form(...),
     u_name: str = Form(...),
     u_phone: str = Form(...),
+    u_address: Optional[str] = Form(None),
     file: UploadFile = File(...)
 ):
     try:
@@ -92,10 +102,10 @@ async def insert_user(
         conn = connect_db()
         curs = conn.cursor()
         sql = """
-            INSERT INTO user (u_id, u_password, u_name, u_phone, u_image) 
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO user (u_id, u_password, u_name, u_phone, u_address, u_image) 
+            VALUES (%s, %s, %s, %s, %s, %s)
         """
-        curs.execute(sql, (u_id, u_password, u_name, u_phone, image_data))
+        curs.execute(sql, (u_id, u_password, u_name, u_phone, u_address, image_data))
         conn.commit()
         inserted_id = curs.lastrowid
         conn.close()
@@ -114,16 +124,17 @@ async def update_user(
     u_password: str = Form(...),
     u_name: str = Form(...),
     u_phone: str = Form(...),
+    u_address: Optional[str] = Form(None),
 ):
     try:
         conn = connect_db()
         curs = conn.cursor()
         sql = """
             UPDATE user 
-            SET u_id=%s, u_password=%s, u_name=%s, u_phone=%s 
+            SET u_id=%s, u_password=%s, u_name=%s, u_phone=%s, u_address=%s 
             WHERE u_seq=%s
         """
-        curs.execute(sql, (u_id, u_password, u_name, u_phone, user_seq))
+        curs.execute(sql, (u_id, u_password, u_name, u_phone, u_address, user_seq))
         conn.commit()
         conn.close()
         return {"result": "OK"}
@@ -141,6 +152,7 @@ async def update_user_with_image(
     u_password: str = Form(...),
     u_name: str = Form(...),
     u_phone: str = Form(...),
+    u_address: Optional[str] = Form(None),
     file: UploadFile = File(...)
 ):
     try:
@@ -151,10 +163,10 @@ async def update_user_with_image(
         curs = conn.cursor()
         sql = """
             UPDATE user 
-            SET u_id=%s, u_password=%s, u_name=%s, u_phone=%s, u_image=%s 
+            SET u_id=%s, u_password=%s, u_name=%s, u_phone=%s, u_address=%s, u_image=%s 
             WHERE u_seq=%s
         """
-        curs.execute(sql, (u_id, u_password, u_name, u_phone, image_data, user_seq))
+        curs.execute(sql, (u_id, u_password, u_name, u_phone, u_address, image_data, user_seq))
         conn.commit()
         conn.close()
         return {"result": "OK"}

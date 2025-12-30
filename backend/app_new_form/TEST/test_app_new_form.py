@@ -523,7 +523,7 @@ def test_purchase_item():
             'b_price': '150000',
             'b_quantity': '2',
             'b_date': datetime.now().isoformat(),
-            'b_tnum': f'TXN{random.randint(1000, 9999)}'
+            'b_status': '주문완료'
         }
         result = api_post_form('/insert_purchase_item', new_purchase)
         purchase_seq = result.get('b_seq')
@@ -538,7 +538,7 @@ def test_purchase_item():
         
         # 5. 고객별 조회
         if u_seq:
-            result = api_get(f'/select_purchase_items_by_user/{u_seq}')
+            result = api_get(f'/purchase_items/by_user/{u_seq}')
             success = 'results' in result
             print_test('고객별 구매 내역 조회', success)
         
@@ -584,12 +584,33 @@ def test_purchase_item_join():
         success = 'result' in result
         print_test('구매 내역 전체 상세 조회', success)
         
-        # b_tnum으로 그룹화된 주문 조회
-        b_tnum = purchase_result['results'][0].get('b_tnum')
-        if b_tnum:
-            result = api_get(f'/purchase_items/by_tnum/{b_tnum}/with_details')
-            success = 'result' in result
-            print_test('주문번호로 그룹화된 주문 조회', success)
+        # 분 단위 기반 주문 조회 (첫 번째 구매 내역의 datetime 사용)
+        if purchase_result.get('results'):
+            first_purchase = purchase_result['results'][0]
+            b_date = first_purchase.get('b_date')
+            u_seq = first_purchase.get('u_seq')
+            br_seq = first_purchase.get('br_seq')
+            if b_date and u_seq and br_seq:
+                # datetime을 YYYY-MM-DD HH:MM 형식으로 변환 (분 단위)
+                if 'T' in b_date:
+                    # ISO format: 2025-01-15T10:30:45
+                    dt_str = b_date.split('T')[1].split('.')[0]  # HH:MM:SS
+                    date_part = b_date.split('T')[0]
+                    time_part = ':'.join(dt_str.split(':')[:2])  # HH:MM만
+                    order_datetime = f"{date_part} {time_part}"
+                else:
+                    # 다른 형식: 2025-01-15 10:30:45
+                    parts = b_date.split(' ')
+                    if len(parts) >= 2:
+                        date_part = parts[0]
+                        time_part = ':'.join(parts[1].split(':')[:2])  # HH:MM만
+                        order_datetime = f"{date_part} {time_part}"
+                    else:
+                        order_datetime = b_date
+                
+                result = api_get(f'/purchase_items/by_datetime/with_details?user_seq={u_seq}&order_datetime={order_datetime}&branch_seq={br_seq}')
+                success = 'result' in result
+                print_test('분 단위 기반 주문 조회', success)
 
 
 # ============================================

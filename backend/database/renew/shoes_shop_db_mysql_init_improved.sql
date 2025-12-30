@@ -7,6 +7,12 @@
    - UNIQUE 제약조건 추가 (중복 방지)
    - FOREIGN KEY CASCADE 옵션 명시
    - 데이터 타입 길이 조정
+   - ERD 1차 최종 반영 (2025-01-XX)
+     * refund_reason_category 테이블 추가
+     * user, staff, product 테이블에 created_at 추가
+     * purchase_item에 b_status 추가
+     * pickup에 u_seq 추가
+     * refund에 ref_re_seq, ref_re_content 추가
 ========================================================= */
 
 DROP DATABASE IF EXISTS shoes_shop_db;
@@ -41,9 +47,14 @@ CREATE TABLE user (
   u_name     VARCHAR(255) NOT NULL COMMENT '고객 이름',
   u_phone    VARCHAR(30)  NOT NULL COMMENT '고객 전화번호',
   u_image    MEDIUMBLOB   NULL COMMENT '고객 프로필 이미지',
+  u_address  VARCHAR(255) COMMENT '고객 주소',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '고객 가입일자',
+  u_quit_date DATETIME NULL COMMENT '고객 탈퇴일자',
   
   UNIQUE INDEX idx_user_id (u_id),
-  UNIQUE INDEX idx_user_phone (u_phone)
+  UNIQUE INDEX idx_user_phone (u_phone),
+  INDEX idx_user_created_at (created_at),
+  INDEX idx_user_quit_date (u_quit_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='고객 계정 정보';
 
 /* =========================================================
@@ -52,19 +63,26 @@ CREATE TABLE user (
 DROP TABLE IF EXISTS staff;
 CREATE TABLE staff (
   s_seq      INT AUTO_INCREMENT PRIMARY KEY COMMENT '직원 고유 ID(PK)',
+  s_id       VARCHAR(50)  NOT NULL COMMENT '직원 로그인 ID',
   br_seq     INT NOT NULL COMMENT '소속 지점 ID(FK)',
   s_password VARCHAR(255) NOT NULL COMMENT '직원 비밀번호(해시)',
   s_image    MEDIUMBLOB   NULL COMMENT '직원 프로필 이미지',
   s_rank     VARCHAR(100) COMMENT '직원 직급',
   s_phone    VARCHAR(30)  NOT NULL COMMENT '직원 전화번호',
+  s_name     VARCHAR(255) NOT NULL COMMENT '직원명',
   s_superseq INT COMMENT '상급자 직원 ID(논리적 참조)',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '생성일자',
+  s_quit_date DATETIME NULL COMMENT '직원 탈퇴 일자',
   
   CONSTRAINT fk_staff_branch
     FOREIGN KEY (br_seq) REFERENCES branch(br_seq)
     ON DELETE RESTRICT ON UPDATE CASCADE,
   
   INDEX idx_staff_br_seq (br_seq),
-  UNIQUE INDEX idx_staff_phone (s_phone)
+  UNIQUE INDEX idx_staff_id (s_id),
+  UNIQUE INDEX idx_staff_phone (s_phone),
+  INDEX idx_staff_created_at (created_at),
+  INDEX idx_staff_quit_date (s_quit_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='지점 직원 정보';
 
 /* =========================================================
@@ -116,6 +134,17 @@ CREATE TABLE gender_category (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='제품 성별 카테고리';
 
 /* =========================================================
+   REFUND_REASON_CATEGORY : 반품 사유 카테고리
+========================================================= */
+DROP TABLE IF EXISTS refund_reason_category;
+CREATE TABLE refund_reason_category (
+  ref_re_seq  INT AUTO_INCREMENT PRIMARY KEY COMMENT '반품 사유 번호(PK)',
+  ref_re_name VARCHAR(100) NOT NULL COMMENT '반품 사유명',
+  
+  UNIQUE INDEX idx_refund_reason_name (ref_re_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='반품 사유 카테고리';
+
+/* =========================================================
    PRODUCT : 판매 상품(SKU)
 ========================================================= */
 DROP TABLE IF EXISTS product;
@@ -127,10 +156,12 @@ CREATE TABLE product (
   gc_seq  INT NOT NULL COMMENT '제품 성별 카테고리 ID(FK)',
   m_seq   INT NOT NULL COMMENT '제조사 ID(FK)',
   
-  p_name  VARCHAR(255) COMMENT '제품명',
-  p_price INT DEFAULT 0 COMMENT '제품 가격',
-  p_stock INT NOT NULL DEFAULT 0 COMMENT '중앙 재고 수량',
-  p_image VARCHAR(255) COMMENT '제품 이미지 경로',
+  p_name        VARCHAR(255) COMMENT '제품명',
+  p_price       INT DEFAULT 0 COMMENT '제품 가격',
+  p_stock       INT NOT NULL DEFAULT 0 COMMENT '중앙 재고 수량',
+  p_image       VARCHAR(255) COMMENT '제품 이미지 경로',
+  p_description TEXT COMMENT '제품 설명',
+  created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '제품 등록일자',
   
   CONSTRAINT uq_product_color_size_maker
     UNIQUE (cc_seq, sc_seq, m_seq),
@@ -156,7 +187,8 @@ CREATE TABLE product (
   INDEX idx_product_kc_seq (kc_seq),
   INDEX idx_product_cc_seq (cc_seq),
   INDEX idx_product_sc_seq (sc_seq),
-  INDEX idx_product_gc_seq (gc_seq)
+  INDEX idx_product_gc_seq (gc_seq),
+  INDEX idx_product_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='판매 상품(SKU)';
 
 /* =========================================================
@@ -172,6 +204,7 @@ CREATE TABLE purchase_item (
   b_quantity INT DEFAULT 1 COMMENT '구매 수량',
   b_date     DATETIME NOT NULL COMMENT '구매 일시',
   b_tnum     VARCHAR(100) COMMENT '결제 트랜잭션 번호',
+  b_status   VARCHAR(50) COMMENT '상품주문상태',
   
   CONSTRAINT fk_purchase_branch  
     FOREIGN KEY (br_seq) REFERENCES branch(br_seq)
@@ -187,7 +220,8 @@ CREATE TABLE purchase_item (
   INDEX idx_purchase_item_b_date (b_date),
   INDEX idx_purchase_item_u_seq (u_seq),
   INDEX idx_purchase_item_br_seq (br_seq),
-  INDEX idx_purchase_item_p_seq (p_seq)
+  INDEX idx_purchase_item_p_seq (p_seq),
+  INDEX idx_purchase_item_b_status (b_status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='고객 구매 내역';
 
 /* =========================================================
@@ -195,16 +229,21 @@ CREATE TABLE purchase_item (
 ========================================================= */
 DROP TABLE IF EXISTS pickup;
 CREATE TABLE pickup (
-  pic_seq  INT AUTO_INCREMENT PRIMARY KEY COMMENT '수령 고유 ID(PK)',
-  b_seq    INT NOT NULL COMMENT '구매 ID(FK)',
-  pic_date DATETIME COMMENT '수령 완료 일시',
+  pic_seq    INT AUTO_INCREMENT PRIMARY KEY COMMENT '수령 고유 ID(PK)',
+  b_seq      INT NOT NULL COMMENT '구매 ID(FK)',
+  u_seq      INT NOT NULL COMMENT '고객 번호(FK)',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '수령 완료 일시',
   
   CONSTRAINT fk_pickup_purchase
     FOREIGN KEY (b_seq) REFERENCES purchase_item(b_seq)
     ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_pickup_user
+    FOREIGN KEY (u_seq) REFERENCES user(u_seq)
+    ON DELETE RESTRICT ON UPDATE CASCADE,
   
   INDEX idx_pickup_b_seq (b_seq),
-  INDEX idx_pickup_pic_date (pic_date)
+  INDEX idx_pickup_u_seq (u_seq),
+  INDEX idx_pickup_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='오프라인 수령 기록';
 
 /* =========================================================
@@ -212,12 +251,14 @@ CREATE TABLE pickup (
 ========================================================= */
 DROP TABLE IF EXISTS refund;
 CREATE TABLE refund (
-  ref_seq    INT AUTO_INCREMENT PRIMARY KEY COMMENT '반품 고유 ID(PK)',
-  ref_date   DATETIME COMMENT '반품 처리 일시',
-  ref_reason VARCHAR(255) COMMENT '반품 사유',
-  u_seq      INT NOT NULL COMMENT '반품 요청 고객 ID(FK)',
-  s_seq      INT NOT NULL COMMENT '반품 처리 직원 ID(FK)',
-  pic_seq    INT NOT NULL COMMENT '수령 ID(FK)',
+  ref_seq       INT AUTO_INCREMENT PRIMARY KEY COMMENT '반품 고유 ID(PK)',
+  ref_date      DATETIME COMMENT '반품 처리 일시',
+  ref_reason    VARCHAR(255) COMMENT '반품 사유',
+  ref_re_seq    INT COMMENT '반품 사유 번호(FK)',
+  ref_re_content VARCHAR(255) COMMENT '반품 사유 내용',
+  u_seq         INT NOT NULL COMMENT '반품 요청 고객 ID(FK)',
+  s_seq         INT NOT NULL COMMENT '반품 처리 직원 ID(FK)',
+  pic_seq       INT NOT NULL COMMENT '수령 ID(FK)',
   
   CONSTRAINT fk_refund_user   
     FOREIGN KEY (u_seq) REFERENCES user(u_seq)
@@ -228,11 +269,15 @@ CREATE TABLE refund (
   CONSTRAINT fk_refund_pickup 
     FOREIGN KEY (pic_seq) REFERENCES pickup(pic_seq)
     ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT fk_refund_reason_category
+    FOREIGN KEY (ref_re_seq) REFERENCES refund_reason_category(ref_re_seq)
+    ON DELETE RESTRICT ON UPDATE CASCADE,
   
   INDEX idx_refund_u_seq (u_seq),
   INDEX idx_refund_s_seq (s_seq),
   INDEX idx_refund_pic_seq (pic_seq),
-  INDEX idx_refund_ref_date (ref_date)
+  INDEX idx_refund_ref_date (ref_date),
+  INDEX idx_refund_ref_re_seq (ref_re_seq)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='오프라인 반품/환불 기록';
 
 /* =========================================================

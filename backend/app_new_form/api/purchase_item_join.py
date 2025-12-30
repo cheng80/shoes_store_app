@@ -2,7 +2,7 @@
 PurchaseItem 복합 쿼리 API
 - PurchaseItem 중심의 JOIN 쿼리들
 - PurchaseItem + User + Product + Branch + 모든 카테고리
-- b_tnum으로 주문 그룹화 지원
+- b_date (구매 날짜)로 주문 그룹화 지원
 
 개별 실행: python purchase_item_join.py
 """
@@ -33,7 +33,7 @@ async def get_purchase_item_with_details(purchase_item_seq: int):
             pi.b_price,
             pi.b_quantity,
             pi.b_date,
-            pi.b_tnum,
+            pi.b_status,
             u.u_seq,
             u.u_id,
             u.u_name,
@@ -63,7 +63,7 @@ async def get_purchase_item_with_details(purchase_item_seq: int):
             'b_price': row[1],
             'b_quantity': row[2],
             'b_date': row[3].isoformat() if row[3] else None,
-            'b_tnum': row[4],
+            'b_status': row[4],
             'user': {
                 'u_seq': row[5],
                 'u_id': row[6],
@@ -111,7 +111,7 @@ async def get_purchase_item_full_detail(purchase_item_seq: int):
             pi.b_price,
             pi.b_quantity,
             pi.b_date,
-            pi.b_tnum,
+            pi.b_status,
             u.u_seq,
             u.u_id,
             u.u_name,
@@ -152,7 +152,7 @@ async def get_purchase_item_full_detail(purchase_item_seq: int):
             'b_price': row[1],
             'b_quantity': row[2],
             'b_date': row[3].isoformat() if row[3] else None,
-            'b_tnum': row[4],
+            'b_status': row[4],
             'user': {
                 'u_seq': row[5],
                 'u_id': row[6],
@@ -206,7 +206,7 @@ async def get_purchase_items_by_user_with_details(user_seq: int):
             pi.b_price,
             pi.b_quantity,
             pi.b_date,
-            pi.b_tnum,
+            pi.b_status,
             p.p_seq,
             p.p_name,
             p.p_price,
@@ -226,7 +226,7 @@ async def get_purchase_items_by_user_with_details(user_seq: int):
             'b_price': row[1],
             'b_quantity': row[2],
             'b_date': row[3].isoformat() if row[3] else None,
-            'b_tnum': row[4],
+            'b_status': row[4],
             'product': {
                 'p_seq': row[5],
                 'p_name': row[6],
@@ -244,14 +244,19 @@ async def get_purchase_items_by_user_with_details(user_seq: int):
 
 
 # ============================================
-# 주문번호(b_tnum)로 그룹화된 PurchaseItem 목록
+# 날짜+시간(분 단위) 기반 주문 그룹화 (같은 날짜+시간(분), 사용자, 지점)
 # ============================================
-@router.get("/purchase_items/by_tnum/{b_tnum}/with_details")
-async def get_purchase_items_by_tnum_with_details(b_tnum: str):
+@router.get("/purchase_items/by_datetime/with_details")
+async def get_purchase_items_by_datetime_with_details(
+    user_seq: int,
+    order_datetime: str,  # YYYY-MM-DD HH:MM format 또는 ISO format
+    branch_seq: int
+):
     """
-    특정 주문번호(b_tnum)의 모든 PurchaseItem + 상세 정보
+    특정 날짜+시간(분 단위), 사용자, 지점의 모든 PurchaseItem + 상세 정보
     JOIN: PurchaseItem + User + Product + Branch + 모든 카테고리
     용도: 주문 상세 화면 (여러 항목을 하나의 주문으로 표시)
+    같은 분에 주문한 항목들을 하나의 주문으로 묶음
     """
     conn = connect_db()
     curs = conn.cursor()
@@ -263,7 +268,7 @@ async def get_purchase_items_by_tnum_with_details(b_tnum: str):
             pi.b_price,
             pi.b_quantity,
             pi.b_date,
-            pi.b_tnum,
+            pi.b_status,
             u.u_seq,
             u.u_name,
             u.u_phone,
@@ -287,27 +292,29 @@ async def get_purchase_items_by_tnum_with_details(b_tnum: str):
         JOIN gender_category gc ON p.gc_seq = gc.gc_seq
         JOIN maker m ON p.m_seq = m.m_seq
         JOIN branch br ON pi.br_seq = br.br_seq
-        WHERE pi.b_tnum = %s
-        ORDER BY pi.b_seq
+        WHERE pi.u_seq = %s 
+          AND DATE_FORMAT(pi.b_date, '%%Y-%%m-%%d %%H:%%i') = DATE_FORMAT(%s, '%%Y-%%m-%%d %%H:%%i')
+          AND pi.br_seq = %s
+        ORDER BY pi.b_date, pi.b_seq
         """
-        curs.execute(sql, (b_tnum,))
+        curs.execute(sql, (user_seq, order_datetime, branch_seq))
         rows = curs.fetchall()
         
         if not rows:
-            return {"result": "Error", "message": "No purchase items found for this transaction number"}
+            return {"result": "Error", "message": "No purchase items found for this datetime (minute)"}
         
         # 첫 번째 행에서 공통 정보 추출
         first_row = rows[0]
         order_info = {
-            'b_tnum': first_row[4],
+            'order_datetime': order_datetime,
             'b_date': first_row[3].isoformat() if first_row[3] else None,
             'user': {
                 'u_seq': first_row[5],
                 'u_name': first_row[6],
                 'u_phone': first_row[7]
             },
-            'branch_name': first_row[18],
-            'branch_address': first_row[19],
+            'branch_name': first_row[17],
+            'branch_address': first_row[18],
             'items': []
         }
         
@@ -318,6 +325,7 @@ async def get_purchase_items_by_tnum_with_details(b_tnum: str):
                 'b_seq': row[0],
                 'b_price': row[1],
                 'b_quantity': row[2],
+                'b_status': row[4],
                 'product': {
                     'p_seq': row[8],
                     'p_name': row[9],
@@ -344,65 +352,73 @@ async def get_purchase_items_by_tnum_with_details(b_tnum: str):
 
 
 # ============================================
-# 고객별 주문 목록 (b_tnum 그룹화)
+# 고객별 주문 목록 (날짜+시간(분 단위) 기반 그룹화)
 # ============================================
 @router.get("/purchase_items/by_user/{user_seq}/orders")
 async def get_user_orders(user_seq: int):
     """
-    특정 고객의 주문 목록 (b_tnum으로 그룹화)
+    특정 고객의 주문 목록 (날짜+시간(분 단위), 지점으로 그룹화)
     JOIN: PurchaseItem + User + Product + Branch
     용도: 고객 주문 목록 화면
+    같은 분에 주문한 항목들을 하나의 주문으로 묶음
     """
     conn = connect_db()
     curs = conn.cursor()
     
     try:
-        # 고유한 b_tnum 목록 조회
-        sql_tnums = """
-        SELECT DISTINCT b_tnum, MIN(b_date) as order_date
+        # 고유한 날짜+시간(분 단위)+지점 조합 목록 조회
+        sql_orders = """
+        SELECT DATE_FORMAT(b_date, '%%Y-%%m-%%d %%H:%%i') as order_datetime, br_seq, MIN(b_date) as order_time
         FROM purchase_item
-        WHERE u_seq = %s AND b_tnum IS NOT NULL
-        GROUP BY b_tnum
-        ORDER BY order_date DESC
+        WHERE u_seq = %s
+        GROUP BY DATE_FORMAT(b_date, '%%Y-%%m-%%d %%H:%%i'), br_seq
+        ORDER BY order_time DESC
         """
-        curs.execute(sql_tnums, (user_seq,))
-        tnum_rows = curs.fetchall()
+        curs.execute(sql_orders, (user_seq,))
+        order_rows = curs.fetchall()
         
         result = []
-        for tnum_row in tnum_rows:
-            b_tnum = tnum_row[0]
-            order_date = tnum_row[1]
+        for order_row in order_rows:
+            order_datetime = order_row[0]
+            branch_seq = order_row[1]
+            order_time = order_row[2]
             
-            # 각 주문의 항목들 조회
+            # 각 주문의 항목들 조회 (분 단위로 비교 - 같은 분에 주문한 항목들)
             sql_items = """
             SELECT 
                 pi.b_seq,
                 pi.b_price,
                 pi.b_quantity,
+                pi.b_status,
                 p.p_name,
                 br.br_name
             FROM purchase_item pi
             JOIN product p ON pi.p_seq = p.p_seq
             JOIN branch br ON pi.br_seq = br.br_seq
-            WHERE pi.b_tnum = %s
-            ORDER BY pi.b_seq
+            WHERE pi.u_seq = %s 
+              AND DATE_FORMAT(pi.b_date, '%%Y-%%m-%%d %%H:%%i') = %s
+              AND pi.br_seq = %s
+            ORDER BY pi.b_date, pi.b_seq
             """
-            curs.execute(sql_items, (b_tnum,))
+            curs.execute(sql_items, (user_seq, order_datetime, branch_seq))
             item_rows = curs.fetchall()
             
             total_amount = sum(row[1] * row[2] for row in item_rows)
             
             order = {
-                'b_tnum': b_tnum,
-                'order_date': order_date.isoformat() if order_date else None,
+                'order_datetime': order_datetime,
+                'order_time': order_time.isoformat() if order_time else None,
+                'branch_seq': branch_seq,
+                'branch_name': item_rows[0][5] if item_rows else None,
                 'item_count': len(item_rows),
                 'total_amount': total_amount,
                 'items': [{
                     'b_seq': row[0],
                     'b_price': row[1],
                     'b_quantity': row[2],
-                    'product_name': row[3],
-                    'branch_name': row[4]
+                    'b_status': row[3],
+                    'product_name': row[4],
+                    'branch_name': row[5]
                 } for row in item_rows]
             }
             result.append(order)

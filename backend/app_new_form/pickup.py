@@ -19,7 +19,8 @@ ipAddress = "127.0.0.1"
 class Pickup(BaseModel):
     pic_seq: Optional[int] = None
     b_seq: int
-    pic_date: Optional[datetime] = None
+    u_seq: int
+    created_at: Optional[datetime] = None
 
 
 # ============================================
@@ -30,16 +31,17 @@ async def select_pickups():
     conn = connect_db()
     curs = conn.cursor()
     curs.execute("""
-        SELECT pic_seq, b_seq, pic_date 
+        SELECT pic_seq, b_seq, u_seq, created_at 
         FROM pickup 
-        ORDER BY pic_date DESC, pic_seq
+        ORDER BY created_at DESC, pic_seq
     """)
     rows = curs.fetchall()
     conn.close()
     result = [{
         'pic_seq': row[0],
         'b_seq': row[1],
-        'pic_date': row[2].isoformat() if row[2] else None
+        'u_seq': row[2],
+        'created_at': row[3].isoformat() if row[3] else None
     } for row in rows]
     return {"results": result}
 
@@ -52,7 +54,7 @@ async def select_pickup(pickup_seq: int):
     conn = connect_db()
     curs = conn.cursor()
     curs.execute("""
-        SELECT pic_seq, b_seq, pic_date 
+        SELECT pic_seq, b_seq, u_seq, created_at 
         FROM pickup 
         WHERE pic_seq = %s
     """, (pickup_seq,))
@@ -63,7 +65,8 @@ async def select_pickup(pickup_seq: int):
     result = {
         'pic_seq': row[0],
         'b_seq': row[1],
-        'pic_date': row[2].isoformat() if row[2] else None
+        'u_seq': row[2],
+        'created_at': row[3].isoformat() if row[3] else None
     }
     return {"result": result}
 
@@ -76,7 +79,7 @@ async def select_pickup_by_purchase(purchase_seq: int):
     conn = connect_db()
     curs = conn.cursor()
     curs.execute("""
-        SELECT pic_seq, b_seq, pic_date 
+        SELECT pic_seq, b_seq, u_seq, created_at 
         FROM pickup 
         WHERE b_seq = %s
     """, (purchase_seq,))
@@ -87,7 +90,8 @@ async def select_pickup_by_purchase(purchase_seq: int):
     result = {
         'pic_seq': row[0],
         'b_seq': row[1],
-        'pic_date': row[2].isoformat() if row[2] else None
+        'u_seq': row[2],
+        'created_at': row[3].isoformat() if row[3] else None
     }
     return {"result": result}
 
@@ -98,17 +102,22 @@ async def select_pickup_by_purchase(purchase_seq: int):
 @app.post("/insert_pickup")
 async def insert_pickup(
     b_seq: int = Form(...),
-    pic_date: Optional[str] = Form(None),  # ISO format string
+    u_seq: int = Form(...),
+    created_at: Optional[str] = Form(None),  # ISO format string
 ):
     try:
-        pic_date_dt = None
-        if pic_date:
-            pic_date_dt = datetime.fromisoformat(pic_date.replace('Z', '+00:00'))
+        created_at_dt = None
+        if created_at:
+            created_at_dt = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
         
         conn = connect_db()
         curs = conn.cursor()
-        sql = "INSERT INTO pickup (b_seq, pic_date) VALUES (%s, %s)"
-        curs.execute(sql, (b_seq, pic_date_dt))
+        if created_at_dt:
+            sql = "INSERT INTO pickup (b_seq, u_seq, created_at) VALUES (%s, %s, %s)"
+            curs.execute(sql, (b_seq, u_seq, created_at_dt))
+        else:
+            sql = "INSERT INTO pickup (b_seq, u_seq) VALUES (%s, %s)"
+            curs.execute(sql, (b_seq, u_seq))
         conn.commit()
         inserted_id = curs.lastrowid
         conn.close()
@@ -124,17 +133,22 @@ async def insert_pickup(
 async def update_pickup(
     pic_seq: int = Form(...),
     b_seq: int = Form(...),
-    pic_date: Optional[str] = Form(None),  # ISO format string
+    u_seq: int = Form(...),
+    created_at: Optional[str] = Form(None),  # ISO format string
 ):
     try:
-        pic_date_dt = None
-        if pic_date:
-            pic_date_dt = datetime.fromisoformat(pic_date.replace('Z', '+00:00'))
+        created_at_dt = None
+        if created_at:
+            created_at_dt = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
         
         conn = connect_db()
         curs = conn.cursor()
-        sql = "UPDATE pickup SET b_seq=%s, pic_date=%s WHERE pic_seq=%s"
-        curs.execute(sql, (b_seq, pic_date_dt, pic_seq))
+        if created_at_dt:
+            sql = "UPDATE pickup SET b_seq=%s, u_seq=%s, created_at=%s WHERE pic_seq=%s"
+            curs.execute(sql, (b_seq, u_seq, created_at_dt, pic_seq))
+        else:
+            sql = "UPDATE pickup SET b_seq=%s, u_seq=%s WHERE pic_seq=%s"
+            curs.execute(sql, (b_seq, u_seq, pic_seq))
         conn.commit()
         conn.close()
         return {"result": "OK"}
@@ -149,12 +163,12 @@ async def update_pickup(
 async def complete_pickup(pickup_seq: int):
     try:
         from datetime import datetime
-        pic_date_dt = datetime.now()
+        created_at_dt = datetime.now()
         
         conn = connect_db()
         curs = conn.cursor()
-        sql = "UPDATE pickup SET pic_date=%s WHERE pic_seq=%s"
-        curs.execute(sql, (pic_date_dt, pickup_seq))
+        sql = "UPDATE pickup SET created_at=%s WHERE pic_seq=%s"
+        curs.execute(sql, (created_at_dt, pickup_seq))
         conn.commit()
         conn.close()
         return {"result": "OK"}
@@ -183,4 +197,3 @@ async def delete_pickup(pickup_seq: int):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host=ipAddress, port=8000)
-

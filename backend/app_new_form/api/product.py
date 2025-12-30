@@ -25,6 +25,8 @@ class Product(BaseModel):
     p_price: int = 0
     p_stock: int = 0
     p_image: Optional[str] = None
+    p_description: Optional[str] = None
+    created_at: Optional[str] = None
 
 
 # ============================================
@@ -35,7 +37,7 @@ async def select_products():
     conn = connect_db()
     curs = conn.cursor()
     curs.execute("""
-        SELECT p_seq, kc_seq, cc_seq, sc_seq, gc_seq, m_seq, p_name, p_price, p_stock, p_image 
+        SELECT p_seq, kc_seq, cc_seq, sc_seq, gc_seq, m_seq, p_name, p_price, p_stock, p_image, p_description, created_at 
         FROM product 
         ORDER BY p_seq
     """)
@@ -51,7 +53,9 @@ async def select_products():
         'p_name': row[6],
         'p_price': row[7],
         'p_stock': row[8],
-        'p_image': row[9]
+        'p_image': row[9],
+        'p_description': row[10],
+        'created_at': row[11].isoformat() if row[11] else None
     } for row in rows]
     return {"results": result}
 
@@ -64,7 +68,7 @@ async def select_product(product_seq: int):
     conn = connect_db()
     curs = conn.cursor()
     curs.execute("""
-        SELECT p_seq, kc_seq, cc_seq, sc_seq, gc_seq, m_seq, p_name, p_price, p_stock, p_image 
+        SELECT p_seq, kc_seq, cc_seq, sc_seq, gc_seq, m_seq, p_name, p_price, p_stock, p_image, p_description, created_at 
         FROM product 
         WHERE p_seq = %s
     """, (product_seq,))
@@ -82,7 +86,9 @@ async def select_product(product_seq: int):
         'p_name': row[6],
         'p_price': row[7],
         'p_stock': row[8],
-        'p_image': row[9]
+        'p_image': row[9],
+        'p_description': row[10],
+        'created_at': row[11].isoformat() if row[11] else None
     }
     return {"result": result}
 
@@ -95,7 +101,7 @@ async def select_products_by_maker(maker_seq: int):
     conn = connect_db()
     curs = conn.cursor()
     curs.execute("""
-        SELECT p_seq, kc_seq, cc_seq, sc_seq, gc_seq, m_seq, p_name, p_price, p_stock, p_image 
+        SELECT p_seq, kc_seq, cc_seq, sc_seq, gc_seq, m_seq, p_name, p_price, p_stock, p_image, p_description, created_at 
         FROM product 
         WHERE m_seq = %s
         ORDER BY p_seq
@@ -112,7 +118,9 @@ async def select_products_by_maker(maker_seq: int):
         'p_name': row[6],
         'p_price': row[7],
         'p_stock': row[8],
-        'p_image': row[9]
+        'p_image': row[9],
+        'p_description': row[10],
+        'created_at': row[11].isoformat() if row[11] else None
     } for row in rows]
     return {"results": result}
 
@@ -131,15 +139,16 @@ async def insert_product(
     p_price: int = Form(0),
     p_stock: int = Form(0),
     p_image: Optional[str] = Form(None),
+    p_description: Optional[str] = Form(None),
 ):
     try:
         conn = connect_db()
         curs = conn.cursor()
         sql = """
-            INSERT INTO product (kc_seq, cc_seq, sc_seq, gc_seq, m_seq, p_name, p_price, p_stock, p_image) 
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO product (kc_seq, cc_seq, sc_seq, gc_seq, m_seq, p_name, p_price, p_stock, p_image, p_description) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
-        curs.execute(sql, (kc_seq, cc_seq, sc_seq, gc_seq, m_seq, p_name, p_price, p_stock, p_image))
+        curs.execute(sql, (kc_seq, cc_seq, sc_seq, gc_seq, m_seq, p_name, p_price, p_stock, p_image, p_description))
         conn.commit()
         inserted_id = curs.lastrowid
         conn.close()
@@ -163,6 +172,7 @@ async def update_product(
     p_price: int = Form(0),
     p_stock: int = Form(0),
     p_image: Optional[str] = Form(None),
+    p_description: Optional[str] = Form(None),
 ):
     try:
         conn = connect_db()
@@ -170,10 +180,10 @@ async def update_product(
         sql = """
             UPDATE product 
             SET kc_seq=%s, cc_seq=%s, sc_seq=%s, gc_seq=%s, m_seq=%s, 
-                p_name=%s, p_price=%s, p_stock=%s, p_image=%s 
+                p_name=%s, p_price=%s, p_stock=%s, p_image=%s, p_description=%s 
             WHERE p_seq=%s
         """
-        curs.execute(sql, (kc_seq, cc_seq, sc_seq, gc_seq, m_seq, p_name, p_price, p_stock, p_image, product_seq))
+        curs.execute(sql, (kc_seq, cc_seq, sc_seq, gc_seq, m_seq, p_name, p_price, p_stock, p_image, p_description, product_seq))
         conn.commit()
         conn.close()
         return {"result": "OK"}

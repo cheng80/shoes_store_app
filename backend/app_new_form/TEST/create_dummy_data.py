@@ -44,7 +44,7 @@ def create_dummy_image():
 
 
 def create_branches(conn):
-    """지점 데이터 생성"""
+    """지점 데이터 생성 (중복 방지)"""
     print("📍 지점 데이터 생성 중...")
     curs = conn.cursor()
     
@@ -58,12 +58,20 @@ def create_branches(conn):
     
     branch_ids = []
     for branch in branches:
-        sql = """
-            INSERT INTO branch (br_name, br_phone, br_address, br_lat, br_lng)
-            VALUES (%s, %s, %s, %s, %s)
-        """
-        curs.execute(sql, branch)
-        branch_ids.append(curs.lastrowid)
+        br_name = branch[0]
+        # 중복 확인
+        curs.execute("SELECT br_seq FROM branch WHERE br_name = %s", (br_name,))
+        existing = curs.fetchone()
+        
+        if existing:
+            branch_ids.append(existing[0])
+        else:
+            sql = """
+                INSERT INTO branch (br_name, br_phone, br_address, br_lat, br_lng)
+                VALUES (%s, %s, %s, %s, %s)
+            """
+            curs.execute(sql, branch)
+            branch_ids.append(curs.lastrowid)
     
     conn.commit()
     print(f"   ✅ {len(branch_ids)}개 지점 생성 완료")
@@ -71,7 +79,7 @@ def create_branches(conn):
 
 
 def create_makers(conn):
-    """제조사 데이터 생성"""
+    """제조사 데이터 생성 (중복 방지)"""
     print("🏭 제조사 데이터 생성 중...")
     curs = conn.cursor()
     
@@ -85,9 +93,17 @@ def create_makers(conn):
     
     maker_ids = []
     for maker in makers:
-        sql = "INSERT INTO maker (m_name, m_phone, m_address) VALUES (%s, %s, %s)"
-        curs.execute(sql, maker)
-        maker_ids.append(curs.lastrowid)
+        m_name = maker[0]
+        # 중복 확인
+        curs.execute("SELECT m_seq FROM maker WHERE m_name = %s", (m_name,))
+        existing = curs.fetchone()
+        
+        if existing:
+            maker_ids.append(existing[0])
+        else:
+            sql = "INSERT INTO maker (m_name, m_phone, m_address) VALUES (%s, %s, %s)"
+            curs.execute(sql, maker)
+            maker_ids.append(curs.lastrowid)
     
     conn.commit()
     print(f"   ✅ {len(maker_ids)}개 제조사 생성 완료")
@@ -99,37 +115,57 @@ def create_categories(conn):
     print("📂 카테고리 데이터 생성 중...")
     curs = conn.cursor()
     
-    # 종류 카테고리
+    # 종류 카테고리 (중복 방지)
     kind_categories = ['러닝화', '스니커즈', '부츠', '로퍼', '샌들']
     kind_ids = []
     for kc_name in kind_categories:
-        sql = "INSERT INTO kind_category (kc_name) VALUES (%s)"
-        curs.execute(sql, (kc_name,))
-        kind_ids.append(curs.lastrowid)
+        curs.execute("SELECT kc_seq FROM kind_category WHERE kc_name = %s", (kc_name,))
+        existing = curs.fetchone()
+        if existing:
+            kind_ids.append(existing[0])
+        else:
+            sql = "INSERT INTO kind_category (kc_name) VALUES (%s)"
+            curs.execute(sql, (kc_name,))
+            kind_ids.append(curs.lastrowid)
     
-    # 색상 카테고리
+    # 색상 카테고리 (중복 방지)
     color_categories = ['블랙', '화이트', '그레이', '레드', '블루', '그린', '옐로우']
     color_ids = []
     for cc_name in color_categories:
-        sql = "INSERT INTO color_category (cc_name) VALUES (%s)"
-        curs.execute(sql, (cc_name,))
-        color_ids.append(curs.lastrowid)
+        curs.execute("SELECT cc_seq FROM color_category WHERE cc_name = %s", (cc_name,))
+        existing = curs.fetchone()
+        if existing:
+            color_ids.append(existing[0])
+        else:
+            sql = "INSERT INTO color_category (cc_name) VALUES (%s)"
+            curs.execute(sql, (cc_name,))
+            color_ids.append(curs.lastrowid)
     
-    # 사이즈 카테고리
+    # 사이즈 카테고리 (중복 방지)
     size_categories = ['230', '240', '250', '260', '270', '280', '290']
     size_ids = []
     for sc_name in size_categories:
-        sql = "INSERT INTO size_category (sc_name) VALUES (%s)"
-        curs.execute(sql, (sc_name,))
-        size_ids.append(curs.lastrowid)
+        curs.execute("SELECT sc_seq FROM size_category WHERE sc_name = %s", (sc_name,))
+        existing = curs.fetchone()
+        if existing:
+            size_ids.append(existing[0])
+        else:
+            sql = "INSERT INTO size_category (sc_name) VALUES (%s)"
+            curs.execute(sql, (sc_name,))
+            size_ids.append(curs.lastrowid)
     
-    # 성별 카테고리
+    # 성별 카테고리 (중복 방지)
     gender_categories = ['남성', '여성', '공용']
     gender_ids = []
     for gc_name in gender_categories:
-        sql = "INSERT INTO gender_category (gc_name) VALUES (%s)"
-        curs.execute(sql, (gc_name,))
-        gender_ids.append(curs.lastrowid)
+        curs.execute("SELECT gc_seq FROM gender_category WHERE gc_name = %s", (gc_name,))
+        existing = curs.fetchone()
+        if existing:
+            gender_ids.append(existing[0])
+        else:
+            sql = "INSERT INTO gender_category (gc_name) VALUES (%s)"
+            curs.execute(sql, (gc_name,))
+            gender_ids.append(curs.lastrowid)
     
     conn.commit()
     print(f"   ✅ 종류 {len(kind_ids)}개, 색상 {len(color_ids)}개, 사이즈 {len(size_ids)}개, 성별 {len(gender_ids)}개 생성 완료")
@@ -137,7 +173,7 @@ def create_categories(conn):
 
 
 def create_users(conn):
-    """고객 데이터 생성"""
+    """고객 데이터 생성 (중복 방지)"""
     print("👤 고객 데이터 생성 중...")
     curs = conn.cursor()
     
@@ -152,12 +188,20 @@ def create_users(conn):
     user_ids = []
     dummy_image = create_dummy_image()
     for user in users:
-        sql = """
-            INSERT INTO user (u_id, u_password, u_name, u_phone, u_image)
-            VALUES (%s, %s, %s, %s, %s)
-        """
-        curs.execute(sql, (*user, dummy_image))
-        user_ids.append(curs.lastrowid)
+        u_id = user[0]
+        # 중복 확인 (u_id 또는 u_phone)
+        curs.execute("SELECT u_seq FROM user WHERE u_id = %s OR u_phone = %s", (u_id, user[3]))
+        existing = curs.fetchone()
+        
+        if existing:
+            user_ids.append(existing[0])
+        else:
+            sql = """
+                INSERT INTO user (u_id, u_password, u_name, u_phone, u_image)
+                VALUES (%s, %s, %s, %s, %s)
+            """
+            curs.execute(sql, (*user, dummy_image))
+            user_ids.append(curs.lastrowid)
     
     conn.commit()
     print(f"   ✅ {len(user_ids)}개 고객 생성 완료")
@@ -165,37 +209,82 @@ def create_users(conn):
 
 
 def create_staffs(conn, branch_ids):
-    """직원 데이터 생성"""
+    """직원 데이터 생성 (중복 방지, 상급자 관계 설정)"""
     print("👔 직원 데이터 생성 중...")
     curs = conn.cursor()
     
+    # 직원 데이터: (s_id, password, name, phone, rank, supervisor_s_id)
+    # supervisor_s_id가 None이면 최상급자(점장)
     staffs = [
-        ('pass1234', '010-1001-1001', '점장', None),
-        ('pass1234', '010-1002-1002', '부점장', None),
-        ('pass1234', '010-2001-2001', '점장', None),
-        ('pass1234', '010-2002-2002', '사원', None),
-        ('pass1234', '010-3001-3001', '점장', None),
+        ('staff001', 'pass1234', '김점장', '010-1001-1001', '점장', None),  # 강남점 점장 (최상급자)
+        ('staff002', 'pass1234', '이부점장', '010-1002-1002', '부점장', 'staff001'),  # 강남점 부점장 (staff001의 하급자)
+        ('staff003', 'pass1234', '박점장', '010-2001-2001', '점장', None),  # 홍대점 점장 (최상급자)
+        ('staff004', 'pass1234', '최사원', '010-2002-2002', '사원', 'staff003'),  # 홍대점 사원 (staff003의 하급자)
+        ('staff005', 'pass1234', '정점장', '010-3001-3001', '점장', None),  # 잠실점 점장 (최상급자)
     ]
     
     staff_ids = []
+    staff_id_to_seq = {}  # s_id -> s_seq 매핑
     dummy_image = create_dummy_image()
+    
     for i, staff in enumerate(staffs):
-        br_seq = branch_ids[i % len(branch_ids)]
-        s_superseq = staff_ids[0] if i > 0 and i % len(branch_ids) == 0 else None
-        sql = """
-            INSERT INTO staff (br_seq, s_password, s_phone, s_rank, s_superseq, s_image)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """
-        curs.execute(sql, (br_seq, staff[0], staff[1], staff[2], s_superseq, dummy_image))
-        staff_ids.append(curs.lastrowid)
+        s_id = staff[0]
+        s_phone = staff[3]
+        supervisor_s_id = staff[5]  # 상급자의 s_id
+        
+        # 중복 확인 (s_id 또는 s_phone)
+        curs.execute("SELECT s_seq FROM staff WHERE s_id = %s OR s_phone = %s", (s_id, s_phone))
+        existing = curs.fetchone()
+        
+        if existing:
+            existing_seq = existing[0]
+            staff_ids.append(existing_seq)
+            staff_id_to_seq[s_id] = existing_seq
+        else:
+            br_seq = branch_ids[i % len(branch_ids)]
+            
+            # 상급자의 s_seq 찾기
+            s_superseq = None
+            if supervisor_s_id:
+                # 상급자가 이미 생성되었는지 확인
+                if supervisor_s_id in staff_id_to_seq:
+                    s_superseq = staff_id_to_seq[supervisor_s_id]
+                else:
+                    # 데이터베이스에서 상급자 찾기
+                    curs.execute("SELECT s_seq FROM staff WHERE s_id = %s", (supervisor_s_id,))
+                    supervisor = curs.fetchone()
+                    if supervisor:
+                        s_superseq = supervisor[0]
+                    else:
+                        print(f"   ⚠️  상급자 {supervisor_s_id}를 찾을 수 없습니다. s_superseq를 NULL로 설정합니다.")
+            
+            sql = """
+                INSERT INTO staff (s_id, br_seq, s_password, s_name, s_phone, s_rank, s_superseq, s_image)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            curs.execute(sql, (staff[0], br_seq, staff[1], staff[2], staff[3], staff[4], s_superseq, dummy_image))
+            inserted_seq = curs.lastrowid
+            staff_ids.append(inserted_seq)
+            staff_id_to_seq[s_id] = inserted_seq
     
     conn.commit()
     print(f"   ✅ {len(staff_ids)}개 직원 생성 완료")
+    
+    # 상급자 관계 확인 출력
+    print("   📋 상급자 관계:")
+    for staff in staffs:
+        s_id = staff[0]
+        supervisor_s_id = staff[5]
+        if supervisor_s_id:
+            print(f"      - {staff[2]} ({s_id}) → 상급자: {supervisor_s_id}")
+        else:
+            print(f"      - {staff[2]} ({s_id}) → 최상급자 (점장)")
+    
     return staff_ids
 
 
 def create_products(conn, kind_ids, color_ids, size_ids, gender_ids, maker_ids):
-    """제품 데이터 생성"""
+    """제품 데이터 생성 (중복 방지)"""
     print("👟 제품 데이터 생성 중...")
     curs = conn.cursor()
     
@@ -205,11 +294,18 @@ def create_products(conn, kind_ids, color_ids, size_ids, gender_ids, maker_ids):
     ]
     
     product_ids = []
-    created_combinations = set()  # 중복 방지
+    created_combinations = set()  # 메모리 내 중복 방지
+    
+    # 기존 제품 조합 조회
+    curs.execute("SELECT cc_seq, sc_seq, m_seq FROM product")
+    existing_combinations = set(curs.fetchall())
+    created_combinations.update(existing_combinations)
     
     for i in range(30):  # 30개 제품 생성
         # UNIQUE 제약조건 회피: (cc_seq, sc_seq, m_seq) 조합이 중복되지 않도록
-        while True:
+        max_attempts = 100
+        attempt = 0
+        while attempt < max_attempts:
             kc_seq = random.choice(kind_ids)
             cc_seq = random.choice(color_ids)
             sc_seq = random.choice(size_ids)
@@ -219,20 +315,35 @@ def create_products(conn, kind_ids, color_ids, size_ids, gender_ids, maker_ids):
             # UNIQUE 제약조건 체크: (cc_seq, sc_seq, m_seq)
             combination = (cc_seq, sc_seq, m_seq)
             if combination not in created_combinations:
-                created_combinations.add(combination)
-                break
+                # 데이터베이스에서도 확인
+                curs.execute("""
+                    SELECT p_seq FROM product 
+                    WHERE cc_seq = %s AND sc_seq = %s AND m_seq = %s
+                """, combination)
+                existing = curs.fetchone()
+                
+                if existing:
+                    product_ids.append(existing[0])
+                    created_combinations.add(combination)
+                    break
+                else:
+                    created_combinations.add(combination)
+                    p_name = f"{product_names[i % len(product_names)]} {random.choice(['프리미엄', '클래식', '에디션'])}"
+                    p_price = random.randint(50000, 200000)
+                    p_stock = random.randint(0, 100)
+                    p_image = f"/images/product_{i+1}.jpg"
+                    
+                    sql = """
+                        INSERT INTO product (kc_seq, cc_seq, sc_seq, gc_seq, m_seq, p_name, p_price, p_stock, p_image)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """
+                    curs.execute(sql, (kc_seq, cc_seq, sc_seq, gc_seq, m_seq, p_name, p_price, p_stock, p_image))
+                    product_ids.append(curs.lastrowid)
+                    break
+            attempt += 1
         
-        p_name = f"{product_names[i % len(product_names)]} {random.choice(['프리미엄', '클래식', '에디션'])}"
-        p_price = random.randint(50000, 200000)
-        p_stock = random.randint(0, 100)
-        p_image = f"/images/product_{i+1}.jpg"
-        
-        sql = """
-            INSERT INTO product (kc_seq, cc_seq, sc_seq, gc_seq, m_seq, p_name, p_price, p_stock, p_image)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """
-        curs.execute(sql, (kc_seq, cc_seq, sc_seq, gc_seq, m_seq, p_name, p_price, p_stock, p_image))
-        product_ids.append(curs.lastrowid)
+        if attempt >= max_attempts:
+            print(f"   ⚠️  제품 {i+1}번 생성 실패: 가능한 조합이 부족합니다.")
     
     conn.commit()
     print(f"   ✅ {len(product_ids)}개 제품 생성 완료")
@@ -240,7 +351,7 @@ def create_products(conn, kind_ids, color_ids, size_ids, gender_ids, maker_ids):
 
 
 def create_purchase_items(conn, branch_ids, user_ids, product_ids):
-    """구매 내역 데이터 생성 (b_tnum으로 그룹화)"""
+    """구매 내역 데이터 생성 (분 단위 그룹화)"""
     print("🛒 구매 내역 데이터 생성 중...")
     curs = conn.cursor()
     
@@ -249,27 +360,42 @@ def create_purchase_items(conn, branch_ids, user_ids, product_ids):
     
     # 10개의 주문 그룹 생성 (각 그룹당 1-3개 항목)
     for order_num in range(10):
-        b_tnum = f"TXN{order_num+1:04d}{int(base_date.timestamp())}"
-        order_date = base_date + timedelta(days=random.randint(0, 29))
+        # 각 주문은 다른 분에 생성 (분 단위 그룹핑을 위해)
+        # 날짜는 랜덤하게 선택하되, 시간은 분 단위로 구분
+        order_day = base_date + timedelta(days=random.randint(0, 29))
+        order_hour = random.randint(9, 20)  # 9시~20시
+        order_minute = random.randint(0, 59)  # 0~59분
+        # 초는 0~59초 중 랜덤 (같은 분이면 같은 주문으로 묶임)
+        order_second = random.randint(0, 59)
+        
+        # 같은 주문 그룹의 모든 항목은 같은 분에 주문 (초는 다를 수 있음)
+        order_datetime = order_day.replace(hour=order_hour, minute=order_minute, second=order_second, microsecond=0)
+        
         u_seq = random.choice(user_ids)
         br_seq = random.choice(branch_ids)
+        b_status = random.choice(['주문완료', '배송중', '배송완료', '수령완료', None])
         
-        # 각 주문당 1-3개 항목
+        # 각 주문당 1-3개 항목 (같은 분, 사용자, 지점)
         item_count = random.randint(1, 3)
         for item_num in range(item_count):
             p_seq = random.choice(product_ids)
             b_price = random.randint(50000, 200000)
             b_quantity = random.randint(1, 3)
             
+            # 같은 주문 그룹의 항목들은 같은 분에 주문 (초만 약간 다름)
+            # 같은 분 내에서 0~59초 사이의 랜덤한 시간 사용
+            item_second = random.randint(0, 59)
+            item_datetime = order_datetime.replace(second=item_second)
+            
             sql = """
-                INSERT INTO purchase_item (br_seq, u_seq, p_seq, b_price, b_quantity, b_date, b_tnum)
+                INSERT INTO purchase_item (br_seq, u_seq, p_seq, b_price, b_quantity, b_date, b_status)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
             """
-            curs.execute(sql, (br_seq, u_seq, p_seq, b_price, b_quantity, order_date, b_tnum))
+            curs.execute(sql, (br_seq, u_seq, p_seq, b_price, b_quantity, item_datetime, b_status))
             purchase_item_ids.append(curs.lastrowid)
     
     conn.commit()
-    print(f"   ✅ {len(purchase_item_ids)}개 구매 내역 생성 완료 (10개 주문 그룹)")
+    print(f"   ✅ {len(purchase_item_ids)}개 구매 내역 생성 완료 (10개 주문 그룹, 분 단위 그룹화)")
     return purchase_item_ids
 
 
@@ -283,10 +409,15 @@ def create_pickups(conn, purchase_item_ids):
     picked_items = random.sample(purchase_item_ids, min(15, len(purchase_item_ids)))
     
     for b_seq in picked_items:
-        pic_date = datetime.now() - timedelta(days=random.randint(0, 20))
-        sql = "INSERT INTO pickup (b_seq, pic_date) VALUES (%s, %s)"
-        curs.execute(sql, (b_seq, pic_date))
-        pickup_ids.append(curs.lastrowid)
+        # purchase_item에서 u_seq 조회
+        curs.execute("SELECT u_seq FROM purchase_item WHERE b_seq = %s", (b_seq,))
+        result = curs.fetchone()
+        if result:
+            u_seq = result[0]
+            created_at = datetime.now() - timedelta(days=random.randint(0, 20))
+            sql = "INSERT INTO pickup (b_seq, u_seq, created_at) VALUES (%s, %s, %s)"
+            curs.execute(sql, (b_seq, u_seq, created_at))
+            pickup_ids.append(curs.lastrowid)
     
     conn.commit()
     print(f"   ✅ {len(pickup_ids)}개 수령 기록 생성 완료")
@@ -305,8 +436,8 @@ def create_refunds(conn, user_ids, staff_ids, pickup_ids):
     reasons = ['사이즈 불일치', '색상 불일치', '제품 불량', '단순 변심', '배송 지연']
     
     for pic_seq in refunded_pickups:
-        # 해당 pickup의 user 찾기
-        curs.execute("SELECT u_seq FROM purchase_item pi JOIN pickup p ON pi.b_seq = p.b_seq WHERE p.pic_seq = %s", (pic_seq,))
+        # 해당 pickup의 user 찾기 (pickup 테이블의 u_seq 사용)
+        curs.execute("SELECT p.u_seq FROM pickup p WHERE p.pic_seq = %s", (pic_seq,))
         result = curs.fetchone()
         u_seq = result[0] if result else random.choice(user_ids)
         
@@ -407,6 +538,34 @@ def create_requests(conn, staff_ids, product_ids, maker_ids):
     return request_ids
 
 
+def clear_all_data(conn):
+    """모든 테이블 데이터 삭제 (외래 키 제약조건 고려)"""
+    print("🗑️  기존 데이터 삭제 중...")
+    curs = conn.cursor()
+    
+    # 외래 키 체크 비활성화
+    curs.execute("SET FOREIGN_KEY_CHECKS = 0")
+    
+    # 역순으로 삭제 (외래 키 의존성 고려)
+    tables = [
+        'request', 'receive', 'refund', 'pickup', 'purchase_item',
+        'product', 'staff', 'user', 'gender_category', 'size_category',
+        'color_category', 'kind_category', 'maker', 'branch'
+    ]
+    
+    for table in tables:
+        try:
+            curs.execute(f"DELETE FROM {table}")
+            print(f"   ✅ {table} 데이터 삭제 완료")
+        except Exception as e:
+            print(f"   ⚠️  {table} 삭제 중 오류: {e}")
+    
+    # 외래 키 체크 재활성화
+    curs.execute("SET FOREIGN_KEY_CHECKS = 1")
+    conn.commit()
+    print("   ✅ 모든 데이터 삭제 완료\n")
+
+
 def main():
     print("=" * 60)
     print("🎯 새로운 ERD 구조 더미 데이터 생성 시작")
@@ -415,6 +574,9 @@ def main():
     conn = connect_db()
     
     try:
+        # 기존 데이터 삭제
+        clear_all_data(conn)
+        
         # 데이터 생성 순서
         branch_ids = create_branches(conn)
         maker_ids = create_makers(conn)

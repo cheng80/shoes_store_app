@@ -2,7 +2,7 @@
 PurchaseItem API - 구매 내역 CRUD
 개별 실행: python purchase_item.py
 
-Note: b_tnum으로 여러 구매 항목을 하나의 주문으로 그룹화
+Note: b_date (구매 날짜)로 여러 구매 항목을 하나의 주문으로 그룹화
 """
 
 from fastapi import APIRouter, Form
@@ -25,7 +25,7 @@ class PurchaseItem(BaseModel):
     b_price: int = 0
     b_quantity: int = 1
     b_date: datetime
-    b_tnum: Optional[str] = None
+    b_status: Optional[str] = None
 
 
 # ============================================
@@ -36,7 +36,7 @@ async def select_purchase_items():
     conn = connect_db()
     curs = conn.cursor()
     curs.execute("""
-        SELECT b_seq, br_seq, u_seq, p_seq, b_price, b_quantity, b_date, b_tnum 
+        SELECT b_seq, br_seq, u_seq, p_seq, b_price, b_quantity, b_date, b_status 
         FROM purchase_item 
         ORDER BY b_date DESC, b_seq
     """)
@@ -50,7 +50,7 @@ async def select_purchase_items():
         'b_price': row[4],
         'b_quantity': row[5],
         'b_date': row[6].isoformat() if row[6] else None,
-        'b_tnum': row[7]
+        'b_status': row[7]
     } for row in rows]
     return {"results": result}
 
@@ -63,7 +63,7 @@ async def select_purchase_item(purchase_item_seq: int):
     conn = connect_db()
     curs = conn.cursor()
     curs.execute("""
-        SELECT b_seq, br_seq, u_seq, p_seq, b_price, b_quantity, b_date, b_tnum 
+        SELECT b_seq, br_seq, u_seq, p_seq, b_price, b_quantity, b_date, b_status 
         FROM purchase_item 
         WHERE b_seq = %s
     """, (purchase_item_seq,))
@@ -79,7 +79,7 @@ async def select_purchase_item(purchase_item_seq: int):
         'b_price': row[4],
         'b_quantity': row[5],
         'b_date': row[6].isoformat() if row[6] else None,
-        'b_tnum': row[7]
+        'b_status': row[7]
     }
     return {"result": result}
 
@@ -87,12 +87,12 @@ async def select_purchase_item(purchase_item_seq: int):
 # ============================================
 # 고객별 구매 내역 조회
 # ============================================
-@router.get("/{user_seq}")
+@router.get("/by_user/{user_seq}")
 async def select_purchase_items_by_user(user_seq: int):
     conn = connect_db()
     curs = conn.cursor()
     curs.execute("""
-        SELECT b_seq, br_seq, u_seq, p_seq, b_price, b_quantity, b_date, b_tnum 
+        SELECT b_seq, br_seq, u_seq, p_seq, b_price, b_quantity, b_date, b_status 
         FROM purchase_item 
         WHERE u_seq = %s
         ORDER BY b_date DESC, b_seq
@@ -107,24 +107,31 @@ async def select_purchase_items_by_user(user_seq: int):
         'b_price': row[4],
         'b_quantity': row[5],
         'b_date': row[6].isoformat() if row[6] else None,
-        'b_tnum': row[7]
+        'b_status': row[7]
     } for row in rows]
     return {"results": result}
 
 
 # ============================================
-# 주문번호(b_tnum)로 구매 내역 조회 (주문 그룹화)
+# 날짜+시간(분 단위) 기반 주문 그룹화 조회 (같은 날짜+시간(분), 사용자, 지점)
 # ============================================
-@router.get("")
-async def select_purchase_items_by_tnum(b_tnum: str):
+@router.get("/by_datetime")
+async def select_purchase_items_by_datetime(
+    user_seq: int,
+    order_datetime: str,  # YYYY-MM-DD HH:MM format 또는 ISO format
+    branch_seq: int
+):
     conn = connect_db()
     curs = conn.cursor()
+    # datetime을 분 단위로 비교 (같은 분에 주문한 항목들을 하나로 묶음)
     curs.execute("""
-        SELECT b_seq, br_seq, u_seq, p_seq, b_price, b_quantity, b_date, b_tnum 
+        SELECT b_seq, br_seq, u_seq, p_seq, b_price, b_quantity, b_date, b_status 
         FROM purchase_item 
-        WHERE b_tnum = %s
-        ORDER BY b_seq
-    """, (b_tnum,))
+        WHERE u_seq = %s 
+          AND DATE_FORMAT(b_date, '%%Y-%%m-%%d %%H:%%i') = DATE_FORMAT(%s, '%%Y-%%m-%%d %%H:%%i')
+          AND br_seq = %s
+        ORDER BY b_date, b_seq
+    """, (user_seq, order_datetime, branch_seq))
     rows = curs.fetchall()
     conn.close()
     result = [{
@@ -135,7 +142,7 @@ async def select_purchase_items_by_tnum(b_tnum: str):
         'b_price': row[4],
         'b_quantity': row[5],
         'b_date': row[6].isoformat() if row[6] else None,
-        'b_tnum': row[7]
+        'b_status': row[7]
     } for row in rows]
     return {"results": result}
 
@@ -151,7 +158,7 @@ async def insert_purchase_item(
     b_price: int = Form(0),
     b_quantity: int = Form(1),
     b_date: str = Form(...),  # ISO format string
-    b_tnum: Optional[str] = Form(None),
+    b_status: Optional[str] = Form(None),
 ):
     try:
         # 문자열을 datetime으로 변환
@@ -160,10 +167,10 @@ async def insert_purchase_item(
         conn = connect_db()
         curs = conn.cursor()
         sql = """
-            INSERT INTO purchase_item (br_seq, u_seq, p_seq, b_price, b_quantity, b_date, b_tnum) 
+            INSERT INTO purchase_item (br_seq, u_seq, p_seq, b_price, b_quantity, b_date, b_status) 
             VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
-        curs.execute(sql, (br_seq, u_seq, p_seq, b_price, b_quantity, b_date_dt, b_tnum))
+        curs.execute(sql, (br_seq, u_seq, p_seq, b_price, b_quantity, b_date_dt, b_status))
         conn.commit()
         inserted_id = curs.lastrowid
         conn.close()
@@ -184,7 +191,7 @@ async def update_purchase_item(
     b_price: int = Form(0),
     b_quantity: int = Form(1),
     b_date: str = Form(...),  # ISO format string
-    b_tnum: Optional[str] = Form(None),
+    b_status: Optional[str] = Form(None),
 ):
     try:
         # 문자열을 datetime으로 변환
@@ -194,10 +201,10 @@ async def update_purchase_item(
         curs = conn.cursor()
         sql = """
             UPDATE purchase_item 
-            SET br_seq=%s, u_seq=%s, p_seq=%s, b_price=%s, b_quantity=%s, b_date=%s, b_tnum=%s 
+            SET br_seq=%s, u_seq=%s, p_seq=%s, b_price=%s, b_quantity=%s, b_date=%s, b_status=%s 
             WHERE b_seq=%s
         """
-        curs.execute(sql, (br_seq, u_seq, p_seq, b_price, b_quantity, b_date_dt, b_tnum, b_seq))
+        curs.execute(sql, (br_seq, u_seq, p_seq, b_price, b_quantity, b_date_dt, b_status, b_seq))
         conn.commit()
         conn.close()
         return {"result": "OK"}

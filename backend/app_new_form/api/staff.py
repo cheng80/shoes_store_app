@@ -18,11 +18,15 @@ router = APIRouter()
 # ============================================
 class Staff(BaseModel):
     s_seq: Optional[int] = None
+    s_id: str
     br_seq: int
     s_password: str
+    s_name: str
     s_rank: Optional[str] = None
     s_phone: str
     s_superseq: Optional[int] = None
+    created_at: Optional[str] = None
+    s_quit_date: Optional[str] = None
 
 
 # ============================================
@@ -33,7 +37,7 @@ async def select_staffs():
     conn = connect_db()
     curs = conn.cursor()
     curs.execute("""
-        SELECT s_seq, br_seq, s_password, s_rank, s_phone, s_superseq 
+        SELECT s_seq, s_id, br_seq, s_password, s_name, s_rank, s_phone, s_superseq, created_at, s_quit_date 
         FROM staff 
         ORDER BY s_seq
     """)
@@ -41,11 +45,15 @@ async def select_staffs():
     conn.close()
     result = [{
         's_seq': row[0],
-        'br_seq': row[1],
-        's_password': row[2],
-        's_rank': row[3],
-        's_phone': row[4],
-        's_superseq': row[5]
+        's_id': row[1],
+        'br_seq': row[2],
+        's_password': row[3],
+        's_name': row[4],
+        's_rank': row[5],
+        's_phone': row[6],
+        's_superseq': row[7],
+        'created_at': row[8].isoformat() if row[8] else None,
+        's_quit_date': row[9].isoformat() if row[9] else None
     } for row in rows]
     return {"results": result}
 
@@ -58,7 +66,7 @@ async def select_staff(staff_seq: int):
     conn = connect_db()
     curs = conn.cursor()
     curs.execute("""
-        SELECT s_seq, br_seq, s_password, s_rank, s_phone, s_superseq 
+        SELECT s_seq, s_id, br_seq, s_password, s_name, s_rank, s_phone, s_superseq, created_at, s_quit_date 
         FROM staff 
         WHERE s_seq = %s
     """, (staff_seq,))
@@ -68,11 +76,15 @@ async def select_staff(staff_seq: int):
         return {"result": "Error", "message": "Staff not found"}
     result = {
         's_seq': row[0],
-        'br_seq': row[1],
-        's_password': row[2],
-        's_rank': row[3],
-        's_phone': row[4],
-        's_superseq': row[5]
+        's_id': row[1],
+        'br_seq': row[2],
+        's_password': row[3],
+        's_name': row[4],
+        's_rank': row[5],
+        's_phone': row[6],
+        's_superseq': row[7],
+        'created_at': row[8].isoformat() if row[8] else None,
+        's_quit_date': row[9].isoformat() if row[9] else None
     }
     return {"result": result}
 
@@ -80,12 +92,12 @@ async def select_staff(staff_seq: int):
 # ============================================
 # 지점별 직원 조회
 # ============================================
-@router.get("/{branch_seq}")
+@router.get("/by_branch/{branch_seq}")
 async def select_staffs_by_branch(branch_seq: int):
     conn = connect_db()
     curs = conn.cursor()
     curs.execute("""
-        SELECT s_seq, br_seq, s_password, s_rank, s_phone, s_superseq 
+        SELECT s_seq, s_id, br_seq, s_password, s_name, s_rank, s_phone, s_superseq, created_at, s_quit_date 
         FROM staff 
         WHERE br_seq = %s
         ORDER BY s_seq
@@ -94,11 +106,15 @@ async def select_staffs_by_branch(branch_seq: int):
     conn.close()
     result = [{
         's_seq': row[0],
-        'br_seq': row[1],
-        's_password': row[2],
-        's_rank': row[3],
-        's_phone': row[4],
-        's_superseq': row[5]
+        's_id': row[1],
+        'br_seq': row[2],
+        's_password': row[3],
+        's_name': row[4],
+        's_rank': row[5],
+        's_phone': row[6],
+        's_superseq': row[7],
+        'created_at': row[8].isoformat() if row[8] else None,
+        's_quit_date': row[9].isoformat() if row[9] else None
     } for row in rows]
     return {"results": result}
 
@@ -108,8 +124,10 @@ async def select_staffs_by_branch(branch_seq: int):
 # ============================================
 @router.post("")
 async def insert_staff(
+    s_id: str = Form(...),
     br_seq: int = Form(...),
     s_password: str = Form(...),
+    s_name: str = Form(...),
     s_phone: str = Form(...),
     s_rank: Optional[str] = Form(None),
     s_superseq: Optional[int] = Form(None),
@@ -122,10 +140,10 @@ async def insert_staff(
         conn = connect_db()
         curs = conn.cursor()
         sql = """
-            INSERT INTO staff (br_seq, s_password, s_phone, s_rank, s_superseq, s_image) 
-            VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO staff (s_id, br_seq, s_password, s_name, s_phone, s_rank, s_superseq, s_image) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """
-        curs.execute(sql, (br_seq, s_password, s_phone, s_rank, s_superseq, image_data))
+        curs.execute(sql, (s_id, br_seq, s_password, s_name, s_phone, s_rank, s_superseq, image_data))
         conn.commit()
         inserted_id = curs.lastrowid
         conn.close()
@@ -140,21 +158,29 @@ async def insert_staff(
 @router.post("/{id}")
 async def update_staff(
     s_seq: int = Form(...),
+    s_id: str = Form(...),
     br_seq: int = Form(...),
     s_password: str = Form(...),
+    s_name: str = Form(...),
     s_phone: str = Form(...),
     s_rank: Optional[str] = Form(None),
     s_superseq: Optional[int] = Form(None),
+    s_quit_date: Optional[str] = Form(None),
 ):
     try:
+        from datetime import datetime
+        s_quit_date_dt = None
+        if s_quit_date:
+            s_quit_date_dt = datetime.fromisoformat(s_quit_date.replace('Z', '+00:00'))
+        
         conn = connect_db()
         curs = conn.cursor()
         sql = """
             UPDATE staff 
-            SET br_seq=%s, s_password=%s, s_phone=%s, s_rank=%s, s_superseq=%s 
+            SET s_id=%s, br_seq=%s, s_password=%s, s_name=%s, s_phone=%s, s_rank=%s, s_superseq=%s, s_quit_date=%s 
             WHERE s_seq=%s
         """
-        curs.execute(sql, (br_seq, s_password, s_phone, s_rank, s_superseq, s_seq))
+        curs.execute(sql, (s_id, br_seq, s_password, s_name, s_phone, s_rank, s_superseq, s_quit_date_dt, s_seq))
         conn.commit()
         conn.close()
         return {"result": "OK"}
@@ -165,17 +191,25 @@ async def update_staff(
 # ============================================
 # 직원 수정 (이미지 포함 - Form + UploadFile)
 # ============================================
-@router.post("/{id}")
+@router.post("/{id}/with_image")
 async def update_staff_with_image(
     s_seq: int = Form(...),
+    s_id: str = Form(...),
     br_seq: int = Form(...),
     s_password: str = Form(...),
+    s_name: str = Form(...),
     s_phone: str = Form(...),
     s_rank: Optional[str] = Form(None),
     s_superseq: Optional[int] = Form(None),
+    s_quit_date: Optional[str] = Form(None),
     file: UploadFile = File(...)
 ):
     try:
+        from datetime import datetime
+        s_quit_date_dt = None
+        if s_quit_date:
+            s_quit_date_dt = datetime.fromisoformat(s_quit_date.replace('Z', '+00:00'))
+        
         # 파일 읽기
         image_data = await file.read()
         
@@ -183,10 +217,10 @@ async def update_staff_with_image(
         curs = conn.cursor()
         sql = """
             UPDATE staff 
-            SET br_seq=%s, s_password=%s, s_phone=%s, s_rank=%s, s_superseq=%s, s_image=%s 
+            SET s_id=%s, br_seq=%s, s_password=%s, s_name=%s, s_phone=%s, s_rank=%s, s_superseq=%s, s_quit_date=%s, s_image=%s 
             WHERE s_seq=%s
         """
-        curs.execute(sql, (br_seq, s_password, s_phone, s_rank, s_superseq, image_data, s_seq))
+        curs.execute(sql, (s_id, br_seq, s_password, s_name, s_phone, s_rank, s_superseq, s_quit_date_dt, image_data, s_seq))
         conn.commit()
         conn.close()
         return {"result": "OK"}

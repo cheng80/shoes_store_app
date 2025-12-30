@@ -38,7 +38,7 @@ async def get_refund_with_details(refund_seq: int):
             s.s_rank,
             s.s_phone,
             pic.pic_seq,
-            pic.pic_date,
+            pic.created_at,
             pi.b_seq,
             pi.b_price,
             pi.b_quantity,
@@ -80,7 +80,7 @@ async def get_refund_with_details(refund_seq: int):
             },
             'pickup': {
                 'pic_seq': row[9],
-                'pic_date': row[10].isoformat() if row[10] else None
+                'created_at': row[10].isoformat() if row[10] else None
             },
             'purchase_item': {
                 'b_seq': row[11],
@@ -133,7 +133,7 @@ async def get_refund_full_detail(refund_seq: int):
             s.s_rank,
             s.s_phone,
             pic.pic_seq,
-            pic.pic_date,
+            pic.created_at,
             pi.b_seq,
             pi.b_price,
             pi.b_quantity,
@@ -186,7 +186,7 @@ async def get_refund_full_detail(refund_seq: int):
             },
             'pickup': {
                 'pic_seq': row[9],
-                'pic_date': row[10].isoformat() if row[10] else None
+                'created_at': row[10].isoformat() if row[10] else None
             },
             'purchase_item': {
                 'b_seq': row[11],

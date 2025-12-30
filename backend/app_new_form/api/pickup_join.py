@@ -29,12 +29,12 @@ async def get_pickup_with_details(pickup_seq: int):
         sql = """
         SELECT 
             pic.pic_seq,
-            pic.pic_date,
+            pic.created_at,
             pi.b_seq,
             pi.b_price,
             pi.b_quantity,
             pi.b_date,
-            pi.b_tnum,
+            pi.b_status,
             u.u_seq,
             u.u_name,
             u.u_phone,
@@ -61,13 +61,13 @@ async def get_pickup_with_details(pickup_seq: int):
         
         result = {
             'pic_seq': row[0],
-            'pic_date': row[1].isoformat() if row[1] else None,
+            'created_at': row[1].isoformat() if row[1] else None,
             'purchase_item': {
                 'b_seq': row[2],
                 'b_price': row[3],
                 'b_quantity': row[4],
                 'b_date': row[5].isoformat() if row[5] else None,
-                'b_tnum': row[6]
+                'b_status': row[6]
             },
             'user': {
                 'u_seq': row[7],
@@ -112,12 +112,12 @@ async def get_pickup_full_detail(pickup_seq: int):
         sql = """
         SELECT 
             pic.pic_seq,
-            pic.pic_date,
+            pic.created_at,
             pi.b_seq,
             pi.b_price,
             pi.b_quantity,
             pi.b_date,
-            pi.b_tnum,
+            pi.b_status,
             u.u_seq,
             u.u_name,
             u.u_phone,
@@ -154,13 +154,13 @@ async def get_pickup_full_detail(pickup_seq: int):
         
         result = {
             'pic_seq': row[0],
-            'pic_date': row[1].isoformat() if row[1] else None,
+            'created_at': row[1].isoformat() if row[1] else None,
             'purchase_item': {
                 'b_seq': row[2],
                 'b_price': row[3],
                 'b_quantity': row[4],
                 'b_date': row[5].isoformat() if row[5] else None,
-                'b_tnum': row[6]
+                'b_status': row[6]
             },
             'user': {
                 'u_seq': row[7],
@@ -210,7 +210,7 @@ async def get_pickups_by_user_with_details(user_seq: int):
         sql = """
         SELECT 
             pic.pic_seq,
-            pic.pic_date,
+            pic.created_at,
             pi.b_seq,
             pi.b_price,
             pi.b_quantity,
@@ -223,14 +223,14 @@ async def get_pickups_by_user_with_details(user_seq: int):
         JOIN product p ON pi.p_seq = p.p_seq
         JOIN branch br ON pi.br_seq = br.br_seq
         WHERE pi.u_seq = %s
-        ORDER BY pic.pic_date DESC, pic.pic_seq DESC
+        ORDER BY pic.created_at DESC, pic.pic_seq DESC
         """
         curs.execute(sql, (user_seq,))
         rows = curs.fetchall()
         
         result = [{
             'pic_seq': row[0],
-            'pic_date': row[1].isoformat() if row[1] else None,
+            'created_at': row[1].isoformat() if row[1] else None,
             'purchase_item': {
                 'b_seq': row[2],
                 'b_price': row[3],
@@ -268,7 +268,7 @@ async def get_pickups_by_branch_with_details(branch_seq: int):
         sql = """
         SELECT 
             pic.pic_seq,
-            pic.pic_date,
+            pic.created_at,
             pi.b_seq,
             pi.b_price,
             pi.b_quantity,
@@ -281,14 +281,14 @@ async def get_pickups_by_branch_with_details(branch_seq: int):
         JOIN user u ON pi.u_seq = u.u_seq
         JOIN product p ON pi.p_seq = p.p_seq
         WHERE pi.br_seq = %s
-        ORDER BY pic.pic_date DESC, pic.pic_seq DESC
+        ORDER BY pic.created_at DESC, pic.pic_seq DESC
         """
         curs.execute(sql, (branch_seq,))
         rows = curs.fetchall()
         
         result = [{
             'pic_seq': row[0],
-            'pic_date': row[1].isoformat() if row[1] else None,
+            'created_at': row[1].isoformat() if row[1] else None,
             'purchase_item': {
                 'b_seq': row[2],
                 'b_price': row[3],
